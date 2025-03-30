@@ -3,3 +3,13 @@
 @import "tailwindcss/utilities";
 
 /* This file is for your main application CSS */
+
+@font-face {
+    font-family: "Abel";
+    font-weight: 400;
+    src: url(/fonts/Abel/Abel-Regular.ttf);
+}
+
+:root {
+    font-family: 'Abel', 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
