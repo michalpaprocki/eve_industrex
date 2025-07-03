@@ -12,4 +12,5 @@
 
 :root {
     font-family: 'Abel', 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    --header-h: 5rem;
 }

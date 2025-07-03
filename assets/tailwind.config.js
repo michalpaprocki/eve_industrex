@@ -13,8 +13,40 @@ module.exports = {
   ],
   theme: {
     extend: {
+      height: {
+        header: "var(--header-h)"
+      },
+      minHeight: {
+        "screen-h": [
+          "calc(100vh - var(--header-h))",
+          "calc(100dvh - var(--header-h))",
+        ]},
       colors: {
         brand: "#FD4F00",
+        "system1.0": "#2e74de",
+        "system0.9": "#389df1",
+        "system0.8": "#62daa6",
+        "system0.7": "#5cdba6",
+        "system0.6": "#73e352",
+        "system0.5": "#f0fe83",
+        "system0.4": "#dc6b08",
+        "system0.3": "#c94711",
+        "system0.2": "#bb1012",
+        "system0.1": "#6d211a",
+        "system0.0": "#8f2f69"
+      },
+      keyframes: {
+        spin: {
+          "0%": {
+            transform: "rotateZ(0deg)"
+          },
+          "100%": {
+            transform: "rotateZ(360deg)"
+          }
+        }
+      },
+      animations: {
+        spin: "spin 0.1s ease infinite"
       }
     },
   },
