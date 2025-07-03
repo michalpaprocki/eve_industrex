@@ -33,7 +33,7 @@ defmodule EveIndustrexWeb.CoreComponents do
 
   def header_link(assigns) do
     ~H"""
-      <.link class={@class} navigate={@destination} ><%= @inner_text %></.link>
+      <.link class={["font-bold text-lg hover:bg-black hover:text-white transition px-4 py-2 rounded-md", @class]} navigate={@destination} ><%= @inner_text %></.link>
     """
   end
 
@@ -290,7 +290,7 @@ defmodule EveIndustrexWeb.CoreComponents do
   attr :name, :any
   attr :label, :string, default: nil
   attr :value, :any
-
+  attr :class, :string, default: ""
   attr :type, :string,
     default: "text",
     values: ~w(checkbox color date datetime-local email file month number password
@@ -373,7 +373,7 @@ defmodule EveIndustrexWeb.CoreComponents do
         id={@id}
         name={@name}
         class={[
-          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6 min-h-[6rem]",
+          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6 min-h-[6rem]", @class,
           @errors == [] && "border-zinc-300 focus:border-zinc-400",
           @errors != [] && "border-rose-400 focus:border-rose-400"
         ]}
@@ -410,11 +410,12 @@ defmodule EveIndustrexWeb.CoreComponents do
   Renders a label.
   """
   attr :for, :string, default: nil
+  attr :class, :string, default: nil
   slot :inner_block, required: true
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
+    <label for={@for} class={["block text-sm font-semibold leading-6 text-zinc-800 ", @class]}>
       {render_slot(@inner_block)}
     </label>
     """
