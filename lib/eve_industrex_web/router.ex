@@ -1,5 +1,6 @@
 defmodule EveIndustrexWeb.Router do
-  alias HomeLive
+alias Tools
+
   use EveIndustrexWeb, :router
 
   pipeline :browser do
@@ -19,6 +20,14 @@ defmodule EveIndustrexWeb.Router do
     pipe_through :browser
 
     live "/", HomeLive
+    live "/market", Market.MarketLive
+    live "/market/*path", Market.MarketLive
+    live "/tools", ToolsLive
+    live "/tools/alchemy", AlchemyLive
+    live "/tools/appraise", Tools.AppraiseLive
+    live "/tools/lp_shop", Tools.LpShopLive
+    live "/tools/production", Tools.ProductionLive
+    live "/tools/reactions", Tools.ReactionsLive
   end
 
   # Other scopes may use custom stacks.
