@@ -1,0 +1,11 @@
+<.live_component module={EveIndustrexWeb.Header.Header} id="header"/>
+<main class="px-4 py-20 sm:px-6 lg:px-8">
+
+    <.flash_group flash={@flash} />
+    <section class="flex md:flex-row flex-col gap-4 justify-start">
+        <.live_component id={"market_tool_panel"} module={EveIndustrexWeb.Market.ToolPanel} />
+        <div class="w-full">
+          {@inner_content}
+        </div>
+    </section>
+</main>
