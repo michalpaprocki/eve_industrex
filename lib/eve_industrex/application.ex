@@ -8,6 +8,7 @@ defmodule EveIndustrex.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      {Task.Supervisor, name: EveIndustrex.TaskSupervisor, strategy: :one_for_one},
       EveIndustrexWeb.Telemetry,
       EveIndustrex.Repo,
       {DNSCluster, query: Application.get_env(:eve_industrex, :dns_cluster_query) || :ignore},
