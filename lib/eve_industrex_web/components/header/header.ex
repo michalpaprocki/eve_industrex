@@ -7,10 +7,11 @@ defmodule EveIndustrexWeb.Header.Header do
 
   def render(assigns) do
     ~H"""
-      <header class="p-8">
-        <nav class="flex gap-2 ">
+      <header class="bg-black/70 text-white">
+        <nav class="mx-auto px-8 flex items-center gap-2 h-header">
           <.header_link destination={~p"/"} inner_text={"Industrex"} />
-          <.header_link destination={~p"/alchemy"} inner_text={"Alchemy"}/>
+          <.header_link destination={~p"/market"} inner_text={"Market"} />
+          <.header_link destination={~p"/tools"} inner_text={"Tools"}/>
         </nav>
       </header>
     """
