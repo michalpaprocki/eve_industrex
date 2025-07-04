@@ -88,22 +88,6 @@ defmodule EveIndustrex.Types do
     %{:name => data.name, :description => data.description, :market_group_id => data.market_group_id, :parent_group_id => data.parent_group_id, :children => children, :types =>  types}
   end
 
-  def insert_materials_from_dump() do
-    mats = EveIndustrex.Parser.parse_materials()
-    Enum.map(mats, fn m ->
-      %Material{materials: :erlang.term_to_binary(elem(m,1)), type_id: elem(m, 0)}
-      |> Repo.insert()
-    end)
-  end
-  def insert_bps_from_dump() do
-    bps = EveIndustrex.Parser.parse_bps()
-    Enum.map(bps, fn b ->
-    %Blueprint{activities: :erlang.term_to_binary(elem(hd(b), 1)), blueprintTypeID: elem(Enum.at(b,1), 1), maxProductionLimit: elem(Enum.at(b,2), 1)}
-    |> Repo.insert() end)
-  end
-  def read_materials_all() do
-    Repo.all(Blueprint)
-  end
   def get_bp_by_type_id(type_id) do
     Repo.get_by(Blueprint, blueprintTypeID: type_id)
   end
@@ -121,5 +105,5 @@ defmodule EveIndustrex.Types do
   end
 
   def remove_bps_all(), do: Repo.delete_all(Blueprint)
-  def remove_materials_all(), do: Repo.delete_all(Material)
+
 end
