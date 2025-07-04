@@ -1,18 +1,14 @@
 defmodule EveIndustrex.Reactor do
+  alias EveIndustrex.Blueprints
   alias EveIndustrex.Materials
   alias EveIndustrex.Types
   def get_alchemy_recipes() do
     types = Types.get_formulas()
-    bps = Types.get_bps_from_id_list(Enum.map(types, fn b -> hd(b) end))
-    |> Enum.map(fn b -> Map.update(b, :activities, nil, fn prev_value ->  :erlang.binary_to_term(prev_value) end) end)
-    |> Enum.map(fn b ->  Map.replace(b, :activities, Enum.map(b.activities, fn a -> extract_reaction(a) end))end)
+    bps = Blueprints.get_blueprints_from_list_of_ids(Enum.map(types, fn b -> hd(b) end))
+    reduced_type_ids = Enum.map(bps, fn b -> [b.blueprint_type_id, Enum.map(b.activities, fn a -> [Enum.map(a.materials, fn m -> m.material_type_id end), Enum.map(a.products, fn p -> p.product_type_id end)] end) ] end) |> List.flatten() |> Enum.uniq()
     recipes = Enum.zip(Enum.map(types, fn t -> Enum.at(t, 1) end), bps)
 
-    reduced_types = reduce_types(recipes)
-    mats = extract_mats(reduced_types)
-    reduced_types_with_mats = Enum.uniq(List.flatten([mats | reduced_types]))
-
-    {Enum.sort_by(recipes, &(&1), :asc), reduced_types_with_mats}
+    {Enum.sort_by(recipes, &(elem(&1, 0)), :asc), reduced_type_ids}
   end
   def get_reactions() do
     types = Types.get_reactions()
