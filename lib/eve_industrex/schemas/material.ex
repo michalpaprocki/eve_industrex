@@ -4,14 +4,17 @@ defmodule EveIndustrex.Schemas.Material do
   import Ecto.Changeset
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "materials" do
-    field :materials, :binary
-    field :type_id, :integer
-    belongs_to :type, Type, references: :type_id, define_field: false
+    field :material_type_id, :integer
+    field :product_type_id, :integer
+    field :amount, :integer
+    field :blueprint_activity_id, :binary_id
+    belongs_to :blueprint_activity, EveIndustrex.Schemas.BlueprintActivity, define_field: false
+    belongs_to :material_type, Type, references: :type_id, define_field: false
+    belongs_to :product_type, Type, references: :type_id, define_field: false
   end
 
    def changeset(material, attrs) do
     material
-    |> cast(attrs, [:materials, :type_id])
-    |> unique_constraint(:type_id)
+    |> cast(attrs, [:material_type_id, :product_type_id, :amount, :blueprint_activity_id])
   end
 end

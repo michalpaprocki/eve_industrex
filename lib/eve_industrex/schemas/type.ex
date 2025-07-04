@@ -18,6 +18,7 @@ defmodule EveIndustrex.Schemas.Type do
     field :market_group_id, :integer
     belongs_to :market_group, EveIndustrex.Schemas.MarketGroup, references: :market_group_id, define_field: false
     has_many :lp_offers, EveIndustrex.Schemas.LpOffer, foreign_key: :offer_id
+    has_many :materials, EveIndustrex.Schemas.Material
 
     timestamps(type: :utc_datetime)
   end
