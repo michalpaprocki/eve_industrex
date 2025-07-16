@@ -1,6 +1,6 @@
 defmodule EveIndustrex.Blueprints do
-  alias EveIndustrex.Schemas.Material
-  alias EveIndustrex.Schemas.{BlueprintActivity, Blueprint, BlueprintProduct}
+
+  alias EveIndustrex.Schemas.{BlueprintActivity, Blueprint, BlueprintProduct,Type}
   alias EveIndustrex.Parser
   alias EveIndustrex.Repo
   import Ecto.Query
@@ -8,15 +8,21 @@ defmodule EveIndustrex.Blueprints do
   def get_blueprints() do
     Repo.all(Blueprint) |> Repo.preload(:activities)
   end
-  def get_blueprint(id), do: Repo.get_by(Blueprint, blueprint_type_id: id) |> Repo.preload([:activities, activities: [:materials, :products]])
+  def get_blueprint(id), do: Repo.get_by(Blueprint, blueprint_type_id: id) |> Repo.preload([:activities, activities: [:materials, :products, products: [:product]]])
   def get_blueprints_from_list_of_ids(list_of_ids) do
-    from(b in Blueprint, where: b.blueprint_type_id in ^list_of_ids) |> Repo.all |> Repo.preload([:activities, activities: [:materials, :products]])
+    from(b in Blueprint, where: b.blueprint_type_id in ^list_of_ids) |> Repo.all |> Repo.preload([:activities, activities: [:products, :materials, products: [:product, product: [:products, products: [:material_type]]], materials: [:material_type]]])
   end
   def get_blueprint_products_and_materials_type_ids(list_of_ids) do
-    from(b in Blueprint, where: b.blueprint_type_id in ^list_of_ids, join: a in BlueprintActivity, on: b.blueprint_type_id == a.blueprint_type_id, join: m in Material, on: a.id == m.blueprint_activity_id, join: p in BlueprintProduct, on: a.id == p.blueprint_activity_id,
-    preload: [:activities, activities: [:products, :materials]],
-    select: [:blueprint_type_id, activities: [:id, materials: [:material_type_id], products: [:product_type_id]]]) |> Repo.all
+    from(b in Blueprint, where: b.blueprint_type_id in ^list_of_ids,
+    preload: [activities: [:products, :materials, products: [:product, product: [:product]]]]
+    ) |> Repo.all
   end
+  def get_blueprint_products_type_ids(list_of_bp_ids) do
+    from(b in Blueprint, where: b.blueprint_type_id in ^list_of_bp_ids) |> Repo.all |> Repo.preload([activities: [:materials]])  |> Enum.map(fn b -> Enum.map(b.activities, fn a -> Enum.map(a.materials, fn p -> p.product_type_id end) end) end) |> List.flatten()
+  end
+
+
+
   def insert_bps_from_dump() do
     Repo.delete_all(Blueprint)
     Repo.delete_all(BlueprintActivity)
@@ -28,16 +34,19 @@ defmodule EveIndustrex.Blueprints do
         %{
           blueprint_type_id:  elem(Enum.at(bp, 1), 1),
           max_production_limit: elem(Enum.at(bp, 2),1),
-          activities: populate_activities(elem(hd(bp), 1), elem(Enum.at(bp, 1), 1))
+          activities: populate_activities(elem(hd(bp), 1), elem(Enum.at(bp, 1), 1)),
+          product_type_id: elem(Enum.at(bp, 1), 1)
           }
-        )  |> Repo.insert()
-    end) |> Stream.run()
-
+      ) |> Repo.insert()
+        end)
+        |> Stream.run()
 
   end
 
   defp populate_activities(activities, bp_id) do
+
     Enum.map(activities, fn a ->
+
       case elem(a, 0) do
         "copying" ->
         %{activity_type: :copying, blueprint_type_id: bp_id, time: get_time(a)}
@@ -75,17 +84,20 @@ defmodule EveIndustrex.Blueprints do
           }
           _-> nil
 
-
-      end
-    end)
+        end
+      end) |>  Enum.filter(fn a -> a != nil end)
   end
 
-  defp extract_manufacturing_products({"products", values}, _bp_id) do
+  defp extract_manufacturing_products({"products", values}, bp_id) do
     Enum.map(values, fn {id, amount} ->
-      %{amount: amount, product_type_id: id}
+      bp_product = Repo.get_by(Type, type_id: id)
+      bp = Repo.get_by(Type, type_id: bp_id) |> Repo.preload(:bp_products)
+      Type.changeset(bp, %{})|> Ecto.Changeset.put_assoc(:bp_products, [bp_product]) |> Repo.update()
+      %{amount: amount, product_type_id: id, }
     end)
   end
   defp extract_manufacturing_products(nil, _bp_id), do: nil
+
   defp extract_manufacturing_materials({"materials", values}, bp_id) do
     Enum.map(values, fn {id, amount} ->
       %{product_type_id: bp_id, material_type_id: id, amount: amount}
@@ -96,12 +108,3 @@ defmodule EveIndustrex.Blueprints do
     elem(List.keyfind(elem(tuple, 1), "time", 0), 1)
   end
 end
-
-
-{"reaction",
- [
-   {"materials", [{4051, 5}, {25268, 10}, {25273, 10}, {57446, 1}]},
-   {"products", [{57467, 10}]},
-   {"skills", [{45746, 2}]},
-   {"time", 10800}
- ]}
