@@ -7,9 +7,6 @@ defmodule EveIndustrexWeb.Alchemy.Reaction do
   def update(%{:update => %{:orders => orders}}, socket) do
     {:ok, socket |> assign(:orders, orders)}
   end
-   def update(%{:selected_skill_level => level} = assigns, socket) when is_integer(level) do
-    {:ok, socket |> assign(assigns)}
-  end
 
   def update(assigns, socket) do
     {:ok, socket |> assign(assigns)}
@@ -19,43 +16,38 @@ defmodule EveIndustrexWeb.Alchemy.Reaction do
     ~H"""
       <div class="p-2 ring-2 ring-black my-2">
         <span class="font-bold text-lg"><%= elem(@data, 0) %></span>
-        <%= for a <- elem(@data, 1).activities do %>
-          <%= for act <- elem(a, 1) do %>
-            <div class="flex flex-col p-1">
-              <span class="font-semibold capitalize"> <%= elem(act, 0) %>&nbsp;:</span>
-              <%= cond do %>
-                <%  is_number(elem(act, 1)) -> %>
-                  <span class="indent-1"><%=  elem(act, 1) %></span>
-                <% elem(act, 0) == "materials" -> %>
-                  <%= for x <- elem(act, 1) do %>
-                    <div class="flex gap-2 items-center justify-between">
+        <%= for act <- elem(@data, 1).activities do %>
+            <div class="flex flex-col gap-2 p-1">
+              <div>
+                <span class="font-semibold capitalize"> <%= hd(act.products).product.name %>&nbsp;:</span>
+                <span class="indent-1"><%=  hd(act.products).amount %></span>
+              </div>
+               <div class="flex flex-col gap-2 items-between">
+                     <span class="indent-1 font-semibold">Required Materials:</span>
+                  <%= for m <- act.materials do %>
+                   <div class="flex items-start justify-between">
                       <span class="indent-1">
-                        <%= hd(elem(x, 0)) %>  <%= elem(x, 1) %>
+                        <%= m.material_type.name %>  <%= m.amount %>
                       </span>
-                      <div class="flex gap-2 justify-between min-w-[20rem]">
-                        <.live_component module={EveIndustrexWeb.Market.MiniMarket} id={~s"#{@id}_#{Enum.at(elem(x,0), 1)}"} item={hd(elem(x, 0))} orders={Enum.filter(@orders.result, fn o -> o.type_id == Enum.at(elem(x, 0), 1)end)} />
-                        <.live_component module={EveIndustrexWeb.Alchemy.MaterialCost} id={~s"#{@id}_#{Enum.at(elem(x,0), 1)}_material_cost"} amount={elem(x, 1)} />
+                      <div class="flex justify-between min-w-[20rem]">
+                        <.live_component module={EveIndustrexWeb.Common.MiniMarket} material_cost_id={~s"#{@id}_#{m.material_type_id}_material_cost"} category={:reaction_material} id={~s"#{@id}_#{m.material_type_id}"}
+                        item={%{:name => m.material_type.name, :type_id => m.material_type.type_id}} orders={Enum.filter(@orders.result, fn o -> o.type_id == m.material_type_id end)} />
+                        <.live_component module={EveIndustrexWeb.Alchemy.MaterialCost} category={:material} id={~s"#{@id}_#{m.material_type_id}_material_cost"} amount={ m.amount} />
                       </div>
                     </div>
                   <% end %>
-                    <.live_component module={EveIndustrexWeb.Alchemy.Total} id={~s"#{@id}_total"} data={elem(@data, 1).activities} />
-                  <% true ->  %>
-                    <%= for x <- elem(act, 1) do %>
-                      <span class="indent-1">
-                        <%= hd(elem(x, 0)) %>  <%= elem(x, 1)%>
-                      </span>
-                      <%= if elem(act, 0) == "products" && String.contains?(String.downcase(elem(@data, 0)), "unrefined") do %>
-                        <.live_component module={EveIndustrexWeb.Alchemy.Product} id={~s"#{@id}_product"} product_id={Enum.at(elem(x, 0), 1)} selected_skill_level={@selected_skill_level} hub={@selected_trade_hub} orders={@orders} data={@data}/>
-                      <% end %>
-                      <%= if elem(act, 0) == "products" && !String.contains?(String.downcase(elem(@data, 0)), "unrefined") do %>
-                       <.live_component module={EveIndustrexWeb.Alchemy.Product} id={~s"#{@id}_product"} product_id={Enum.at(elem(x, 0), 1)} hub={@selected_trade_hub} orders={@orders} data={@data}/>
-                      <% end %>
+                       <.live_component module={EveIndustrexWeb.Alchemy.Total} profit_component_id={~s"#{@id}_reaction_profit"} id={~s"#{@id}_total"} />
+                  <%= for p <- act.products do %>
+                    <div class="flex gap-2 items-start justify-between">
+                      <.live_component module={EveIndustrexWeb.Alchemy.Product} category={assigns.category} id={~s"#{@id}_product"} profit_component_id={~s"#{@id}_reaction_profit"} product={p} hub={@selected_trade_hub} orders={@orders} />
+                    </div>
                   <% end %>
-                <% end %>
                   <div>
+                      <.live_component module={EveIndustrexWeb.Alchemy.ReactionProfit} id={~s"#{@id}_reaction_profit"} />
+                  </div>
             </div>
+
       </div>
-          <% end %>
         <% end %>
 
       </div>
