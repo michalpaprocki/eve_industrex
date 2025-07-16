@@ -27,14 +27,12 @@ defmodule EveIndustrex.Corporation do
     Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, corps_offers, fn {cid, offer_ids} -> Repo.get_by(NpcCorp, corp_id: cid) |> Repo.preload([:offers]) |> Ecto.Changeset.change() |> Ecto.Changeset.put_assoc(:offers, Enum.map(offer_ids, fn id -> Repo.get_by(LpOffer, offer_id: id) end))  |> Repo.update() end) |> Stream.run()
     Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, offers, fn o -> Enum.map(o["required_items"], fn ri -> %LpReqItem{type_id: o["type_id"], offer_id: o["offer_id"]} |> LpReqItem.changeset(ri) |> Repo.insert() end) end) |> Stream.run()
 
-
   end
 
   def delete_npc_corps(), do: Repo.delete_all(NpcCorp)
   def delete_npc_lp_offers(), do: Repo.delete_all(from(co in "corps_offers"))
   def delete_req_items(), do: Repo.delete_all(LpReqItem)
   def get_npc_corps(), do: Repo.all(NpcCorp)
-
   def get_npc_corps_names_and_ids() do
     from(c in NpcCorp, as: :corp, where: exists(
       from(co in CorpsOffers, where: parent_as(:corp).corp_id == co.corp_id and not is_nil(co.offer_id))
@@ -44,16 +42,19 @@ defmodule EveIndustrex.Corporation do
   def get_npc_corps_offers() do
     from(c in NpcCorp, join: o in assoc(c, :offers)) |> Repo.all
   end
-  def get_npc_offers_by_id(id), do: Repo.get_by(LpOffer, offer_id: id)
-  @spec get_req_items() :: any()
+  def get_npc_offers_by_id(type_id), do: from(lp in LpOffer, where: lp.type_id == ^type_id, preload: :corps  ) |> Repo.all()
+
   def get_req_items(), do: Repo.all(LpReqItem)
   def get_lp_offers_with_reqs() do
     from(lp in LpOffer, preload: [:type, :req_items], left_join: r in LpReqItem, on: lp.offer_id == r.offer_id, preload: [req_items: r]) |> Repo.all
   end
+  def get_corp_offers_type_ids(corp_id) do
+    from(lp in LpOffer, join: c in assoc(lp, :corps), where: c.corp_id == ^corp_id, preload: [:req_items, :type, type: [:bp_products] ])|> Repo.all
+  end
   def get_corp_lp_offers(corp_id) do
-
-    from(lp in LpOffer, join: c in assoc(lp, :corps), where: c.corp_id == ^corp_id, preload: [:req_items, :type], join: r in LpReqItem, on: lp.offer_id == r.offer_id, preload: [req_items: :type, req_items: r]) |> Repo.all
-
-
+   from(lp in LpOffer, join: c in assoc(lp, :corps), where: c.corp_id == ^corp_id, preload: [:req_items, :type, type: [:bp_products]], left_join: r in LpReqItem, on: lp.offer_id == r.offer_id, preload: [:type, type: [:products, products: [:material_type]], req_items: :type, req_items: r]) |> Repo.all
+  end
+  def get_corp_lp_offers2(corp_id) do
+    from(lp in LpOffer, join: c in assoc(lp, :corps), where: c.corp_id == ^corp_id, preload: [:type], left_join: r in LpReqItem, on: lp.offer_id == r.offer_id, preload: [req_items: r]) |> Repo.all()
   end
 end
