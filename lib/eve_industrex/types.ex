@@ -1,5 +1,4 @@
 defmodule EveIndustrex.Types do
-  alias EveIndustrex.Schemas.Material
   alias EveIndustrex.Schemas.Blueprint
   alias EveIndustrex.Schemas.Type
   alias EveIndustrex.Schemas.MarketGroup
@@ -25,10 +24,32 @@ defmodule EveIndustrex.Types do
     fourth_wave = Enum.map(third_wave, fn tw -> Map.replace(tw,:children, Enum.map(tw.children, fn sw -> Map.replace(sw, :children, Enum.map(sw.children, fn fw -> Map.replace(fw, :children, Enum.map(fw.children, fn c -> Map.replace(c, :children, prep_map(Enum.sort(Enum.filter(with_parents, fn wp -> c.market_group_id == wp.parent_group_id end), &(&1.name > &2.name))))end) )end)) end)) end)
     fourth_wave
   end
-
+  def add_type(id) do
+    t = Types.fetch_type(id)
+       case get_market_group(t["market_group_id"]) do
+        nil ->
+          case get_type(t["type_id"]) do
+            nil ->
+            %Type{}
+            type ->
+              type
+          end
+            found_market_group ->
+         case get_type(t["type_id"]) do
+           nil ->
+            %Type{}
+            |> Ecto.Changeset.change(market_group_id: found_market_group.market_group_id)
+          type ->
+            type
+         end
+      end
+      |> Type.changeset(t)
+      |> Repo.insert_or_update()
+  end
   def update_types() do
     types = Types.fetch_types()
-    for t <- types do
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, types, fn t ->
+
       case get_market_group(t["market_group_id"]) do
         nil ->
           case get_type(t["type_id"]) do
@@ -48,7 +69,14 @@ defmodule EveIndustrex.Types do
       end
       |> Type.changeset(t)
       |> Repo.insert_or_update()
-    end
+    end) |> Stream.run()
+  end
+  def get_type_with_mats(id) do
+
+    from(t in Type, where: t.type_id == ^id, preload: :materials) |> Repo.all
+  end
+  def get_type_product(id) do
+    from(t in Type, where: t.type_id ==^id, preload: [:products]) |> Repo.all
   end
   def get_type(id) when is_integer(id), do: Repo.get_by(Type, type_id: id)
   def get_type(id) when is_binary(id), do: Repo.get_by(Type, type_id: String.to_integer(id))
@@ -98,7 +126,7 @@ defmodule EveIndustrex.Types do
     Enum.filter(elem(hd(manufacturing), 1), fn m -> String.contains?(elem(m, 0), "product") end) |> hd() |> elem(1) |> hd()
   end
   def get_bps_from_id_list(type_ids) do
-    from(b in Blueprint, where: b.blueprintTypeID in ^type_ids, order_by: [asc: b.blueprintTypeID]) |> Repo.all
+    from(b in Blueprint, where: b.blueprint_type_id in ^type_ids, order_by: [asc: b.blueprint_type_id]) |> Repo.all
   end
   def read_bps_all() do
     Repo.all(Blueprint)

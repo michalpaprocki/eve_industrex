@@ -10,7 +10,9 @@ alias EveIndustrex.Utils
     market_groups_ids = Utils.fetch_from_url(@market_groups_url)
     Enum.map(market_groups_ids, fn mgi -> Utils.fetch_from_url(@market_groups_url<>~s"#{mgi}") end)
   end
-
+  def fetch_type(id) do
+    Utils.fetch_from_url(@types_url<>~s"#{id}")
+  end
   def fetch_types() do
     current_pages = get_types_pages_amount()
     types = fetch_types_pages(String.to_integer(current_pages))
