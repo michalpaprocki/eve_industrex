@@ -9,8 +9,8 @@ defmodule EveIndustrex.Schemas.Material do
     field :amount, :integer
     field :blueprint_activity_id, :binary_id
     belongs_to :blueprint_activity, EveIndustrex.Schemas.BlueprintActivity, define_field: false
-    belongs_to :material_type, Type, references: :type_id, define_field: false
-    belongs_to :product_type, Type, references: :type_id, define_field: false
+    belongs_to :material_type, Type, references: :type_id, define_field: false, foreign_key: :material_type_id
+    belongs_to :product_type, Type, references: :type_id, define_field: false, foreign_key: :product_type_id
   end
 
    def changeset(material, attrs) do
