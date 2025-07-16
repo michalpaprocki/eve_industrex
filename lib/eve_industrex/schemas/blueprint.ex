@@ -7,6 +7,7 @@ defmodule EveIndustrex.Schemas.Blueprint do
     field :blueprint_type_id, :integer
     field :max_production_limit, :integer
     has_many :activities, EveIndustrex.Schemas.BlueprintActivity, references: :blueprint_type_id, foreign_key: :blueprint_type_id
+    belongs_to :product, EveIndustrex.Schemas.Type, references: :product_type_id, define_field: false, foreign_key: :type_id
 
   end
 
