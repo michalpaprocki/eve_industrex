@@ -29,21 +29,19 @@ defmodule EveIndustrex.Utils do
         raise "Could not fetch from provided url: #{inspect(url)}"
       {:ok, %Req.Response{:status=> 200} = response} ->
           response.body
-      {:ok, %Req.Response{:status=> _}} = response ->
+      {:ok, %Req.Response{:status=> _}} = _response ->
 
         raise "Could not fetch from provided url: #{inspect(url)}"
     end
   end
-  def fetch_from_url(url, index) do
-    IO.puts("""
-      Fetching ... current index: #{inspect(index)}
-    """)
+  def fetch_from_url(url, _index) do
+
     case Req.get(url: url) do
       {:error, _} ->
         raise "Could not fetch from provided url: #{inspect(url)}"
       {:ok, %Req.Response{:status=> 200} = response} ->
           response.body
-      {:ok, %Req.Response{:status=> _}} = response ->
+      {:ok, %Req.Response{:status=> _}} = _response ->
         raise "Could not fetch from provided url: #{inspect(url)}"
     end
   end
@@ -97,13 +95,26 @@ defmodule EveIndustrex.Utils do
   def format_with_coma(price_float) when is_float(price_float) do
   price = :erlang.float_to_binary(price_float, [decimals: 2])
   reversed_string = String.reverse(price)
-  with_comas = Enum.map(Enum.with_index(String.to_charlist(reversed_string)), fn {s, index} -> if index > 3 && rem(index + 1, 3) == 0 && index != String.length(reversed_string) - 1, do: [s,","], else: s end)
-  String.reverse(List.to_string(List.flatten(with_comas)))
+  pre_with_comas = Enum.map(Enum.with_index(String.to_charlist(reversed_string)), fn {s, index} -> if index > 3 && rem(index + 1, 3) == 0 && index != String.length(reversed_string) - 1, do: [s,","], else: s end)
+  with_comas = String.reverse(List.to_string(List.flatten(pre_with_comas)))
+  if String.at(with_comas, 0) == "-" && String.at(with_comas, 1) == "," do
+    tail = elem(String.split_at(with_comas, 2), 1)
+    "-"<>tail
+  else
+    with_comas
+  end
   end
   def format_with_coma(price_integer) when is_integer(price_integer) do
   reversed_string = String.reverse(Integer.to_string(price_integer))
-  with_comas = Enum.map(Enum.with_index(String.to_charlist(reversed_string)), fn {s, index} -> if rem(index + 1, 3) == 0 && index != String.length(reversed_string) - 1, do: [s,","], else: s end)
-  String.reverse(List.to_string(List.flatten(with_comas)))
+  pre_with_comas = Enum.map(Enum.with_index(String.to_charlist(reversed_string)), fn {s, index} -> if rem(index + 1, 3) == 0 && index != String.length(reversed_string) - 1, do: [s,","], else: s end)
+  with_comas = String.reverse(List.to_string(List.flatten(pre_with_comas)))
+  if String.at(with_comas, 0) == "-" && String.at(with_comas, 1) == "," do
+   tail = elem(String.split_at(with_comas, 2), 1)
+    "-"<>tail
+  else
+    with_comas
+  end
+
   end
 
   def apply_color_on_status(sec_status) do
