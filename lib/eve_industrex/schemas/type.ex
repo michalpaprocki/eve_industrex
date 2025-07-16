@@ -18,7 +18,12 @@ defmodule EveIndustrex.Schemas.Type do
     field :market_group_id, :integer
     belongs_to :market_group, EveIndustrex.Schemas.MarketGroup, references: :market_group_id, define_field: false
     has_many :lp_offers, EveIndustrex.Schemas.LpOffer, foreign_key: :offer_id
-    has_many :materials, EveIndustrex.Schemas.Material
+    # from reprocess
+    has_many :products, EveIndustrex.Schemas.Material, references: :type_id, foreign_key: :product_type_id
+    # for production
+    has_many :materials, EveIndustrex.Schemas.Material, references: :type_id, foreign_key: :material_type_id
+    # optional blueprint products
+    many_to_many :bp_products, EveIndustrex.Schemas.Type, join_through: "bp_product_types", join_keys: [bp_product: :type_id, type: :type_id]
 
     timestamps(type: :utc_datetime)
   end
