@@ -6,7 +6,7 @@ defmodule EveIndustrex.Schemas.BlueprintActivity do
     field :activity_type, Ecto.Enum, values: [:copying, :invention, :manufacturing, :reaction, :research_material, :research_time]
     field :time, :integer
     has_many :materials, EveIndustrex.Schemas.Material
-    has_many :products, EveIndustrex.Schemas.BlueprintProduct
+    has_many :products, EveIndustrex.Schemas.BlueprintProduct, foreign_key: :blueprint_activity_id
     field :probability, :float
     field :blueprint_type_id, :integer
     belongs_to :blueprint, EveIndustrex.Schemas.Blueprint, references: :blueprint_type_id, define_field: false, foreign_key: :blueprint_type_id
