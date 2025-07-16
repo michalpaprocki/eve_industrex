@@ -1,6 +1,6 @@
 defmodule EveIndustrex.Materials do
-  alias EveIndustrex.Types
-  alias EveIndustrex.Schemas.Material
+
+  alias EveIndustrex.Schemas.{Material}
   alias EveIndustrex.Repo
   import Ecto.Query
 
@@ -9,18 +9,20 @@ defmodule EveIndustrex.Materials do
     Repo.delete_all(Material)
     Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, mats, fn {pid, mats} ->
       Enum.map(elem(mats, 1), fn m ->
-        %Material{amount: elem(m, 0), product_type_id: pid, material_type_id: elem(m, 1)} |> Repo.insert()
+          %Material{amount: elem(m, 0), product_type_id: pid, material_type_id: elem(m, 1)} |> Repo.insert()
       end)
     end) |> Stream.run()
+
 
   end
   def get_type_materials(type_id) do
     from(m in Material, join: t in assoc(m, :product_type), where: t.type_id == ^type_id, preload: :material_type) |> Repo.all()
   end
-  def get_materials(type_id) do
-    materials = Repo.get_by(Material, type_id: type_id)
-    materials_into_term = Map.replace(materials, :materials, :erlang.binary_to_term(materials.materials))
-    Enum.map(elem(materials_into_term.materials, 1), fn m -> {Types.get_type(elem(m, 1)), elem(m, 0)} end)
+  def get_product_materials_from_type_id_list(type_ids) do
+    from(m in Material, where: m.product_type_id in ^type_ids, preload: :material_type) |> Repo.all
+  end
+  def get_product_materials_ids_from_type_id_list(type_ids) do
+    from(m in Material, where: m.product_type_id in ^type_ids, select: [m.material_type_id]) |> Repo.all
   end
   def get_materials_from_type_id_list(type_ids) do
     from(m in Material, join: t in assoc(m, :product_type), where: t.type_id in ^type_ids, preload: :material_type) |> Repo.all()
