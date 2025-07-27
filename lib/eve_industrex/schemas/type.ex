@@ -16,6 +16,8 @@ defmodule EveIndustrex.Schemas.Type do
     field :volume, :float
     field :group_id, :integer
     field :market_group_id, :integer
+    field :average_price_id, :integer
+    belongs_to :group, EveIndustrex.Schemas.Group, references: :group_id, define_field: false, foreign_key: :group_id
     belongs_to :market_group, EveIndustrex.Schemas.MarketGroup, references: :market_group_id, define_field: false
     has_many :lp_offers, EveIndustrex.Schemas.LpOffer, foreign_key: :offer_id
     # from reprocess
@@ -23,8 +25,8 @@ defmodule EveIndustrex.Schemas.Type do
     # for production
     has_many :materials, EveIndustrex.Schemas.Material, references: :type_id, foreign_key: :material_type_id
     # optional blueprint products
-    many_to_many :bp_products, EveIndustrex.Schemas.Type, join_through: "bp_product_types", join_keys: [bp_product: :type_id, type: :type_id]
-
+    many_to_many :bp_products, EveIndustrex.Schemas.Type, join_through: "bp_product_types", join_keys: [bp_product: :type_id, type: :type_id], on_delete: :delete_all, on_replace: :delete
+    has_many :average_prices, EveIndustrex.Schemas.AveragePrice, references: :type_id, foreign_key: :type_id, on_delete: :delete_all
     timestamps(type: :utc_datetime)
   end
 
