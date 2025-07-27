@@ -50,7 +50,29 @@ defmodule EveIndustrex.Utils do
     diff = DateTime.diff(now, time)
     format_time(diff)
   end
+  def get_ESI_pages_amount(url) do
+    request = Req.head(url)
+    case request do
+      {:ok, response}->
+        hd(response.headers["x-pages"])
+      {:error, msg} ->
+        {:erro, msg}
+    end
+  end
+    def fetch_ESI_pages(url, page_number, types \\ []) when is_integer(page_number) do
 
+    {status, response = %Req.Response{}} = Req.get(url<>"?datasource=tranquility&page=#{Integer.to_string(page_number)}")
+
+      if  status != :ok , do: raise "An error occured, try again later"
+
+      updated_types = [response.body | types]
+      if page_number == 1 do
+        List.flatten(updated_types)
+      else
+
+        fetch_ESI_pages(url, page_number - 1, updated_types)
+    end
+  end
   defp format_time(time) do
     cond do
 

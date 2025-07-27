@@ -1,4 +1,6 @@
 defmodule EveIndustrex.Market do
+  alias EveIndustrex.Schemas.Type
+  alias EveIndustrex.Schemas.AveragePrice
   alias EveIndustrex.Schemas.{Station, System, MarketOrder,Constellation, Region}
   alias EveIndustrex.Universe
   alias EveIndustrex.ESI.Markets
@@ -56,6 +58,22 @@ defmodule EveIndustrex.Market do
 
   def delete_all_market_orders() do
     Repo.delete_all(MarketOrder)
+  end
+  # to do: figure out how often average prices are updated
+  def update_market_average_prices() do
+    task = Task.async(fn -> Markets.fetch_market_average_prices() end )
+    average_prices = Task.await(task)
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, average_prices, fn ap ->
+      %AveragePrice{} |> AveragePrice.changeset(ap) |> Ecto.Changeset.change(type_id: ap["type_id"]) |> Repo.insert()
+    end) |> Enum.map(fn x -> x end)
+  end
+  def get_type_average_prices(type_id) do
+    subquery = from(av in AveragePrice, order_by: [desc: :inserted_at])
+    from(t in Type, where: t.type_id == ^type_id) |> Repo.all |> Repo.preload(average_prices: subquery)
+  end
+   def get_type_current_average_prices(type_id) do
+    subquery = from(av in AveragePrice, order_by: [desc: :inserted_at], limit: 1)
+    from(t in Type, where: t.type_id == ^type_id) |> Repo.all |> Repo.preload(average_prices: subquery)
   end
   defp prep_and_save_orders(order) do
     if order.location_id < 600000000 do
