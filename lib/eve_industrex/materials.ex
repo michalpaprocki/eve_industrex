@@ -15,6 +15,10 @@ defmodule EveIndustrex.Materials do
 
 
   end
+
+  def insert_material(attrs) do
+    %Material{} |> Material.changeset(attrs) |> Repo.insert()
+  end
   def get_type_materials(type_id) do
     from(m in Material, join: t in assoc(m, :product_type), where: t.type_id == ^type_id, preload: :material_type) |> Repo.all()
   end
