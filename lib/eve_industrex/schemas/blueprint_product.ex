@@ -6,7 +6,7 @@ defmodule EveIndustrex.Schemas.BlueprintProduct do
     field :amount, :integer
     field :product_type_id, :integer
     field :blueprint_activity_id, :binary_id
-    has_one :product, EveIndustrex.Schemas.Type, foreign_key: :type_id, references: :product_type_id
+    has_one :product, EveIndustrex.Schemas.Type, foreign_key: :type_id, references: :product_type_id, on_delete: :delete_all
     belongs_to :blueprint_activity, EveIndustrex.Schemas.BlueprintActivity, define_field: false
 
   end
