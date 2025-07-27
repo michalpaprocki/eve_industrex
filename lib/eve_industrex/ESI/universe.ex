@@ -4,8 +4,8 @@ defmodule EveIndustrex.ESI.Universe do
   @constellations_url "https://esi.evetech.net/latest/universe/constellations/"
   @systems_url "https://esi.evetech.net/latest/universe/systems/"
   @stations_url "https://esi.evetech.net/latest/universe/stations/"
-
-
+  @categories_url "https://esi.evetech.net/latest/universe/categories/"
+  @groups_url "https://esi.evetech.net/latest/universe/groups/"
   def fetch_regions() do
     regions_ids = Utils.fetch_from_url(@regions_url)
     Enum.map(regions_ids, fn ri ->Utils.fetch_from_url(@regions_url<>~s"#{ri}") end)
@@ -23,6 +23,18 @@ defmodule EveIndustrex.ESI.Universe do
 
   def fetch_station(id) do
     Utils.fetch_from_url(@stations_url<>~s"#{id}")
+  end
+  def fetch_categories() do
+    categories_ids = Utils.fetch_from_url(@categories_url)
+    Enum.map(categories_ids, fn ci -> Utils.fetch_from_url(@categories_url<>~s"#{ci}") end)
+  end
+  def fetch_groups() do
+    current_pages = Utils.get_ESI_pages_amount(@groups_url)
+    groups = Utils.fetch_ESI_pages(@groups_url, String.to_integer(current_pages))
+    Enum.map(Enum.with_index(groups),fn {g, i} -> Utils.fetch_from_url(@groups_url<>~s"#{g}", i) end)
+  end
+  def fetch_group(group_id) do
+    Utils.fetch_from_url(@groups_url<>~s"#{group_id}")
   end
 
 end
