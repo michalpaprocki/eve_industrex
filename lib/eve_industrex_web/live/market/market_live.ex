@@ -38,14 +38,15 @@ def mount(%{"path" => id} = _params, _session, socket) do
   def render(assigns) do
     ~H"""
       <div class="w-full ">
+
         <%= cond do %>
           <% @market_orders == []-> %>
           <div class="w-full">
-            <h4 class="text-lg font-semibold">Sellers</h4>
+            <h2 class="text-lg font-semibold">Sellers</h2>
             <div class="h-[38vh] min-h-[325px] overflow-auto rounded-md">
               <.live_component id={"sell_orders"} module={EveIndustrexWeb.Market.Orders} data={[]} is_buy_list?={false}/>
             </div>
-            <h4 class="text-lg font-semibold">Buyers</h4>
+            <h2 class="text-lg font-semibold">Buyers</h2>
             <div class="h-[38vh] min-h-[325px] overflow-auto rounded-md">
               <.live_component id={"buy_orders"} module={EveIndustrexWeb.Market.Orders} data={[]} is_buy_list?={true}/>
             </div>
@@ -59,13 +60,21 @@ def mount(%{"path" => id} = _params, _session, socket) do
             Can't fetch orders data, try again later
           <% @market_orders.ok? -> %>
           <div class="flex flex-col gap-2 justify-between h-[80vh] ">
-            <h4 class="text-lg font-semibold">Sellers</h4>
+            <h2 class="text-lg font-semibold">Sellers</h2>
             <div class="h-[38vh] min-h-[325px] overflow-auto rounded-md">
+            <%= if length(@market_orders.result.sell_orders) > 0 do %>
               <.live_component id={"sell_orders"} module={EveIndustrexWeb.Market.Orders} data={if @filtered_orders !=[], do: @filtered_orders.sell_orders, else: @market_orders.result.sell_orders} is_buy_list?={false}/>
+              <% else %>
+                no sell orders for specified item
+              <% end %>
             </div>
-            <h4 class="text-lg font-semibold">Buyers</h4>
+            <h2 class="text-lg font-semibold">Buyers</h2>
             <div class="h-[38vh] min-h-[325px] overflow-auto rounded-md">
+              <%= if length(@market_orders.result.buy_orders) > 0 do %>
               <.live_component id={"buy_orders"} module={EveIndustrexWeb.Market.Orders} data={if @filtered_orders !=[], do: @filtered_orders.buy_orders, else: @market_orders.result.buy_orders} is_buy_list?={true}/>
+                    <% else %>
+                no buy orders for specified item
+              <% end %>
             </div>
           </div>
         <% end %>
