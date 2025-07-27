@@ -2,8 +2,9 @@ defmodule EveIndustrex.ESI.Markets do
   alias EveIndustrex.ESI.Names
   alias EveIndustrex.Utils
   @market_groups_url "https://esi.evetech.net/latest/markets/groups/"
-
+  @average_market_prices_url "https://esi.evetech.net/latest/markets/prices/?datasource=tranquility"
   def fetch_market_orders(region_id, attempts \\ 10) do
+    # 504 returned when servers down
     resp = Code.ensure_loaded(EveIndustrex.Schemas.MarketOrder)
     if resp != {:module, EveIndustrex.Schemas.MarketOrder} && attempts > 0 do
       fetch_market_orders(attempts - 1)
@@ -49,6 +50,10 @@ defmodule EveIndustrex.ESI.Markets do
       |> prep_market_types()
       |> Names.get_by_ids()
       market_types
+  end
+
+  def fetch_market_average_prices() do
+    Utils.fetch_from_url(@average_market_prices_url)
   end
 
   defp get_market_groups_ids() do
