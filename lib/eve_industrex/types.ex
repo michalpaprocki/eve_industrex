@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Types do
+  alias EveIndustrex.Parser
   alias EveIndustrex.Schemas.Group
   alias EveIndustrex.Schemas.Blueprint
   alias EveIndustrex.Schemas.Type
@@ -48,10 +49,9 @@ defmodule EveIndustrex.Types do
       |> Type.changeset(t)
       |> Repo.insert_or_update()
   end
-  def update_types() do
+  def update_types_from_ESI() do
     types = Types.fetch_types()
-
-    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, types, fn t ->
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, types, fn {_status, t} ->
 
       case get_market_group(t["market_group_id"]) do
         nil ->
@@ -71,6 +71,33 @@ defmodule EveIndustrex.Types do
          end
       end
       |> Type.changeset(t)
+      |> Repo.insert_or_update()
+    end) |> Stream.run()
+  end
+  def update_types_from_dump() do
+    dumped_types = Parser.parse_types()
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, dumped_types, fn t ->
+    case get_type(elem(t, 0)) do
+      nil ->
+        %Type{}
+      type ->
+        type
+      end
+      |> Type.changeset(%{
+        :type_id => elem(t, 0),
+        :capacity => elem(List.keyfind(elem(t, 1), "capacity", 0, {nil, nil}), 1),
+        :description => extract_description(t),
+        :icon_id => elem(List.keyfind(elem(t, 1), "iconID", 0, {nil, nil}), 1),
+        :mass => elem(List.keyfind(elem(t, 1), "mass", 0, {nil, nil}), 1),
+        :name => elem(List.keyfind(elem(t, 1), "name", 0, {nil, nil}), 1),
+        :packaged_volume => elem(List.keyfind(elem(t, 1), "packaged_volume", 0, {nil, nil}), 1),
+        :portion_size => elem(List.keyfind(elem(t, 1), "portion_size", 0, {nil, nil}), 1),
+        :published => elem(List.keyfind(elem(t, 1), "published", 0, {nil, nil}), 1),
+        :radius => elem(List.keyfind(elem(t, 1), "radius", 0, {nil, nil}), 1),
+        :volume => elem(List.keyfind(elem(t, 1), "volume", 0, {nil, nil}), 1),
+        :group_id => elem(List.keyfind(elem(t, 1), "group_id", 0, {nil, nil}), 1),
+        :market_group_id => elem(List.keyfind(elem(t, 1), "market_group_id", 0, {nil, nil}), 1),
+      })
       |> Repo.insert_or_update()
     end) |> Stream.run()
   end
@@ -145,5 +172,13 @@ defmodule EveIndustrex.Types do
   def remove_bps_all(), do: Repo.delete_all(Blueprint)
   def remove_types_all(), do: Repo.delete_all(Type)
 
+
+  defp extract_description(type) do
+    if List.keyfind(elem(type, 1), "description", 0, nil) do
+      List.keyfind(elem(List.keyfind(elem(type, 1), "description", 0, {nil, nil}), 1), :en, 0, {nil, nil})
+     else
+      nil
+    end
+  end
 
 end

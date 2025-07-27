@@ -9,7 +9,7 @@ defmodule EveIndustrex.Schemas.Category do
     has_many :groups, EveIndustrex.Schemas.Group, references: :category_id, foreign_key: :category_id
 
   end
-  def changest(category, attrs) do
+  def changeset(category, attrs) do
     category
     |> cast(attrs, [:category_id, :name, :published])
   end

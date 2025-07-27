@@ -1,35 +1,53 @@
 defmodule EveIndustrex.Parser do
   @blueprints_path "data_dump/blueprints.yaml"
   @type_materials_path "data_dump/typeMaterials.yaml"
-
-
+  @types_path "data_dump/types.yaml"
+  @categories_path "data_dump/categories.yaml"
+  @groups_path "data_dump/groups.yaml"
   def parse_bps() do
     content = yaml_simple(@blueprints_path)
-    extract_yaml(content)
+    extract_yaml_bps(content)
 
   end
   def parse_materials() do
     content = yaml_simple(@type_materials_path)
     extract_yaml_materials(content)
   end
-
+  def parse_types() do
+    content = yaml_simple(@types_path)
+    extract_yaml_categories(content)
+  end
+  def parse_groups() do
+    content = yaml_simple(@groups_path)
+    extract_yaml_categories(content)
+  end
+  def parse_categories() do
+    content = yaml_simple(@categories_path)
+    extract_yaml_categories(content)
+  end
   def yaml_simple(path)  do
     Application.start(:yamerl)
-    content = :yamerl_constr.file(path)
+    task = Task.Supervisor.async(EveIndustrex.TaskSupervisor, fn -> :yamerl_constr.file(path) end) |> Task.await(:infinity)
     Application.stop(:yamerl)
-   content
+    task
   end
-
+  defp extract_yaml_categories(content) do
+    Enum.map(List.flatten(content), fn c -> {elem(c, 0), Enum.sort(Enum.map(elem(c, 1), fn v ->  handle_value(v) end), &(&1 > &2))} end)
+  end
   defp extract_yaml_materials(content) do
     Enum.map(List.flatten(content), fn c -> {elem(c, 0), hd(Enum.map(elem(c,1), fn v -> handle_value(v) end))} end)
   end
 
-  defp extract_yaml(content) do
+  defp extract_yaml_bps(content) do
    Enum.map(List.flatten(content), fn c -> Enum.map(elem(c,1), fn v -> handle_value(v) end) end)
   end
 
   defp handle_value(data) when is_tuple(data) do
-    {List.to_string(elem(data,0)), handle_value(elem(data, 1))}
+    if is_integer(elem(data,0)) do
+      {elem(data,0), handle_value(elem(data, 1))}
+    else
+      {List.to_string(elem(data,0)), handle_value(elem(data, 1))}
+    end
   end
   defp handle_value(data) when is_list(data) do
     cond do
@@ -45,4 +63,5 @@ defmodule EveIndustrex.Parser do
     end
   end
   defp handle_value(data) when is_number(data), do: data
+  defp handle_value(data) when is_boolean(data), do: data
 end
