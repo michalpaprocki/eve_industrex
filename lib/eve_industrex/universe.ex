@@ -1,5 +1,9 @@
 defmodule EveIndustrex.Universe do
   import Ecto.Query
+  alias EveIndustrex.Types
+  alias EveIndustrex.Schemas.Type
+  alias EveIndustrex.Schemas.Group
+  alias EveIndustrex.Schemas.Category
   alias EveIndustrex.Schemas.{Region, Station, System, Constellation}
   alias EveIndustrex.Repo
   alias EveIndustrex.ESI.Universe
@@ -64,9 +68,11 @@ defmodule EveIndustrex.Universe do
 
   end
   def update_stations() do
+    stations =
     get_system_stations()
     |> Enum.filter(fn {stations, _system} -> stations != nil end)
-    |> Enum.map(fn tuple -> update_station(tuple) end)
+
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, stations, fn tuple -> update_station(tuple) end) |> Stream.run()
 
   end
   def update_station({stations_ids, system_id}) do
@@ -108,6 +114,57 @@ defmodule EveIndustrex.Universe do
     query_string = "%#{like_name}%"
     from(s in Station, where: ilike(s.name, ^query_string)) |> Repo.all()
   end
+  def insert_category(attrs) do
+    result =Repo.get_by(Category, category_id: attrs["category_id"])
+    case result do
+      nil ->
+        %Category{}
+      category ->
+        category
+    end
+    |> Category.changest(attrs)
+    |> Repo.insert_or_update()
+  end
+  def insert_group(attrs) do
+    case Repo.get_by(Group, group_id: attrs["group_id"]) do
+      nil ->
+        %Group{}
+      group ->
+          group
+    end
+    |> Group.changset(attrs)
+    |> Repo.insert_or_update()
+  end
+  def update_categories() do
+    categories_ids = Universe.fetch_categories()
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, categories_ids, fn c ->
+      insert_category(c)
+    end) |> Stream.run()
+  end
+  def update_groups() do
+    groups_ids = Universe.fetch_groups()
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, groups_ids, fn  g ->
+      insert_group(g)
+    end) |> Stream.run()
 
-
+  end
+  def add_group(group_id) do
+    group = Universe.fetch_group(group_id)
+    insert_group(group)
+  end
+  def get_categories() do
+    from(c in Category) |> Repo.all()
+  end
+  def get_category(category_id), do: Repo.get_by(Category, category_id: category_id)
+  def get_groups() do
+    from(g in Group) |> Repo.all()
+  end
+  def get_group(group_id) do
+    from(g in Group, where: g.group_id == ^group_id) |> Repo.all
+  end
+  def delete_groups(), do: from(g in Group) |> Repo.delete_all()
+  def delete_categories(), do: from(c in Category) |> Repo.delete_all()
+  def get_blueprints_with_groups() do
+    from(g in Group, preload: [:types]) |> Repo.all
+  end
 end
