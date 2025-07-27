@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Types do
+  alias EveIndustrex.Schemas.Group
   alias EveIndustrex.Schemas.Blueprint
   alias EveIndustrex.Schemas.Type
   alias EveIndustrex.Schemas.MarketGroup
@@ -8,11 +9,11 @@ defmodule EveIndustrex.Types do
 
   def update_market_groups() do
     market_groups = Types.fetch_market_groups()
-    for mg <- market_groups do
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor,market_groups, fn {_status, mg} ->
       %MarketGroup{}
       |> MarketGroup.changeset(mg)
       |> Repo.insert_or_update()
-    end
+    end) |> Stream.run()
   end
 
   def get_market_groups() do
@@ -26,6 +27,7 @@ defmodule EveIndustrex.Types do
   end
   def add_type(id) do
     t = Types.fetch_type(id)
+
        case get_market_group(t["market_group_id"]) do
         nil ->
           case get_type(t["type_id"]) do
@@ -48,6 +50,7 @@ defmodule EveIndustrex.Types do
   end
   def update_types() do
     types = Types.fetch_types()
+
     Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, types, fn t ->
 
       case get_market_group(t["market_group_id"]) do
@@ -82,6 +85,10 @@ defmodule EveIndustrex.Types do
   def get_type(id) when is_binary(id), do: Repo.get_by(Type, type_id: String.to_integer(id))
   def get_type_name(id) when is_integer(id), do: from(from t in Type, where: t.type_id == ^id, select: [t.name, t.type_id]) |> Repo.all() |> hd()
   def get_all_types(), do: from(t in Type, preload: [:market_group]) |> Repo.all
+  def get_types_count(), do: from(t in Type) |> Repo.aggregate(:count)
+  def get_types_from_list_of_ids(list_of_type_ids) do
+    from(t in Type, where: t.type_id in ^list_of_type_ids)|> Repo.all
+  end
   def get_types_by_market_group(market_group_id) do
     from(t in Type, where: t.market_group_id == ^market_group_id) |> Repo.all()
   end
@@ -128,10 +135,15 @@ defmodule EveIndustrex.Types do
   def get_bps_from_id_list(type_ids) do
     from(b in Blueprint, where: b.blueprint_type_id in ^type_ids, order_by: [asc: b.blueprint_type_id]) |> Repo.all
   end
+  def get_all_blueprints() do
+    from(t in Type, where: ilike(t.name, "%blueprint%") and t.published == true, join: g in Group, on: t.group_id == g.group_id, group_by: [t.group_id, g.name, t.name, t.type_id, t.id], order_by: [asc: :group_id]) |> Repo.all() |> Repo.preload(:group)
+  end
   def read_bps_all() do
     Repo.all(Blueprint)
   end
 
   def remove_bps_all(), do: Repo.delete_all(Blueprint)
+  def remove_types_all(), do: Repo.delete_all(Type)
+
 
 end
