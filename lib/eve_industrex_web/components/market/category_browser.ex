@@ -9,7 +9,7 @@ defmodule EveIndustrexWeb.Market.CategoryBrowser do
   def render(assigns) do
     ~H"""
     <div class="h-full p-1 flex flex-col">
-    <h3 class="text-lg pl-2 font-semibold text-start truncate">Market Browser</h3>
+
       <%= cond do %>
       <% @market_groups.loading -> %>
       <div class="text-center text-xl font-bold my-20">
