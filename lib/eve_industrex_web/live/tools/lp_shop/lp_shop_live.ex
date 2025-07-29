@@ -67,8 +67,9 @@ alias Phoenix.LiveView.AsyncResult
 
               <div class="flex flex-col justify-center">
                 <%= if String.contains?(o.type.name, "Blueprint") do %>
+                  <%= Enum.map(o.type.bp_products, fn bpp -> "Portion size #{bpp.portion_size}"  end) %>
                   <%= for bpp <-o.type.bp_products do %>
-                      <.live_component module={EveIndustrexWeb.Common.MiniMarket} category={:product} isk_per_lp_id={Integer.to_string(i)<>"_#{o.type.type_id}_ISK_per_LP"} id={Integer.to_string(i)<>"_#{o.type.type_id}_MiniMarket_Product"} item={%{:name => bpp.name, :type_id => bpp.type_id}} orders={Enum.filter(@orders.result, fn order -> order.type_id == bpp.type_id  end)}  />
+                      <.live_component module={EveIndustrexWeb.Common.MiniMarket} category={:product} isk_per_lp_id={Integer.to_string(i)<>"_#{o.type.type_id}_ISK_per_LP"} id={Integer.to_string(i)<>"_#{o.type.type_id}_MiniMarket_Product"} item={%{:name => bpp.name, :type_id => bpp.type_id}} orders={Enum.filter(@orders.result, fn order -> order.type_id == bpp.type_id  end)} />
                   <% end %>
                 <% else %>
                   <.live_component module={EveIndustrexWeb.Common.MiniMarket} category={:product} isk_per_lp_id={Integer.to_string(i)<>"_#{o.type.type_id}_ISK_per_LP"} id={Integer.to_string(i)<>"_#{o.type.type_id}_MiniMarket_Product"} item={%{:name => o.type.name, :type_id => o.type.type_id}} orders={Enum.filter(@orders.result, fn order -> order.type_id == o.type.type_id end)}  />
@@ -87,7 +88,7 @@ alias Phoenix.LiveView.AsyncResult
                 <%= if ri != nil do %>
                   <div class="p-1">
                     <span> <%= ri.type.name %></span>
-                    <span> <%= ri.quantity %></span>
+                    <span> <%= ri.quantity%></span>
                   </div>
                   <.live_component module={EveIndustrexWeb.Common.MiniMarket} amount={ri.quantity} category={:materials} isk_per_lp_id={Integer.to_string(i)<>"_#{o.type.type_id}_ISK_per_LP"} id={Integer.to_string(i)<>"_#{ri.type_id}_MiniMarket_Materials"} item={%{:name =>ri.type.name, :type_id => ri.type.type_id}} orders={Enum.filter(@orders.result, fn order -> order.type_id == ri.type_id end)} />
                 <% end %>
@@ -97,13 +98,17 @@ alias Phoenix.LiveView.AsyncResult
             <div>
               <%= if String.contains?(o.type.name, "Blueprint") do %>
 
-                <.live_component module={EveIndustrexWeb.Common.BpMatsCost} isk_per_lp_id={Integer.to_string(i)<>"_#{o.type.type_id}_ISK_per_LP"} id={Integer.to_string(i)<>"_#{o.type.type_id}_BP_Mats_Cost"} bp_materials={o.type.products} orders={@orders.result} production_product={o.type.name} />
+                <.live_component module={EveIndustrexWeb.Common.BpMatsCost} isk_per_lp_id={Integer.to_string(i)<>"_#{o.type.type_id}_ISK_per_LP"} id={Integer.to_string(i)<>"_#{o.type.type_id}_BP_Mats_Cost"} bp_materials={o.type.products} orders={@orders.result} production_product={o.type.name} runs={o.quantity}/>
               <% end %>
             </div>
 
             <div class="flex flex-col min-w-[15%]">
             <%!-- refactor to allow sorting by isk / lp --%>
+              <%= if String.contains?(o.type.name, "Blueprint") do %>
+                <.live_component module={EveIndustrexWeb.LpShop.IskOnLpReturn} id={Integer.to_string(i)<>"_#{o.type.type_id}_ISK_per_LP"} amount={o.quantity} portion_size={List.foldl(Enum.map(o.type.bp_products, fn bpp -> bpp.portion_size end), 0, fn x, acc -> acc + x end)} lp_cost={o.lp_cost} isk_cost={o.isk_cost}/>
+              <% else %>
                 <.live_component module={EveIndustrexWeb.LpShop.IskOnLpReturn} id={Integer.to_string(i)<>"_#{o.type.type_id}_ISK_per_LP"} amount={o.quantity} lp_cost={o.lp_cost} isk_cost={o.isk_cost}/>
+              <% end %>
             </div>
           </div>
           <% end %>

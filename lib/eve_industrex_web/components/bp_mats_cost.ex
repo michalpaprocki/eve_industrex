@@ -46,11 +46,17 @@ alias EveIndustrex.Utils
   end
 
   def render(assigns) do
+
     ~H"""
     <div class="">
       <div phx-click={"toggle_modal"} phx-target={@myself} class={"cursor-pointer hover:text-white hover:bg-black transition p-1 flex flex-col justify-center #{if @total == nil, do: "bg-red-500 animate-pulse text-white"}"}>
       <span>Production Materials Cost:</span>
-      <span class="text-center">  <%= if @total != nil, do: Utils.format_with_coma(@total)<>" ISK" , else: "N/A - missing prices" %> </span>
+      <%= if @runs == 1 do %>
+        <span class="text-center">  <%= if @total != nil, do: Utils.format_with_coma(@total)<>" ISK", else: "N/A - missing prices" %> </span>
+      <% else %>
+        <span class="text-center">  <%= if @total != nil, do: Utils.format_with_coma(@total)<>" ISK per run", else: "N/A - missing prices" %> </span>
+        <span class="text-center">  <%= if @total != nil, do: Utils.format_with_coma(@total * @runs)<>" ISK total", else: "N/A - missing prices" %> </span>
+      <% end %>
       </div>
       <%= if @show_modal do %>
 

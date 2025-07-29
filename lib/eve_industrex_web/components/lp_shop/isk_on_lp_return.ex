@@ -51,11 +51,13 @@ alias EveIndustrex.Utils
 
   def update(assigns, socket) do
     send(self(), {:get_tax_rate, __MODULE__, assigns.id})
+    product_amount = if Map.has_key?(assigns, :portion_size), do: assigns.portion_size * assigns.amount, else: assigns.amount
     req_items = []
-    {:ok, socket |> assign(assigns) |> assign(:req_items, req_items) |> assign(:total_bp_materials_cost, 0) |> assign(:product_price, nil)}
+    {:ok, socket |> assign(assigns) |> assign(:product_amount, product_amount) |> assign(:req_items, req_items) |> assign(:total_bp_materials_cost, 0) |> assign(:product_price, nil)}
   end
 
   def render(assigns) do
+
     ~H"""
       <div class="flex flex-col">
       <%= cond do %>
@@ -67,8 +69,11 @@ alias EveIndustrex.Utils
           Missing required item price
         <% @total_bp_materials_cost ==nil -> %>
           Missing material price
+        <% @lp_cost == 0 -> %>
+          <%= Utils.format_with_coma((((@product_price * ((100 - @tax_rate) / 100)) * @product_amount ) - (@isk_cost + List.foldl(@req_items, 0, fn ri, acc -> ri.cost + acc end) + (@total_bp_materials_cost * @amount))))  <>" Profit" %>
         <% true -> %>
-          <%= Utils.format_with_coma((((@product_price * ((100 - @tax_rate) / 100)) * @amount ) - (@isk_cost + List.foldl(@req_items, 0, fn ri, acc -> ri.cost + acc end) + @total_bp_materials_cost)) / @lp_cost)  <>" ISK per LP" %>
+          <%= Utils.format_with_coma((((@product_price * ((100 - @tax_rate) / 100)) * @product_amount ) - (@isk_cost + List.foldl(@req_items, 0, fn ri, acc -> ri.cost + acc end) + (@total_bp_materials_cost * @amount))) / @lp_cost)  <>" ISK per LP" %>
+
       <% end %>
       </div>
     """
