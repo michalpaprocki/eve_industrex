@@ -4,6 +4,7 @@ defmodule EveIndustrex.Parser do
   @types_path "data_dump/types.yaml"
   @categories_path "data_dump/categories.yaml"
   @groups_path "data_dump/groups.yaml"
+  @market_groups_path "data_dump/marketGroups.yaml"
   def parse_bps() do
     content = yaml_simple(@blueprints_path)
     extract_yaml_bps(content)
@@ -25,6 +26,10 @@ defmodule EveIndustrex.Parser do
     content = yaml_simple(@categories_path)
     extract_yaml_categories(content)
   end
+  def parse_market_groups() do
+    content = yaml_simple(@market_groups_path)
+    extract_yaml_market_groups(content)
+  end
   def yaml_simple(path)  do
     Application.start(:yamerl)
     task = Task.Supervisor.async(EveIndustrex.TaskSupervisor, fn -> :yamerl_constr.file(path) end) |> Task.await(:infinity)
@@ -37,7 +42,9 @@ defmodule EveIndustrex.Parser do
   defp extract_yaml_materials(content) do
     Enum.map(List.flatten(content), fn c -> {elem(c, 0), hd(Enum.map(elem(c,1), fn v -> handle_value(v) end))} end)
   end
-
+  defp extract_yaml_market_groups(content) do
+    Enum.map(List.flatten(content), fn c -> {elem(c, 0), Enum.sort(Enum.map(elem(c, 1), fn v ->  handle_value(v) end), &(&1 > &2))} end)
+  end
   defp extract_yaml_bps(content) do
    Enum.map(List.flatten(content), fn c -> Enum.map(elem(c,1), fn v -> handle_value(v) end) end)
   end

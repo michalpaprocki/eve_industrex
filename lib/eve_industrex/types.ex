@@ -8,15 +8,44 @@ defmodule EveIndustrex.Types do
   alias EveIndustrex.Repo
   import Ecto.Query
 
-  def update_market_groups() do
+  def update_market_groups_from_ESI() do
     market_groups = Types.fetch_market_groups()
     Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor,market_groups, fn {_status, mg} ->
-      %MarketGroup{}
+      case get_market_group(mg.market_group_id) do
+        nil ->
+          %MarketGroup{}
+        market_group ->
+          market_group
+      end
       |> MarketGroup.changeset(mg)
       |> Repo.insert_or_update()
     end) |> Stream.run()
   end
+  def update_market_groups_from_dump() do
+    market_groups = Parser.parse_market_groups()
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor,market_groups, fn mg->
+      case get_market_group(elem(mg, 0)) do
+        nil ->
+          %MarketGroup{}
+          |> MarketGroup.changeset(%{
+            :market_group_id => elem(mg, 0),
+            :parent_group_id => elem(List.keyfind(elem(mg, 1), "parentGroupID", 0, {nil, nil}), 1),
+            :description => extract_description_market_group(mg),
+            :name => List.to_string(elem(List.keyfind(elem(List.keyfind(elem(mg, 1), "nameID", 0, {nil, nil}), 1), "en", 0), 1)),
+          })
+        market_group ->
+          market_group
+          |> MarketGroup.changeset(%{
+            :market_group_id => elem(mg, 0),
+            :parent_group_id => elem(List.keyfind(elem(mg, 1), "parentGroupID", 0, {nil, nil}), 1),
+            :description => extract_description_market_group(mg),
+            :name => List.to_string(elem(List.keyfind(elem(List.keyfind(elem(mg, 1), "nameID", 0, {nil, nil}), 1), "en", 0), 1)),
+          })
+      end
 
+      |> Repo.insert_or_update() |> IO.inspect()
+    end) |> Stream.run()
+  end
   def get_market_groups() do
     top_groups = Enum.sort(Enum.map(get_market_groups_without_parent(), fn m -> prep_map(m) end ), &(&1.name < &2.name))
     with_parents = get_market_groups_with_parents()
@@ -175,7 +204,14 @@ defmodule EveIndustrex.Types do
 
   defp extract_description(type) do
     if List.keyfind(elem(type, 1), "description", 0, nil) do
-      List.keyfind(elem(List.keyfind(elem(type, 1), "description", 0, {nil, nil}), 1), :en, 0, {nil, nil})
+      List.keyfind(elem(List.keyfind(elem(type, 1), "description", 0, {nil, nil}), 1), "en", 0, {nil, nil})
+     else
+      nil
+    end
+  end
+  defp extract_description_market_group(market_group) do
+    if List.keyfind(elem(market_group, 1), "descriptionID", 0, nil) do
+      List.to_string(elem(List.keyfind(elem(List.keyfind(elem(market_group, 1), "descriptionID", 0, {nil, nil}), 1), "en", 0, {nil, nil}), 1))
      else
       nil
     end
