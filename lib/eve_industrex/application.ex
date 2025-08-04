@@ -15,6 +15,8 @@ defmodule EveIndustrex.Application do
       {Phoenix.PubSub, name: EveIndustrex.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: EveIndustrex.Finch},
+      {Registry, keys: :unique, name: EveIndustrex.Registry},
+      {EveIndustrex.Tasks.Init, []},
       # Start a worker by calling: EveIndustrex.Worker.start_link(arg)
       # {EveIndustrex.Worker, arg},
       # Start to serve requests, typically the last entry
