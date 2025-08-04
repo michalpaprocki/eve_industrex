@@ -8,7 +8,7 @@ defmodule EveIndustrex.Blueprints do
   def get_blueprints() do
     Repo.all(Blueprint) |> Repo.preload(:activities)
   end
-  def get_blueprint(id), do: Repo.get_by(Blueprint, blueprint_type_id: id) |> Repo.preload([:activities, activities: [:materials, :products, products: [:product]]])
+  def get_blueprint(id) when is_integer(id), do: Repo.get_by(Blueprint, blueprint_type_id: id) |> Repo.preload([:activities, activities: [:materials, :products, products: [:product]]])
   def get_blueprints_from_list_of_ids(list_of_ids) do
     from(b in Blueprint, where: b.blueprint_type_id in ^list_of_ids) |> Repo.all |> Repo.preload([:activities, activities: [:products, :materials, products: [:product, product: [:products, products: [:material_type]]], materials: [:material_type]]])
   end

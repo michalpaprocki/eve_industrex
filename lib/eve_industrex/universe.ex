@@ -84,6 +84,7 @@ defmodule EveIndustrex.Universe do
   end
 
   def get_regions(), do: Repo.all(Region)
+  def get_regions_ids(), do: from(r in Region, select: r.region_id) |> Repo.all
   def get_regions_with_assoc() do
     query = from r in Region, join: c in Constellation, on: r.region_id == c.region_id, preload: [constellations: c]
     Repo.all(query)

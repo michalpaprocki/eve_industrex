@@ -26,9 +26,7 @@ defmodule EveIndustrex.Market do
   def get_market_orders_by_type_and_station(type_ids, station_id) do
     from(m in MarketOrder, join: s in Station, on: m.station_id == s.station_id, join: system in System, on: s.system_id == system.system_id, where: m.type_id in ^type_ids and m.station_id == ^station_id, order_by: [asc: m.price], preload: [:station, station: :system]) |> Repo.all
   end
-  # def get_market_buy_orders_by_type(type_ids, station_id) do
-  #   from(m in MarketOrder, join: s in Station, on: m.station_id == s.station_id, join: system in System, on: s.system_id == system.system_id, where: m.type_id in ^type_ids and m.is_buy_order == true and m.station_id == ^station_id ,  order_by: [desc: m.price], preload: [:station, station: :system]) |> Repo.all
-  # end
+
 
   def get_market_orders_for_appraisal(type_id, station_id) do
     from(m in MarketOrder, join: station in Station, on: m.station_id == station.station_id, where: m.type_id == ^type_id and m.station_id == ^station_id, preload: [:station]) |> Repo.all
@@ -65,8 +63,10 @@ defmodule EveIndustrex.Market do
     average_prices = Task.await(task)
     Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, average_prices, fn ap ->
       %AveragePrice{} |> AveragePrice.changeset(ap) |> Ecto.Changeset.change(type_id: ap["type_id"]) |> Repo.insert()
-    end) |> Enum.map(fn x -> x end)
+    end) |> Stream.run()
+    :ok
   end
+
   def get_type_average_prices(type_id) do
     subquery = from(av in AveragePrice, order_by: [desc: :inserted_at])
     from(t in Type, where: t.type_id == ^type_id) |> Repo.all |> Repo.preload(average_prices: subquery)
@@ -85,6 +85,6 @@ defmodule EveIndustrex.Market do
     %MarketOrder{}
     |> MarketOrder.changeset(order)
     |> Repo.insert()
+    end
   end
-end
 end
