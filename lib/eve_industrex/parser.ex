@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Parser do
+  require Logger
   @blueprints_path "data_dump/blueprints.yaml"
   @type_materials_path "data_dump/typeMaterials.yaml"
   @types_path "data_dump/types.yaml"
@@ -6,35 +7,58 @@ defmodule EveIndustrex.Parser do
   @groups_path "data_dump/groups.yaml"
   @market_groups_path "data_dump/marketGroups.yaml"
   def parse_bps() do
-    content = yaml_simple(@blueprints_path)
+    content = yaml_simple_with_tc(@blueprints_path)
     extract_yaml_bps(content)
 
   end
   def parse_materials() do
-    content = yaml_simple(@type_materials_path)
+    content = yaml_simple_with_tc(@type_materials_path)
     extract_yaml_materials(content)
   end
   def parse_types() do
-    content = yaml_simple(@types_path)
+    content = yaml_simple_with_tc(@types_path)
     extract_yaml_categories(content)
   end
   def parse_groups() do
-    content = yaml_simple(@groups_path)
+    content = yaml_simple_with_tc(@groups_path)
     extract_yaml_categories(content)
   end
   def parse_categories() do
-    content = yaml_simple(@categories_path)
+    content = yaml_simple_with_tc(@categories_path)
     extract_yaml_categories(content)
   end
   def parse_market_groups() do
-    content = yaml_simple(@market_groups_path)
+    content = yaml_simple_with_tc(@market_groups_path)
     extract_yaml_market_groups(content)
+  end
+  def yaml_simple_with_tc(path) do
+    {time, result} = :timer.tc(fn -> yaml_simple(path) end, :seconds)
+    Logger.info("Done parsing in #{time} seconds")
+    result
   end
   def yaml_simple(path)  do
     Application.start(:yamerl)
     task = Task.Supervisor.async(EveIndustrex.TaskSupervisor, fn -> :yamerl_constr.file(path) end) |> Task.await(:infinity)
     Application.stop(:yamerl)
     task
+  end
+  def parse_html_to_latest_patch_notes_path(html) do
+    html
+      |> String.split("<")
+      |> Enum.filter(fn string -> String.contains?(string, "/news/view") end)
+      |> hd()
+      |> String.split("\"")
+      |> Enum.at(1)
+      |> String.split("/")
+      |> Enum.at(3)
+  end
+  def parse_path_to_tq_version(path) do
+    if String.contains?(path, "expansion") do
+        path |> String.split("-") |> Enum.take(2) |> Enum.join(" ")
+      else
+        path |> String.split("-") |> Enum.take(-2) |> Enum.join(".")
+    end
+
   end
   defp extract_yaml_categories(content) do
     Enum.map(List.flatten(content), fn c -> {elem(c, 0), Enum.sort(Enum.map(elem(c, 1), fn v ->  handle_value(v) end), &(&1 > &2))} end)
