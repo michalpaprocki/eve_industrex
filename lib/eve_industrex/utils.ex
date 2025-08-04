@@ -1,5 +1,6 @@
 defmodule EveIndustrex.Utils do
-
+@sde_files ["categories.yaml", "types.yaml", "groups.yaml", "blueprints.yaml", "typeMaterials.yaml", "marketGroups.yaml"]
+@sde_url "https://eve-static-data-export.s3-eu-west-1.amazonaws.com/tranquility/fsd.zip"
   def get_pages_ammount(url) when is_binary(url) do
     request = Req.Request.new(url: url, method: :head)
     {_req, res} = Req.run(request)
@@ -164,5 +165,28 @@ defmodule EveIndustrex.Utils do
       _ ->
         "text-system0.0"
     end
+  end
+   def fetch_SDE() do
+    File.mkdir(Path.join(File.cwd!(), "/data_dump/"))
+    case Req.get(@sde_url) do
+      {:ok, resp} ->
+        if resp.status == 200 do
+          sde = resp.body
+          Enum.filter(sde, fn x -> String.contains?(List.to_string(elem(x, 0)), @sde_files) end)
+          |> Enum.map(fn x -> File.write(Path.join(File.cwd!(), "/data_dump/"<>List.to_string(elem(x, 0))), elem(x, 1)) end)
+          :ok
+        else
+          {:err_responded_with, resp.status, @sde_url}
+        end
+      {:error, exception} ->
+        {:err_req, exception, @sde_url}
+    end
+  end
+  def remove_SDE_files() do
+    File.rm(Path.join(File.cwd!(), "/data_dump/*"))
+  end
+  def apfn() do
+    :timer.sleep(Enum.random(0..4000))
+    :ok
   end
 end
