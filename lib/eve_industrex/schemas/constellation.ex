@@ -9,7 +9,7 @@ defmodule EveIndustrex.Schemas.Constellation do
     field :name, :string
     field :region_id, :integer
     has_many :systems, System
-    belongs_to :region, Region, references: :region_id, define_field: false
+    belongs_to :region, Region, references: :region_id, define_field: false, foreign_key: :region_id
 
 
     timestamps(type: :utc_datetime)
@@ -17,7 +17,7 @@ defmodule EveIndustrex.Schemas.Constellation do
 
   def changeset(constellation, attrs) do
     constellation
-    |> cast(attrs, [:name, :constellation_id])
+    |> cast(attrs, [:name, :constellation_id, :region_id])
     |> unique_constraint([:name, :constellation_id])
     |> validate_required([:constellation_id, :name])
   end
