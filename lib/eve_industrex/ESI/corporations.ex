@@ -32,7 +32,7 @@ defmodule EveIndustrex.ESI.Corporations do
     npc_corps_ids = Corporation.get_npc_corps_ids()
     if length(npc_corps_ids) == 0 do
       fun = Function.info(&fetch_lp_offers_from_ESI/0)
-      {:error,{:enoent, "Missing entities required", "#{Keyword.get(fun, :module)}"<>":#{Keyword.get(fun, :name)}"<>"/#{Keyword.get(fun, :arity)}"}}
+      {:error,{:enoent, "Missing entities required: npc corporations", "#{Keyword.get(fun, :module)}"<>":#{Keyword.get(fun, :name)}"<>"/#{Keyword.get(fun, :arity)}"}}
     else
       case Utils.can_fetch?(@loyalty_offer_url<>~s"#{hd(npc_corps_ids)}"<>"/offers/") do
         {false, error} ->
@@ -46,8 +46,8 @@ defmodule EveIndustrex.ESI.Corporations do
      npc_corps_ids = Corporation.get_npc_corps_ids()
     if length(npc_corps_ids) == 0 do
       fun = Function.info(&fetch_lp_offers_from_ESI!/0)
-        EiLogger.log(:error,{:enoent, "Missing entities required", "#{Keyword.get(fun, :module)}"<>":#{Keyword.get(fun, :name)}"<>"/#{Keyword.get(fun, :arity)}"})
-        raise "Missing entities required"
+        EiLogger.log(:error,{:enoent, "Missing entities required: npc corporations", "#{Keyword.get(fun, :module)}"<>":#{Keyword.get(fun, :name)}"<>"/#{Keyword.get(fun, :arity)}"})
+        raise "Missing entities required: npc corporations"
     else
       case Utils.can_fetch?(@loyalty_offer_url<>~s"#{hd(npc_corps_ids)}"<>"/offers/") do
         {false, error} ->
