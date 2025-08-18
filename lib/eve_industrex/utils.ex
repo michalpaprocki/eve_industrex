@@ -22,30 +22,30 @@ defmodule EveIndustrex.Utils do
   end
 
   def get_chunked_list(list, chunk), do: Enum.chunk_every(list, chunk)
-
+  def can_fetch?(url) do
+    case Req.head(url) do
+      {:error, exception} ->
+        {false, {:req_head_exception, exception.reason, url}}
+      {:ok, %Req.Response{:status => 200} = _response} ->
+        true
+      {:ok, %Req.Response{:status => status} = _response} ->
+        {false, {:req_response, Integer.to_string(status), url}}
+    end
+  end
   def fetch_from_url(url) do
-
     case Req.get(url: url) do
-      {:error, _} ->
-        raise "Could not fetch from provided url: #{inspect(url)}"
+      {:error, exception} ->
+        {:error, {:req_exception, exception.reason, url}}
       {:ok, %Req.Response{:status=> 200} = response} ->
-          response.body
-      {:ok, %Req.Response{:status=> _}} = _response ->
-
-        raise "Could not fetch from provided url: #{inspect(url)}"
+        {:ok, response.body}
+      {:ok, %Req.Response{:status=> status}} = _response ->
+        {:error, {:req_response, Integer.to_string(status), url}}
     end
   end
-  def fetch_from_url(url, _index) do
-
-    case Req.get(url: url) do
-      {:error, _} ->
-        raise "Could not fetch from provided url: #{inspect(url)}"
-      {:ok, %Req.Response{:status=> 200} = response} ->
-          response.body
-      {:ok, %Req.Response{:status=> _}} = _response ->
-        raise "Could not fetch from provided url: #{inspect(url)}"
-    end
+  def fetch_from_url!(url) do
+    Req.get!(url).body
   end
+
   def calculate_time_difference(%DateTime{} = time) do
     {:ok, now} = DateTime.now("Etc/UTC")
     diff = DateTime.diff(now, time)
