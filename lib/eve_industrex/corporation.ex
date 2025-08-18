@@ -14,7 +14,7 @@ defmodule EveIndustrex.Corporation do
          Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, npc_corps, fn {id, corp} ->
           case get_npc_corp(id) do
             nil ->
-              %NpcCorp{}
+              %NpcCorp{corp_id: id}
             npc_corp ->
               npc_corp
           end
