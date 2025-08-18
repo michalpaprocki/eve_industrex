@@ -28,24 +28,26 @@ defmodule EveIndustrex.ESI.Corporations do
     end
 
   end
-  def fetch_lp_offers_from_ESI() do
+  def fetch_lp_offers() do
     npc_corps_ids = Corporation.get_npc_corps_ids()
     if length(npc_corps_ids) == 0 do
-      fun = Function.info(&fetch_lp_offers_from_ESI/0)
+      fun = Function.info(&fetch_lp_offers/0)
       {:error,{:enoent, "Missing entities required: npc corporations", "#{Keyword.get(fun, :module)}"<>":#{Keyword.get(fun, :name)}"<>"/#{Keyword.get(fun, :arity)}"}}
     else
       case Utils.can_fetch?(@loyalty_offer_url<>~s"#{hd(npc_corps_ids)}"<>"/offers/") do
         {false, error} ->
           {:error, error}
         true ->
-         Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, npc_corps_ids, fn id -> {id, Utils.fetch_from_url!(@loyalty_offer_url<>Integer.to_string(id)<>"/offers/")} end) |> Enum.map(fn x -> elem(x, 1) end)
+          lp_offers =
+          Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, npc_corps_ids, fn id -> {id, Utils.fetch_from_url!(@loyalty_offer_url<>Integer.to_string(id)<>"/offers/")} end) |> Enum.map(fn x -> elem(x, 1) end)
+          {:ok, lp_offers}
       end
     end
   end
-   def fetch_lp_offers_from_ESI!() do
+   def fetch_lp_offers!() do
      npc_corps_ids = Corporation.get_npc_corps_ids()
     if length(npc_corps_ids) == 0 do
-      fun = Function.info(&fetch_lp_offers_from_ESI!/0)
+      fun = Function.info(&fetch_lp_offers!/0)
         EiLogger.log(:error,{:enoent, "Missing entities required: npc corporations", "#{Keyword.get(fun, :module)}"<>":#{Keyword.get(fun, :name)}"<>"/#{Keyword.get(fun, :arity)}"})
         raise "Missing entities required: npc corporations"
     else
