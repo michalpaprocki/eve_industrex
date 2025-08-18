@@ -49,7 +49,7 @@ defmodule EveIndustrex.ESI.Universe do
         constellations_ids = Utils.fetch_from_url!(@constellations_url)
         Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, constellations_ids, fn c ->
           Utils.fetch_from_url!(@constellations_url<>~s"#{c}")
-        end) |> Enum.map(fn x -> elem(x, 1) end) |> Enum.map(fn x -> elem(x, 1) end)
+        end) |> Enum.map(fn x -> elem(x, 1) end)
         {false, error} ->
             EiLogger.log(:error, error)
           raise "Could not initiate fetching"
@@ -74,14 +74,13 @@ defmodule EveIndustrex.ESI.Universe do
          systems_ids = Utils.fetch_from_url!(@systems_url)
         Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, systems_ids, fn s ->
           Utils.fetch_from_url!(@systems_url<>~s"#{s}")
-        end) |> Enum.map(fn x -> elem(x, 1) end) |> Enum.map(fn x -> elem(x, 1) end)
+        end) |> Enum.map(fn x -> elem(x, 1) end)
       {false, error} ->
           EiLogger.log(:error, error)
         raise "Could not initiate fetching"
     end
 
   end
-
   def fetch_station(id) do
     Utils.fetch_from_url(@stations_url<>~s"#{id}")
   end
