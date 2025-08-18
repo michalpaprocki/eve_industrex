@@ -11,7 +11,7 @@ defmodule EveIndustrex.Schemas.System do
     field :stations, {:array, :integer}
     field :security_status, :float
     field :constellation_id, :integer
-    belongs_to :constellation, Constellation, references: :constellation_id, define_field: false
+    belongs_to :constellation, Constellation, references: :constellation_id, define_field: false, foreign_key: :constellation_id
     has_many :market_orders, MarketOrder
 
     timestamps(type: :utc_datetime)
