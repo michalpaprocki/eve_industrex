@@ -5,64 +5,99 @@ defmodule EveIndustrex.Universe do
   alias EveIndustrex.Repo
   alias EveIndustrex.ESI.Universe
   @trade_hubs [60003760,60008494,60011866,60004588,60005686]
+
+
   def update_regions_from_ESI() do
-      regions = Universe.fetch_regions()
-      for r <- regions do
-        case get_region(r["region_id"]) do
-          nil ->
-            %Region{}
-          region -> region
-        end
-        |> Region.changeset(r)
-        |> Repo.insert_or_update()
-      end
-  end
-
-  def update_constellations_from_ESI() do
-    constellations = Universe.fetch_constellations()
-    for c <- constellations do
-      case get_region(c["region_id"]) do
-        nil -> nil
-        found_region ->
-          case get_constellation(c["constellation_id"]) do
+    case Universe.fetch_regions() do
+      {:error, error} ->
+        {:error, error}
+      {:ok, regions} ->
+        Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, regions, fn r ->
+          case get_region(r["region_id"]) do
             nil ->
-              %Constellation{}
-              |> Ecto.Changeset.change(region_id: found_region.region_id)
-            constellation ->
-              constellation
-            end
-
-          |> Constellation.changeset(c)
-          |> Repo.insert_or_update()
-      end
+              %Region{}
+            region ->
+              region
+          end
+            |> Region.changeset(r)
+            |> Repo.insert_or_update()
+        end) |> Stream.run()
     end
   end
 
-  def create_system(map) do
-    %System{}
-    |> System.changeset(map)
-    |> Repo.insert()
+  def update_regions_from_ESI!() do
+    regions = Universe.fetch_regions!()
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, regions, fn r ->
+      case get_region(r["region_id"]) do
+        nil ->
+          %Region{}
+        region ->
+          region
+      end
+        |> Region.changeset(r)
+        |> Repo.insert_or_update()
+    end) |> Stream.run()
+  end
+  def update_constellations_from_ESI() do
+    case Universe.fetch_constellations() do
+      {:error, error} ->
+        {:error, error}
+      {:ok, constellations} ->
+        Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, constellations, fn c ->
+           case get_constellation(c["constellation_id"]) do
+            nil ->
+              %Constellation{}
+            constellation ->
+              constellation
+           end
+          |> Constellation.changeset(c)
+          |> Repo.insert_or_update()
+        end) |> Stream.run()
+    end
+  end
+  def update_constellations_from_ESI!() do
+    constellations = Universe.fetch_constellations!()
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, constellations, fn c ->
+    case get_constellation(c["constellation_id"]) do
+      nil ->
+        %Constellation{}
+      constellation ->
+        constellation
+    end
+    |> Constellation.changeset(c)
+    |> Repo.insert_or_update()
+    end) |> Stream.run()
   end
 
   def update_systems_from_ESI() do
-    systems = Universe.fetch_systems()
-    for s <- systems do
-      case get_constellation(s["constellation_id"]) do
-        nil ->
-           nil
-        found_constellation ->
-          case get_system(s["system_id"]) do
-            nil ->
-              %System{}
-              |> Ecto.Changeset.change(constellation_id: found_constellation.constellation_id)
-            system ->
-              system
+    case Universe.fetch_systems() do
+      {:error, error} ->
+        {:error, error}
+      {:ok, systems} ->
+      Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, systems, fn s ->
+        case get_system(s["system_id"]) do
+          nil ->
+            %System{}
+          system ->
+            system
           end
           |> System.changeset(s)
           |> Repo.insert_or_update()
-      end
+      end) |> Stream.run()
     end
-
+  end
+  def update_systems_from_ESI!() do
+    systems = Universe.fetch_systems!()
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, systems, fn s ->
+      case get_system(s["system_id"]) do
+        nil ->
+          %System{}
+        system ->
+          system
+      end
+      |> System.changeset(s)
+      |> Repo.insert_or_update()
+    end) |> Stream.run()
   end
   def update_stations_from_ESI() do
     stations =
@@ -102,6 +137,7 @@ defmodule EveIndustrex.Universe do
   end
   def get_region(name) when is_binary(name), do: Repo.get_by(Region, name: name)
   def get_region(id) when is_integer(id), do: Repo.get_by(Region, region_id: id)
+  def get_regions_count(), do: Repo.aggregate(Region, :count)
   def get_constellation(name) when is_binary(name), do: Repo.get_by(Constellation, name: name)
   def get_constellation(id) when is_integer(id), do: Repo.get_by(Constellation, constellation_id: id)
   def get_system(name) when is_binary(name), do: Repo.get_by(System, name: name)
