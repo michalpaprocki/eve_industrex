@@ -38,14 +38,14 @@ defmodule EveIndustrex.Corporation do
   end
   # rewrite the order and how are req_items inserted
 
-  def update_npc_lp_offers() do
+  def update_npc_lp_offers_from_ESI() do
     if Repo.aggregate(Type, :count) == 0 do
-      fun = Function.info(&update_npc_lp_offers/0)
+      fun = Function.info(&update_npc_lp_offers_from_ESI/0)
       {:error,{:enoent, "Missing entities required: types", "#{Keyword.get(fun, :module)}"<>":#{Keyword.get(fun, :name)}"<>"/#{Keyword.get(fun, :arity)}"}}
 
     else
 
-    npc_offers = Corporations.fetch_lp_offers_from_ESI() |> Enum.filter(fn {_id, offers} -> offers != [] end)
+    npc_offers = Corporations.fetch_lp_offers!() |> Enum.filter(fn {_id, offers} -> offers != [] end)
     offers = Enum.map(npc_offers, fn {_id, o} -> o end) |> List.flatten() |> Enum.uniq()
     corps_offers = Enum.map(npc_offers, fn {cid, offer} -> {cid, Enum.map(offer, fn o -> o["offer_id"] end)} end)
 
@@ -66,33 +66,40 @@ defmodule EveIndustrex.Corporation do
     Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, offers, fn o -> Enum.map(o["required_items"], fn ri -> %LpReqItem{type_id: o["type_id"], offer_id: o["offer_id"]} |> LpReqItem.changeset(ri) |> Repo.insert() end) end) |> Stream.run()
     end
   end
-def update_npc_lp_offers!() do
+def update_npc_lp_offers_from_ESI!() do
     if Repo.aggregate(Type, :count) == 0 do
-      fun = Function.info(&update_npc_lp_offers/0)
+      fun = Function.info(&update_npc_lp_offers_from_ESI!/0)
       EiLogger.log(:error,{:enoent, "Missing entities required: types", "#{Keyword.get(fun, :module)}"<>":#{Keyword.get(fun, :name)}"<>"/#{Keyword.get(fun, :arity)}"})
       raise "Missing entities required: types"
 
     else
 
-    npc_offers = Corporations.fetch_lp_offers_from_ESI() |> Enum.filter(fn {_id, offers} -> offers != [] end)
-    offers = Enum.map(npc_offers, fn {_id, o} -> o end) |> List.flatten() |> Enum.uniq()
-    corps_offers = Enum.map(npc_offers, fn {cid, offer} -> {cid, Enum.map(offer, fn o -> o["offer_id"] end)} end)
+      case Corporations.fetch_lp_offers() do
+        {:error, error} ->
+          {:error, error}
+        {:ok, lp_offers} ->
+          npc_offers = Enum.filter(lp_offers , fn {_id, offers} -> offers != [] end)
+          offers = Enum.map(npc_offers, fn {_id, o} -> o end) |> List.flatten() |> Enum.uniq()
+          corps_offers = Enum.map(npc_offers, fn {cid, offer} -> {cid, Enum.map(offer, fn o -> o["offer_id"] end)} end)
 
-    delete_req_items()
 
-    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, offers, fn o ->
-      case get_lp_offer(o["offer_id"]) do
-        nil ->
-          %LpOffer{}
-        lp_offer ->
-          lp_offer
+
+        delete_req_items()
+
+        Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, offers, fn o ->
+          case get_lp_offer(o["offer_id"]) do
+            nil ->
+              %LpOffer{}
+            lp_offer ->
+              lp_offer
+          end
+        |> LpOffer.changeset(o)
+        |> Repo.insert_or_update() end) |> Stream.run()
+
+        Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, corps_offers, fn {cid, offer_ids} -> Repo.get_by(NpcCorp, corp_id: cid) |> Repo.preload([:offers]) |> Ecto.Changeset.change() |> Ecto.Changeset.put_assoc(:offers, Enum.map(offer_ids, fn id -> Repo.get_by(LpOffer, offer_id: id) end))  |> Repo.update() end) |> Stream.run()
+
+        Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, offers, fn o -> Enum.map(o["required_items"], fn ri -> %LpReqItem{type_id: o["type_id"], offer_id: o["offer_id"]} |> LpReqItem.changeset(ri) |> Repo.insert() end) end) |> Stream.run()
       end
-    |> LpOffer.changeset(o)
-    |> Repo.insert_or_update() end) |> Stream.run()
-
-    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, corps_offers, fn {cid, offer_ids} -> Repo.get_by(NpcCorp, corp_id: cid) |> Repo.preload([:offers]) |> Ecto.Changeset.change() |> Ecto.Changeset.put_assoc(:offers, Enum.map(offer_ids, fn id -> Repo.get_by(LpOffer, offer_id: id) end))  |> Repo.update() end) |> Stream.run()
-
-    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, offers, fn o -> Enum.map(o["required_items"], fn ri -> %LpReqItem{type_id: o["type_id"], offer_id: o["offer_id"]} |> LpReqItem.changeset(ri) |> Repo.insert() end) end) |> Stream.run()
     end
   end
   def delete_npc_corps(), do: Repo.delete_all(NpcCorp)
