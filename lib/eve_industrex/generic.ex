@@ -35,7 +35,7 @@ defmodule EveIndustrex.Generic do
   def populate_db(MarketGroup), do: Types.update_market_groups_from_dump()
   def populate_db(Type), do: Types.update_types_from_dump_with_time_tc()
   def populate_db(Material), do: Materials.insert_materials_from_dump()
-  def populate_db(NpcCorp), do: Corporation.update_npc_corps()
+  def populate_db(NpcCorp), do: Corporation.update_npc_corps_from_ESI!()
   def populate_db(LpOffer), do: Corporation.update_npc_lp_offers()
   def populate_db(Blueprint), do: Blueprints.insert_bps_from_dump()
 end

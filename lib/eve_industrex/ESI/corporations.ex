@@ -5,8 +5,21 @@ defmodule EveIndustrex.ESI.Corporations do
   @corp_info_url "https://esi.evetech.net/latest/corporations/"
   @loyalty_offer_url "https://esi.evetech.net/latest/loyalty/stores/"
   def fetch_npc_corps() do
-    npc_corps_ids = Utils.fetch_from_url(@npc_corps_url)
-    Enum.map(npc_corps_ids, fn id -> {id, Utils.fetch_from_url(@corp_info_url<>Integer.to_string(id))} end)
+    case Utils.fetch_from_url(@npc_corps_url) do
+      {:error, error} ->
+        {:error, error}
+      {:ok, npc_corps_ids} ->
+        Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, npc_corps_ids, fn id ->
+           {id, Utils.fetch_from_url!(@corp_info_url<>Integer.to_string(id))}
+        end) |> Enum.map(fn x -> elem(x, 1) end)
+    end
+
+  end
+  def fetch_npc_corps!() do
+    npc_corps_ids = Utils.fetch_from_url!(@npc_corps_url)
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, npc_corps_ids, fn id ->
+      {id, Utils.fetch_from_url!(@corp_info_url<>Integer.to_string(id))}
+    end) |> Enum.map(fn x -> elem(x, 1) end)
   end
   def fetch_lp_offers() do
     npc_corps_ids = Corporation.get_npc_corps_ids()

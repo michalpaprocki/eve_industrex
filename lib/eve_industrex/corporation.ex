@@ -6,13 +6,34 @@ defmodule EveIndustrex.Corporation do
   alias EveIndustrex.ESI.Corporations
   alias EveIndustrex.Repo
   import Ecto.Query
-  def update_npc_corps() do
-    npc_corps = Corporations.fetch_npc_corps()
-    delete_npc_corps()
-    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, npc_corps, fn {id, corp} -> %NpcCorp{corp_id: id} |> NpcCorp.changeset(corp) |> Repo.insert() end)
-    |> Stream.run()
+  def update_npc_corps_from_ESI() do
+    case Corporations.fetch_npc_corps() do
+      {:error, error} ->
+        {:error, error}
+      npc_corps ->
+         Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, npc_corps, fn {id, corp} ->
+          case get_npc_corp(id) do
+            nil ->
+              %NpcCorp{}
+            npc_corp ->
+              npc_corp
+          end
+        |> NpcCorp.changeset(corp) |> Repo.insert_or_update() end)
+        |> Stream.run()
+    end
   end
-
+  def update_npc_corps_from_ESI!() do
+    npc_corps = Corporations.fetch_npc_corps!()
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, npc_corps, fn {id, corp} ->
+          case get_npc_corp(id) do
+            nil ->
+              %NpcCorp{}
+            npc_corp ->
+              npc_corp
+          end
+        |> NpcCorp.changeset(corp) |> Repo.insert_or_update() end)
+        |> Stream.run()
+  end
   # rewrite the order and how are req_items inserted
 
   def update_npc_lp_offers() do
@@ -38,6 +59,7 @@ defmodule EveIndustrex.Corporation do
       from(co in CorpsOffers, where: parent_as(:corp).corp_id == co.corp_id and not is_nil(co.offer_id))
     ), order_by: [asc: c.name]) |> Repo.all
   end
+  def get_npc_corp(corp_id), do: Repo.get_by(NpcCorp, corp_id: corp_id)
   def get_npc_corps_ids(), do: from(n in NpcCorp, select: n.corp_id) |> Repo.all()
   def get_npc_corps_offers() do
     from(c in NpcCorp, join: o in assoc(c, :offers)) |> Repo.all
