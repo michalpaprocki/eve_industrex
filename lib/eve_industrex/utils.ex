@@ -29,7 +29,7 @@ defmodule EveIndustrex.Utils do
       {:ok, %Req.Response{:status => 200} = _response} ->
         true
       {:ok, %Req.Response{:status => status} = _response} ->
-        {false, {:req_response, Integer.to_string(status), url}}
+        {false, {:err_responded_with, Integer.to_string(status), url}}
     end
   end
   def fetch_from_url(url) do
@@ -39,7 +39,7 @@ defmodule EveIndustrex.Utils do
       {:ok, %Req.Response{:status=> 200} = response} ->
         {:ok, response.body}
       {:ok, %Req.Response{:status=> status}} = _response ->
-        {:error, {:req_response, Integer.to_string(status), url}}
+        {:error, {:err_responded_with, Integer.to_string(status), url}}
     end
   end
   def fetch_from_url!(url) do
@@ -57,7 +57,7 @@ defmodule EveIndustrex.Utils do
       {:ok, response}->
         hd(response.headers["x-pages"])
       {:error, msg} ->
-        {:erro, msg}
+        {:error, msg}
     end
   end
     def fetch_ESI_pages(url, page_number, types \\ []) when is_integer(page_number) do
