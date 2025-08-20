@@ -52,15 +52,16 @@ defmodule EveIndustrex.Utils do
     format_time(diff)
   end
   def get_ESI_pages_amount(url) do
-    request = Req.head(url)
-    case request do
-      {:ok, response}->
-        hd(response.headers["x-pages"])
-      {:error, msg} ->
-        {:error, msg}
+    case Req.head(url) do
+      {:ok, %Req.Response{:status=> 200} = response} ->
+        {:ok, response.headers["x-pages"]}
+      {:ok, %Req.Response{:status=> status} = _response} ->
+        {:error, {:err_responded_with, Integer.to_string(status), url}}
+      {:error, exception} ->
+        {:error, {:req_exception, exception.reason, url}}
     end
   end
-    def fetch_ESI_pages(url, page_number, types \\ []) when is_integer(page_number) do
+  def fetch_ESI_pages(url, page_number, types \\ []) when is_integer(page_number) do
 
     {status, response = %Req.Response{}} = Req.get(url<>"?datasource=tranquility&page=#{Integer.to_string(page_number)}")
 
