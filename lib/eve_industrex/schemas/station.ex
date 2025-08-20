@@ -11,7 +11,7 @@ defmodule EveIndustrex.Schemas.Station do
     field :services, {:array, :string}
     field :reprocessing_efficiency, :float
     field :reprocessing_stations_take, :float
-    belongs_to :system, System, references: :system_id, define_field: false
+    belongs_to :system, System, references: :system_id, define_field: false, foreign_key: :system_id
     has_many :market_orders, MarketOrder, foreign_key: :order_id
     timestamps(type: :utc_datetime)
   end
