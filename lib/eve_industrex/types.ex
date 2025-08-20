@@ -46,6 +46,27 @@ defmodule EveIndustrex.Types do
 
       |> Repo.insert_or_update()
     end) |> Stream.run()
+    put_mg_assocs()
+  end
+  def put_mg_assocs() do
+    market_groups = get_market_groups_with_parents()
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, market_groups, fn mg ->
+      parent = get_market_group(mg.parent_group_id) |> Repo.preload([:types, :child_market_group, :parent_market_group])
+      parent
+      |> Ecto.Changeset.change()
+      |> Ecto.Changeset.put_assoc(:child_market_group, [mg | parent.child_market_group])
+      |> Repo.update()
+
+    end) |> Enum.to_list
+  end
+  def dev_get_market_groups() do
+    from(mg in MarketGroup, where: is_nil(mg.parent_group_id), order_by: [asc: mg.name],
+    preload: [:types, :child_market_group,
+      child_market_group: [:types, :child_market_group,
+        child_market_group: [:types, :child_market_group,
+          child_market_group: [:types, :child_market_group,
+            child_market_group: [:types, :child_market_group,
+              child_market_group: [:types, :child_market_group]]]]]]) |> Repo.all
   end
   def get_market_groups() do
     top_groups = Enum.sort(Enum.map(get_market_groups_without_parent(), fn m -> prep_map(m) end ), &(&1.name < &2.name))
@@ -55,29 +76,6 @@ defmodule EveIndustrex.Types do
     third_wave = Enum.map(second_wave, fn sw -> Map.replace(sw, :children, Enum.map(sw.children, fn fw -> Map.replace(fw, :children, Enum.map(fw.children, fn c -> Map.replace(c, :children, prep_map(Enum.sort(Enum.filter(with_parents, fn wp -> c.market_group_id == wp.parent_group_id end), &(&1.name > &2.name)))) end) )end))end)
     fourth_wave = Enum.map(third_wave, fn tw -> Map.replace(tw,:children, Enum.map(tw.children, fn sw -> Map.replace(sw, :children, Enum.map(sw.children, fn fw -> Map.replace(fw, :children, Enum.map(fw.children, fn c -> Map.replace(c, :children, prep_map(Enum.sort(Enum.filter(with_parents, fn wp -> c.market_group_id == wp.parent_group_id end), &(&1.name > &2.name))))end) )end)) end)) end)
     fourth_wave
-  end
-  def add_type(id) do
-    t = Types.fetch_type(id)
-
-       case get_market_group(t["market_group_id"]) do
-        nil ->
-          case get_type(t["type_id"]) do
-            nil ->
-            %Type{}
-            type ->
-              type
-          end
-            found_market_group ->
-         case get_type(t["type_id"]) do
-           nil ->
-            %Type{}
-            |> Ecto.Changeset.change(market_group_id: found_market_group.market_group_id)
-          type ->
-            type
-         end
-      end
-      |> Type.changeset(t)
-      |> Repo.insert_or_update()
   end
   def update_types_from_ESI() do
     types = Types.fetch_types()
@@ -170,7 +168,7 @@ defmodule EveIndustrex.Types do
 
   def remove_bps_all(), do: Repo.delete_all(Blueprint)
   def remove_types_all(), do: Repo.delete_all(Type)
-
+  def remove_market_groups(), do: Repo.delete_all(MarketGroup)
 
   defp extract_description(type) do
 
@@ -208,7 +206,7 @@ defmodule EveIndustrex.Types do
     %{:name => data.name, :description => data.description, :market_group_id => data.market_group_id, :parent_group_id => data.parent_group_id, :children => children, :types =>  types}
   end
   defp get_market_groups_without_parent(), do: from(m in MarketGroup, where: is_nil(m.parent_group_id)) |> Repo.all
-  defp get_market_groups_with_parents() do
-    from(m in MarketGroup, where: not is_nil(m.parent_group_id), preload: :types, left_join: t in Type, on: m.market_group_id == t.market_group_id, preload: [types: t]) |> Repo.all
+  def get_market_groups_with_parents() do
+    from(m in MarketGroup, where: not is_nil(m.parent_group_id)) |> Repo.all
   end
 end
