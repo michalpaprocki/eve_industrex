@@ -8,7 +8,9 @@ defmodule EveIndustrex.Schemas.MarketGroup do
     field :market_group_id, :integer
     field :name, :string
     field :parent_group_id, :integer
-    has_many :types, EveIndustrex.Schemas.Type, foreign_key: :market_group_id
+    has_many :types, EveIndustrex.Schemas.Type, foreign_key: :market_group_id, references: :market_group_id
+    many_to_many :parent_market_group, EveIndustrex.Schemas.MarketGroup, join_through: "market_group_relationships", join_keys: [parent_id: :id, child_id: :id], preload_order: [asc: :name]
+    many_to_many :child_market_group, EveIndustrex.Schemas.MarketGroup, join_through: "market_group_relationships", join_keys: [child_id: :id, parent_id: :id], preload_order: [asc: :name]
     timestamps(type: :utc_datetime)
   end
 
