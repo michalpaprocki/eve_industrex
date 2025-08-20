@@ -23,7 +23,7 @@ defmodule EveIndustrexWeb.Market.Category do
         <% end %>
       <% end %>
 
-      <%= for c <- @data.children do %>
+      <%= for c <- @data.child_market_group do %>
       <div class={@cat_indent<>" #{if @open, do: "block", else: "hidden"}"}>
         <.live_component id={c.market_group_id} data={c} module={__MODULE__} indent={@indent}/>
       </div>

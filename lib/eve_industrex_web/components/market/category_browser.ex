@@ -3,7 +3,7 @@ defmodule EveIndustrexWeb.Market.CategoryBrowser do
   alias Phoenix.LiveView.AsyncResult
   alias EveIndustrex.Types
   def update(assigns, socket) do
-    {:ok, socket |> assign(assigns) |> assign(:market_groups, AsyncResult.loading()) |> start_async(:get_market_groups, fn -> Types.get_market_groups() end)
+    {:ok, socket |> assign(assigns) |> assign(:market_groups, AsyncResult.loading()) |> start_async(:get_market_groups, fn -> Types.dev_get_market_groups() end)
 }
   end
   def render(assigns) do
