@@ -1,5 +1,6 @@
 defmodule EveIndustrex.Universe do
   import Ecto.Query
+  alias EveIndustrex.Utils
   alias EveIndustrex.Parser
   alias EveIndustrex.Schemas.{Region, Station, System, Constellation, Category, Group}
   alias EveIndustrex.Repo
@@ -100,18 +101,19 @@ defmodule EveIndustrex.Universe do
     end) |> Stream.run()
   end
   def update_stations_from_ESI() do
-    stations =
-    get_system_stations()
-    |> Enum.filter(fn {stations, _system} -> stations != nil end)
-
-    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, stations, fn tuple -> update_station(tuple) end) |> Stream.run()
-
+    stations = get_system_stations() |> List.flatten()
+    case Utils.can_fetch?(Universe.get_stations_url()<>Integer.to_string(hd(stations))<>"/") do
+      {false, error} ->
+        {:error, error}
+      true ->
+        Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, stations, fn station_id -> update_station!(station_id) end) |> Stream.run()
+    end
   end
-  def update_station({stations_ids, system_id}) do
-    stations = Enum.map(stations_ids, fn id -> Universe.fetch_station(id) end)
+
+  def update_station!(stations_ids) do
+    stations = Enum.map(stations_ids, fn id -> Universe.fetch_station!(id) end)
     Enum.map(stations, fn station ->
       %Station{}
-      |> Ecto.Changeset.change(system_id: system_id)
       |> Station.changeset(station)
       |> Repo.insert_or_update()
     end)
@@ -128,7 +130,7 @@ defmodule EveIndustrex.Universe do
   def get_constellations_with_assoc(), do: Repo.all(from c in Constellation, preload: [:region])
   def get_systems(), do: Repo.all(System)
   def get_systems_with_assoc(), do:  Repo.all(from s in System, preload: [:constellation, constellation: :region])
-  def get_system_stations(), do: Repo.all(from s in System, select: {s.stations, s.system_id})
+  def get_system_stations(), do: Repo.all(from s in System, where: not is_nil(s.stations), order_by: [asc: s.stations], select: s.stations)
   def get_stations(), do: Repo.all(Station)
   def get_station_by_station_id(id), do: Repo.get_by(Station, station_id: id)
   def get_stations_with_assoc(), do: Repo.all(from s in Station, preload: [:system, system: :constellation, system: [constellation: :region]])
@@ -149,7 +151,7 @@ defmodule EveIndustrex.Universe do
     from(s in Station, where: ilike(s.name, ^query_string)) |> Repo.all()
   end
   def insert_category(attrs) do
-    result =Repo.get_by(Category, category_id: attrs["category_id"])
+    result = Repo.get_by(Category, category_id: attrs["category_id"])
     case result do
       nil ->
         %Category{}
@@ -169,7 +171,7 @@ defmodule EveIndustrex.Universe do
     |> Group.changeset(attrs)
     |> Repo.insert_or_update()
   end
-  def insert_category_dump(dumped_data) do
+  def update_category_from_dump(dumped_data) do
     case Repo.get_by(Category, category_id: elem(dumped_data, 0)) do
       nil ->
         %Category{}
@@ -186,7 +188,7 @@ defmodule EveIndustrex.Universe do
     )
     |> Repo.insert_or_update()
   end
-  def insert_group_dump(dumped_data) do
+  def update_group_from_dump(dumped_data) do
     case Repo.get_by(Group, group_id: elem(dumped_data, 0)) do
       nil ->
         %Group{}
@@ -202,35 +204,45 @@ defmodule EveIndustrex.Universe do
     |> Repo.insert_or_update()
   end
   def update_categories_from_ESI() do
-    categories_ids = Universe.fetch_categories()
-    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, categories_ids, fn c ->
-      insert_category(c)
-    end) |> Stream.run()
+    case Universe.fetch_categories() do
+      {:error, error} ->
+        {:error, error}
+      {:ok, categories} ->
+        Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, categories, fn c ->
+          case get_category(c["category_id"]) do
+            nil ->
+              %Category{}
+            category ->
+              category
+          end
+          |> Category.changeset(c)
+          |> Repo.insert_or_update()
+        end) |> Stream.run()
+    end
   end
   def update_categories_from_dump() do
     categories = Parser.parse_categories()
     Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, categories, fn c ->
-      insert_category_dump(c)
+      update_category_from_dump(c)
     end) |> Stream.run()
   end
   def update_groups_from_ESI() do
-    groups_ids = Universe.fetch_groups()
-    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, groups_ids, fn  g ->
-      insert_group(g)
-    end) |> Stream.run()
-
+    case Universe.fetch_groups() do
+      {:error, error} ->
+        {:error, error}
+      {:ok, groups} ->
+        Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, groups, fn  g ->
+          insert_group(g)
+        end) |> Stream.run()
+    end
   end
   def update_groups_from_dump() do
     groups = Parser.parse_groups()
     Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, groups, fn  g ->
-      insert_group_dump(g)
+      update_group_from_dump(g)
     end) |> Stream.run()
+  end
 
-  end
-  def add_group(group_id) do
-    group = Universe.fetch_group(group_id)
-    insert_group(group)
-  end
   def get_categories() do
     from(c in Category) |> Repo.all()
   end

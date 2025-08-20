@@ -8,6 +8,7 @@ defmodule EveIndustrex.ESI.Universe do
   @categories_url "https://esi.evetech.net/latest/universe/categories/"
   @groups_url "https://esi.evetech.net/latest/universe/groups/"
 
+  def get_stations_url(), do: @stations_url
   def fetch_regions() do
     case Utils.fetch_from_url(@regions_url) do
       {:ok, regions_ids} ->
@@ -81,20 +82,39 @@ defmodule EveIndustrex.ESI.Universe do
     end
 
   end
-  def fetch_station(id) do
-    Utils.fetch_from_url(@stations_url<>~s"#{id}")
+  def fetch_station!(id) do
+    Utils.fetch_from_url!(@stations_url<>~s"#{id}")
   end
   def fetch_categories() do
-    categories_ids = Utils.fetch_from_url(@categories_url)
-    Enum.map(categories_ids, fn ci -> Utils.fetch_from_url(@categories_url<>~s"#{ci}") end)
+    case Utils.fetch_from_url(@categories_url) do
+      {:error, error} ->
+        {:error, error}
+      {:ok, categories_ids} ->
+        categories =
+        Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, categories_ids, fn ci -> Utils.fetch_from_url!(@categories_url<>~s"#{ci}") end) |> Enum.map(fn x -> elem(x, 1) end)
+        {:ok, categories}
+    end
+  end
+  def fetch_categories!() do
+    case Utils.can_fetch?(@categories_url) do
+      {false, error} ->
+        EiLogger.log(:error, error)
+        raise "Could not initiate fetching"
+      true ->
+          categories_ids = Utils.fetch_from_url!(@categories_url)
+         Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, categories_ids, fn ci ->
+            Utils.fetch_from_url!(@categories_url<>~s"#{ci}")
+        end) |> Enum.map(fn x -> elem(x, 1) end)
+    end
   end
   def fetch_groups() do
-    current_pages = Utils.get_ESI_pages_amount(@groups_url)
-    groups = Utils.fetch_ESI_pages(@groups_url, String.to_integer(current_pages))
-    Enum.map(Enum.with_index(groups),fn {g, i} -> Utils.fetch_from_url(@groups_url<>~s"#{g}", i) end)
+    case Utils.get_ESI_pages_amount(@groups_url) do
+      {:error, error} ->
+        {:error, error}
+      {:ok, pages} ->
+        groups_ids = Utils.fetch_ESI_pages(@groups_url, String.to_integer(pages))
+        groups = Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, groups_ids,fn g -> Utils.fetch_from_url(@groups_url<>~s"#{g}") end) |> Enum.map(fn x -> elem(x, 1) end)
+        {:ok, groups}
+    end
   end
-  def fetch_group(group_id) do
-    Utils.fetch_from_url(@groups_url<>~s"#{group_id}")
-  end
-
 end
