@@ -14,7 +14,7 @@ defmodule EveIndustrex.Logger.EiLogger do
     Returns `:ok`
     ## Examples
 
-      iex: EiLogger.log(:error, {:err_responded_with, 400, https://example.com})
+      iex: EiLogger.log(:error, {:err_responded_with, "400", https://example.com})
 
   """
   def log(type, msg) when type in @types_list and is_atom(type) and is_tuple(msg) do
@@ -24,8 +24,8 @@ defmodule EveIndustrex.Logger.EiLogger do
       :error ->
         @err_path
     end
-    maybe_create_log_file(log_file_present?(path))
-    write_to_file(type, path, msg)
+      maybe_create_log_file(log_file_present?(path))
+      write_to_file(type, path, msg)
     :ok
   end
 
