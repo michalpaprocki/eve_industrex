@@ -40,8 +40,8 @@ defmodule EveIndustrex.Tasks.Update do
       :ok ->
         Enum.map(Generic.get_used_schemas(), fn schema -> Generic.populate_db(schema) end)
         Utils.remove_SDE_files()
-      {error, reason, url} ->
-        {error, reason, url}
+      {:error, {error, reason, url}} ->
+        {:error, {error, reason, url}}
     end
   end
   def average_prices() do

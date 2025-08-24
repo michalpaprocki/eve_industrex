@@ -41,7 +41,7 @@ defmodule EveIndustrex.Corporation do
   def update_npc_lp_offers_from_ESI() do
     if Repo.aggregate(Type, :count) == 0 do
       fun = Function.info(&update_npc_lp_offers_from_ESI/0)
-      {:error,{:enoent, "Missing entities required: types", "#{Keyword.get(fun, :module)}"<>":#{Keyword.get(fun, :name)}"<>"/#{Keyword.get(fun, :arity)}"}}
+      {:error,{:enoent, "Missing entities required: types", "#{Keyword.get(fun, :module)}"<>".#{Keyword.get(fun, :name)}"<>"/#{Keyword.get(fun, :arity)}"}}
 
     else
 
@@ -69,7 +69,7 @@ defmodule EveIndustrex.Corporation do
 def update_npc_lp_offers_from_ESI!() do
     if Repo.aggregate(Type, :count) == 0 do
       fun = Function.info(&update_npc_lp_offers_from_ESI!/0)
-      EiLogger.log(:error,{:enoent, "Missing entities required: types", "#{Keyword.get(fun, :module)}"<>":#{Keyword.get(fun, :name)}"<>"/#{Keyword.get(fun, :arity)}"})
+      EiLogger.log(:error,{:enoent, "Missing entities required: types", "#{Keyword.get(fun, :module)}"<>".#{Keyword.get(fun, :name)}"<>"/#{Keyword.get(fun, :arity)}"})
       raise "Missing entities required: types"
 
     else
@@ -111,7 +111,8 @@ def update_npc_lp_offers_from_ESI!() do
       from(co in CorpsOffers, where: parent_as(:corp).corp_id == co.corp_id and not is_nil(co.offer_id))
     ), order_by: [asc: c.name]) |> Repo.all
   end
-  def get_npc_corp(corp_id), do: Repo.get_by(NpcCorp, corp_id: corp_id)
+  def get_npc_corp(corp_id) when is_integer(corp_id), do: Repo.get_by(NpcCorp, corp_id: corp_id)
+  def get_npc_corp(name) when is_binary(name), do: Repo.get_by(NpcCorp, name: name)
   def get_npc_corps_ids(), do: from(n in NpcCorp, select: n.corp_id) |> Repo.all()
   def get_npc_corps_offers() do
     from(c in NpcCorp, join: o in assoc(c, :offers)) |> Repo.all

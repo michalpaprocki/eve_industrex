@@ -11,8 +11,8 @@ defmodule EveIndustrex.Scraper do
         |> Parser.parse_html_to_latest_patch_notes_path()
         |> Parser.parse_path_to_tq_version()
       {:ok, version}
-      error ->
-        error
+      {:error, error} ->
+        {:error, error}
     end
 
   end
@@ -32,9 +32,9 @@ defmodule EveIndustrex.Scraper do
       {:ok, %Req.Response{:status => 200, :headers => _headers, :body => body, :trailers => _trailers, :private => _private} } ->
         {:ok, body}
       {:ok, %Req.Response{:status => status, :headers => _headers, :body => _body, :trailers => _trailers, :private => _private}} ->
-        {:err_responded_with, Integer.to_string(status), url}
+        {:error, {:err_responded_with, Integer.to_string(status), url}}
       {:error, exception} ->
-        {:err_could_not_fetch , exception, url}
+        {:error, {:err_could_not_fetch , exception.reason, url}}
     end
   end
 end
