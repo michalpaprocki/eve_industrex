@@ -21,7 +21,7 @@ defmodule EveIndustrex.Tasks.CheckTqVersion do
         cond do
           stored_tq_version == nil ->
             # this should never match if Task.Init was completed at startup without problems
-          {:update, tq_version}
+            {:update, tq_version}
           stored_tq_version.version != tq_version ->
             if String.contains?(tq_version, "expansion") do
               {:run_SDE_update, tq_version}
@@ -32,9 +32,9 @@ defmodule EveIndustrex.Tasks.CheckTqVersion do
             :noop
         end
 
-      {error, reason, url} ->
+      {:error, {error, reason, url}} ->
 
-        {error, reason, url}
+        {:error,{error, reason, url}}
     end
   end
 
