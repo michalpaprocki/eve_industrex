@@ -25,7 +25,7 @@ defmodule EveIndustrex.Utils do
   def can_fetch?(url) do
     case Req.head(url) do
       {:error, exception} ->
-        {false, {:req_head_exception, exception.reason, url}}
+        {false, {:req_exception, exception.reason, url}}
       {:ok, %Req.Response{:status => 200} = _response} ->
         true
       {:ok, %Req.Response{:status => status} = _response} ->
@@ -55,11 +55,14 @@ defmodule EveIndustrex.Utils do
     case Req.head(url) do
       {:ok, %Req.Response{:status=> 200} = response} ->
         {:ok, response.headers["x-pages"]}
-      {:ok, %Req.Response{:status=> status} = _response} ->
-        {:error, {:err_responded_with, Integer.to_string(status), url}}
-      {:error, exception} ->
-        {:error, {:req_exception, exception.reason, url}}
-    end
+        {:ok, %Req.Response{:status=> status} = _response} ->
+          {:error, {:err_responded_with, Integer.to_string(status), url}}
+          {:error, exception} ->
+            {:error, {:req_exception, exception.reason, url}}
+          end
+        end
+  def get_ESI_pages_amount!(url) do
+    String.to_integer(hd(Req.head!(url).headers["x-pages"]))
   end
   def fetch_ESI_pages(url, page_number, types \\ []) when is_integer(page_number) do
 
@@ -177,10 +180,10 @@ defmodule EveIndustrex.Utils do
           |> Enum.map(fn x -> File.write(Path.join(File.cwd!(), "/data_dump/"<>List.to_string(elem(x, 0))), elem(x, 1)) end)
           :ok
         else
-          {:err_responded_with, resp.status, @sde_url}
+          {:error, {:err_responded_with, Integer.to_string(resp.status), @sde_url}}
         end
       {:error, exception} ->
-        {:err_req, exception, @sde_url}
+        {:error, {:req_exception, exception.reason, @sde_url}}
     end
   end
   def remove_SDE_files() do
