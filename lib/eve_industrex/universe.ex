@@ -100,25 +100,21 @@ defmodule EveIndustrex.Universe do
       |> Repo.insert_or_update()
     end) |> Stream.run()
   end
-  def update_stations_from_ESI() do
-    stations = get_system_stations() |> List.flatten()
-    case Utils.can_fetch?(Universe.get_stations_url()<>Integer.to_string(hd(stations))<>"/") do
-      {false, error} ->
-        {:error, error}
-      true ->
-        Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, stations, fn station_id -> update_station!(station_id) end) |> Stream.run()
-    end
+  def update_stations_from_ESI!() do
+    stations_ids = get_system_stations_ids()
+    stations =  Universe.fetch_stations!(stations_ids)
+    Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, stations, fn st ->
+        case get_station(st["station_id"]) do
+          nil ->
+            %Station{}
+          station ->
+            station
+        end
+        |> Station.changeset(st)
+        |> Repo.insert_or_update()
+    end) |> Stream.run()
   end
 
-  def update_station!(stations_ids) do
-    stations = Enum.map(stations_ids, fn id -> Universe.fetch_station!(id) end)
-    Enum.map(stations, fn station ->
-      %Station{}
-      |> Station.changeset(station)
-      |> Repo.insert_or_update()
-    end)
-
-  end
 
   def get_regions(), do: Repo.all(Region)
   def get_regions_ids(), do: from(r in Region, select: r.region_id) |> Repo.all
@@ -130,7 +126,7 @@ defmodule EveIndustrex.Universe do
   def get_constellations_with_assoc(), do: Repo.all(from c in Constellation, preload: [:region])
   def get_systems(), do: Repo.all(System)
   def get_systems_with_assoc(), do:  Repo.all(from s in System, preload: [:constellation, constellation: :region])
-  def get_system_stations(), do: Repo.all(from s in System, where: not is_nil(s.stations), order_by: [asc: s.stations], select: s.stations)
+  def get_system_stations_ids(), do: Repo.all(from s in System, where: not is_nil(s.stations), order_by: [asc: s.stations], select: s.stations) |> List.flatten()
   def get_stations(), do: Repo.all(Station)
   def get_station_by_station_id(id), do: Repo.get_by(Station, station_id: id)
   def get_stations_with_assoc(), do: Repo.all(from s in Station, preload: [:system, system: :constellation, system: [constellation: :region]])
