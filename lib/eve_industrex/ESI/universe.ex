@@ -65,6 +65,7 @@ defmodule EveIndustrex.ESI.Universe do
           Utils.fetch_from_url!(@systems_url<>~s"#{s}")
         end) |> Enum.map(fn x -> elem(x, 1) end)
         {:ok, systems}
+
       {:error, error} ->
         {:error, error}
     end
@@ -80,7 +81,17 @@ defmodule EveIndustrex.ESI.Universe do
           EiLogger.log(:error, error)
         raise "Could not initiate fetching"
     end
-
+  end
+  def fetch_stations!(stations_ids) do
+    case Utils.can_fetch?(@stations_url<>~s"#{hd(stations_ids)}") do
+      {:false, error} ->
+        EiLogger.log(:error, error)
+        raise "Could not initiate fetching"
+      :true ->
+        Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, stations_ids, fn s ->
+          Utils.fetch_from_url!(@stations_url<>~s"#{s}")
+        end) |> Enum.map(fn x -> elem(x,1) end)
+    end
   end
   def fetch_station!(id) do
     Utils.fetch_from_url!(@stations_url<>~s"#{id}")
