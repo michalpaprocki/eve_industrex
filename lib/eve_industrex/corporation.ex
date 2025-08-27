@@ -128,10 +128,29 @@ def update_npc_lp_offers_from_ESI!() do
   end
   def get_lp_offers(), do: Repo.all(LpOffer)
   def get_lp_offer(offer_id), do: Repo.get_by(LpOffer, offer_id: offer_id)
+  def get_corp_lp_offers_count(corp_id), do: Repo.aggregate(from(lp in LpOffer, join: c in assoc(lp, :corps), where: c.corp_id == ^corp_id), :count)
   def get_corp_lp_offers(corp_id) do
-   from(lp in LpOffer, join: c in assoc(lp, :corps), where: c.corp_id == ^corp_id, preload: [:req_items, :type, type: [:bp_products]], left_join: r in LpReqItem, on: lp.offer_id == r.offer_id, preload: [:type, type: [:products, products: [:material_type]], req_items: :type, req_items: r]) |> Repo.all
+      from(lp in LpOffer, join: c in assoc(lp, :corps),
+      where: c.corp_id == ^corp_id,
+      left_join: r in LpReqItem, on: c.corp_id == r.offer_id,
+      left_join: t in assoc(lp, :type),
+      order_by: t.name,
+       preload: [:req_items, :type, type: [:products, :bp_products, :group, bp_products: [:group], products: [:material_type, material_type: [:group]]], req_items: [:type, type: [:group]]]
+     ) |> Repo.all
+  end
+  def get_corp_lp_offers(corp_id, limit, offset) do
+      from(lp in LpOffer, join: c in assoc(lp, :corps),
+      where: c.corp_id == ^corp_id,
+      left_join: r in LpReqItem, on: c.corp_id == r.offer_id,
+      inner_join: t in assoc(lp, :type),
+      order_by: t.name,
+      limit: ^limit,
+      offset: ^offset,
+       preload: [:req_items, :type, type: [:products, :bp_products, products: [:material_type]], req_items: [:type]]
+     ) |> Repo.all
   end
   def get_corp_lp_offers2(corp_id) do
-    from(lp in LpOffer, join: c in assoc(lp, :corps), where: c.corp_id == ^corp_id, preload: [:type], left_join: r in LpReqItem, on: lp.offer_id == r.offer_id, preload: [req_items: r]) |> Repo.all()
+    from(lp in LpOffer, join: c in assoc(lp, :corps),
+     where: c.corp_id == ^corp_id, preload: [:type], left_join: r in LpReqItem, on: lp.offer_id == r.offer_id, preload: [req_items: r]) |> Repo.all()
   end
 end
