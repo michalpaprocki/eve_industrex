@@ -135,7 +135,7 @@ def update_npc_lp_offers_from_ESI!() do
       left_join: r in LpReqItem, on: c.corp_id == r.offer_id,
       left_join: t in assoc(lp, :type),
       order_by: t.name,
-       preload: [:req_items, :type, type: [:products, :bp_products, :group, bp_products: [:group], products: [:material_type, material_type: [:group]]], req_items: [:type, type: [:group]]]
+       preload: [:req_items, :type, type: [:products, :bp_products, :group, bp_products: [:group], products: [:material_type, material_type: [:group, group: [:category]]]], req_items: [:type, type: [:group]]]
      ) |> Repo.all
   end
   def get_corp_lp_offers(corp_id, limit, offset) do

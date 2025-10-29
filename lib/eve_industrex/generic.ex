@@ -26,16 +26,16 @@ defmodule EveIndustrex.Generic do
     end
   end
   def get_used_schemas(), do: @used_schemas
-  def populate_db(Region), do: Universe.update_regions_from_ESI()
-  def populate_db(Constellation), do: Universe.update_constellations_from_ESI()
-  def populate_db(System), do: Universe.update_systems_from_ESI()
-  def populate_db(Station), do: Universe.update_stations_from_ESI()
   def populate_db(Category), do: Universe.update_categories_from_dump()
   def populate_db(Group), do: Universe.update_groups_from_dump()
+  def populate_db(Region), do: Universe.update_regions_from_ESI!()
+  def populate_db(Constellation), do: Universe.update_constellations_from_ESI!()
+  def populate_db(System), do: Universe.update_systems_from_ESI!()
+  def populate_db(Station), do: Universe.update_stations_from_ESI!()
   def populate_db(MarketGroup), do: Types.update_market_groups_from_dump()
   def populate_db(Type), do: Types.update_types_from_dump_with_time_tc()
   def populate_db(Material), do: Materials.insert_materials_from_dump()
   def populate_db(NpcCorp), do: Corporation.update_npc_corps_from_ESI!()
-  def populate_db(LpOffer), do: Corporation.update_npc_lp_offers()
+  def populate_db(LpOffer), do: Corporation.update_npc_lp_offers_from_ESI!()
   def populate_db(Blueprint), do: Blueprints.insert_bps_from_dump()
 end

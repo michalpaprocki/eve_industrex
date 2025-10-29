@@ -3,7 +3,7 @@ defmodule EveIndustrexWeb.Market.CategoryBrowser do
   alias Phoenix.LiveView.AsyncResult
   alias EveIndustrex.Types
   def update(assigns, socket) do
-    {:ok, socket |> assign(assigns) |> assign(:market_groups, AsyncResult.loading()) |> start_async(:get_market_groups, fn -> Types.dev_get_market_groups() end)
+    {:ok, socket |> assign(assigns) |> assign(:market_groups, AsyncResult.loading()) |> start_async(:get_market_groups, fn -> Types.get_market_groups() end)
 }
   end
   def render(assigns) do
@@ -14,7 +14,7 @@ defmodule EveIndustrexWeb.Market.CategoryBrowser do
       <% @market_groups.loading -> %>
       <div class="text-center text-xl font-bold my-20">
         Loading market groups...
-        <div class={"mx-auto mt-20 h-14 w-14 rounded-full border-solid border-4 border-[black_transparent_black_transparent] animate-spin"}/>
+        <div class={"mx-auto mt-20 h-14 w-14 rounded-full border-solid border-4 border-[white_transparent_white_transparent] animate-spin"}/>
       </div>
       <% @market_groups.failed -> %>
       Can't fetch market groups data, try again later

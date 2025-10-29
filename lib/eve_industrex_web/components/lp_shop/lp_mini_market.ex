@@ -1,61 +1,40 @@
-defmodule EveIndustrexWeb.Common.MiniMarket do
-alias EveIndustrex.Market
+defmodule EveIndustrexWeb.LpShop.LpMiniMarket do
   use EveIndustrexWeb, :live_component
   alias EveIndustrex.Utils
+  alias EveIndustrex.Market
   @types ["SELL", "BUY"]
-
   @form_types %{custom_price: :float, order_type: :string}
-  # todo_: filtering by order type
-
   def update_component(cid, %{:update => data}) do
     send_update(__MODULE__, id: cid, update: data)
   end
-
-  def update(%{:update => %{:show_modal => boolean}}, socket) do
-
-
-    %{:orders => orders, :item => item, :selected_trade_hub => selected_trade_hub} = socket.assigns
-
-    if length(orders) == 0 do
-      type_id = item.type_id
-      station_id = selected_trade_hub
-      {:ok, socket |> assign(:show_modal, boolean) |> assign(:is_loading?, true) |> start_async(:get_market_orders, fn -> Market.get_market_orders_for_type_and_station(type_id, station_id) end)}
-    else
-
-      {:ok, socket |> assign(:show_modal, boolean)}
-    end
-
+  def update(%{:update => %{:tax_rate => tax_rate}}, socket) do
+    {:ok, socket |> assign(:updated_tax_rate, tax_rate)}
   end
-  def update(%{:update => %{:new_tax_rate => tax_rate}}, socket) do
-
-    {:ok, socket |> assign(:tax_rate, tax_rate)}
-  end
-
 
   def update(assigns, socket) do
-    %{:selected_order => selected_order} = assigns
-
-
     params = %{"custom_price" => 0.00, "order_type" => hd(@types)}
     changeset =
     {%{}, @form_types}
     |> Ecto.Changeset.cast(params, Map.keys(@form_types))
 
-      {:ok, socket |> assign(:is_loading?, false) |> assign(:form, to_form(changeset, as: :order_form)) |> assign(assigns) |> assign(:show_modal, false) |> assign(:selected_order, selected_order) |> assign(:types, @types) |> assign(:selected_type, hd(@types)) |> assign(:orders, [])}
+
+    filtered = Enum.filter(List.flatten(assigns.orders), fn o -> o.is_buy_order == false end)
+    selected_order = if filtered == [], do: %{:id => nil, :price => nil}, else: %{:id => hd(filtered).order_id, :price => hd(filtered).price}
+
+    {:ok, socket |> assign(:is_loading?, false) |> assign(:form, to_form(changeset, as: :order_form)) |> assign(assigns) |> assign(:show_modal, false) |> assign(:selected_order, selected_order) |> assign(:types, @types) |> assign(:selected_type, hd(@types)) |> assign(:updated_tax_rate, nil)}
   end
 
   def render(assigns) do
-  ~H"""
-      <div class="p-1">
-        <%= cond do %>
-
-          <% @selected_order == :missing_order -> %>
+    ~H"""
+     <div class="p-1">
+       <%= cond do %>
+          <% @selected_order.price == nil -> %>
             <span phx-target={@myself} phx-click="toggle_modal" class={"cursor-pointer hover:text-white hover:bg-black transition p-1 bg-red-500 animate-pulse text-white"}>
               no <%= @selected_type %> orders
             </span>
           <% true -> %>
             <span phx-target={@myself} phx-click="toggle_modal" class={"cursor-pointer hover:text-white hover:bg-black transition p-1"}>
-              <%= Utils.format_with_coma(@selected_order.price * ((100 - @tax_rate) / 100))<>" ISK"%>
+              <%= Utils.format_with_coma(@selected_order.price * ((100 - if @updated_tax_rate == nil, do: @tax_rate, else: @updated_tax_rate) / 100))<>" ISK"%>
             </span>
         <% end %>
         <%= if @show_modal do %>
@@ -85,7 +64,6 @@ alias EveIndustrex.Market
           <% end %>
             </div>
             <div class={"#{if @is_loading? == true, do: "hidden"} flex flex-col gap-2 py-4"}>
-
               <.form for={@form} phx-target={@myself} phx-change={"validate"}>
                 <div class="flex gap-4 items-end">
                 <.input field={@form[:custom_price]} name="custom price" type="number" label="Custom Price:" min="0.00" step="0.01" value={if length(@form[:custom_price].errors) == 0, do: Utils.format_with_coma(@form[:custom_price].value), else: 0.0}/>
@@ -93,7 +71,7 @@ alias EveIndustrex.Market
                   Apply
                 </.button>
                 </div>
-                <.input class="text-black" field={@form[:order_type]} name="order type" type="select" label="Order Type" options={Enum.map(@types, fn t -> t end) }/>
+                <.input field={@form[:order_type]} name="order type" type="select" label="Order Type" options={Enum.map(@types, fn t -> t end) }/>
 
                 <.button phx-disable-with="Saving..." disabled={true} class={"hidden"}>
                   submit
@@ -103,7 +81,7 @@ alias EveIndustrex.Market
           </div>
 
           <div class={"#{if @is_loading? == true, do: "hidden"} h-[50vh] overflow-auto"}>
-            <table class={"w-full text-black text-sm table-fixed border-collapse"}>
+            <table class={"w-full text-sm table-fixed border-collapse"}>
               <thead>
                 <tr class="">
                   <th class=" w-[10%] sticky top-0 bg-stone-200"> volume </th>
@@ -111,10 +89,10 @@ alias EveIndustrex.Market
                   <th class=" w-[20%] sticky top-0 bg-stone-200"> location </th>
                 </tr>
               </thead>
-              <tbody class="text-white">
+              <tbody class="">
               <%= Enum.map(Enum.sort(Enum.filter(@orders, fn f -> if @form[:order_type].value == hd(@types), do: f.is_buy_order == false, else: f.is_buy_order == true end), (if @form[:order_type].value == hd(@types), do: &(&1.price <= &2.price), else: &(&1.price >= &2.price))), fn o -> %>
 
-              <tr class={"px-2 font-sm #{"hover:cursor-pointer hover:bg-black hover:text-white"}"} phx-target={@myself} phx-click={"select_order"} phx-value-order_id={o.order_id}>
+              <tr class={"px-2 font-sm #{if @selected_order.id == o.order_id, do: "bg-black text-white", else: " hover:bg-black hover:text-white"}"} phx-target={@myself} phx-click={"select_order"} phx-value-price={o.price} phx-value-order_id={o.order_id}>
                 <td class="pl-2 text-end"> <%= Utils.format_with_coma(o.volume_remain) %> / <%= Utils.format_with_coma(o.volume_total) %> </td>
                 <td class="pl-2 text-end truncate"> <%= Utils.format_with_coma(o.price) %> &nbsp;ISK </td>
                 <td class="pl-2 text-start truncate">  <span class={apply_color_on_status(:erlang.float_to_binary(o.station.system.security_status, [decimals: 1]))}><%= :erlang.float_to_binary(o.station.system.security_status, [decimals: 1]) %></span>&nbsp;<%= o.station.name %> </td>
@@ -124,7 +102,7 @@ alias EveIndustrex.Market
             </table>
             </div>
             <div class={"#{if @is_loading? == true, do: "flex", else: "hidden"} flex-col items-center gap-5 mt-10"}>
-                 <div class={"p-2 mx-auto h-10 w-10 rounded-full border-solid border-4 border-[white_transparent_white_transparent] animate-spin"}/>
+                 <div class={"p-2 mx-auto h-10 w-10 rounded-full border-solid border-4 border-[black_transparent_black_transparent] animate-spin"}/>
                  <span class="text-xl font-semibold">Loading market orders...</span>
             </div>
           </.modal>
@@ -132,33 +110,26 @@ alias EveIndustrex.Market
       </div>
     """
   end
-  def handle_event("toggle_modal", %{}, socket) do
 
-    update_component(socket.assigns.id, %{:update => %{:show_modal => !socket.assigns.show_modal}})
-    {:noreply, socket}
+  def handle_event("toggle_modal", %{}, socket) do
+     %{:orders => orders, :show_modal => show_modal} = socket.assigns
+    if length(orders) == 1 do
+      type_id = hd(orders).type_id
+      station_id = hd(orders).station.station_id
+      {:noreply, socket |> assign(:show_modal, !show_modal) |> assign(:is_loading?, true) |> start_async(:get_market_orders, fn -> Market.get_market_orders_for_type_and_station(type_id, station_id) end)}
+    else
+
+      {:noreply, socket |> assign(:show_modal, !show_modal)}
+    end
   end
   def handle_event("close_modal", %{}, socket) do
-    update_component(socket.assigns.id, %{:update => %{:show_modal => false}})
-    {:noreply, socket}
-  end
-  def handle_event("select_order", %{"order_id" => order_id} = _params, socket) do
-    %{:category => category, :offer_id => offer_id, :orders => orders} = socket.assigns
-    order = hd(Enum.filter(orders, fn o -> o.order_id == String.to_integer(order_id) end))
 
-      send(self(), {:update_order, category, offer_id, order})
     {:noreply, socket |> assign(:show_modal, false)}
   end
-    def handle_event("apply_price", %{"value" => ""} = _params, socket) do
-    %{:form => form, :category => category, :offer_id => offer_id, :item => item} = socket.assigns
-      order = %{:price => form[:custom_price].value, :id => nil, :type_id => item.type_id}
-
-      send(self(), {:update_order, category, offer_id, order})
-    {:noreply, socket |> assign(:selected_order, order) |> assign(:show_modal, false)}
-  end
-  def handle_event("select_type", %{"value" => value}, socket) do
+    def handle_event("select_type", %{"value" => value}, socket) do
     {:noreply, socket |> assign(:selected_type, value)}
   end
-  def handle_event("validate", %{"_target" => ["custom price"], "custom price" => price, "order type" => _order_type} = _params, socket) do
+    def handle_event("validate", %{"_target" => ["custom price"], "custom price" => price, "order type" => _order_type} = _params, socket) do
     %{:form => form} = socket.assigns
     params = %{custom_price: price, order_type: form[:order_type].value}
 
@@ -182,11 +153,18 @@ alias EveIndustrex.Market
     |> Map.put(:action, :validate)
     {:noreply, socket |> assign(:form, to_form(changeset, as: :order_form))}
   end
-
+  def handle_event("select_order", %{"price" => price, "order_id" => order_id} = _params, socket) do
+    selected_order = %{:id => String.to_integer(order_id), :price => String.to_float(price)}
+    {:noreply, socket |> assign(:selected_order, selected_order) |> assign(:show_modal, false)}
+  end
+  def handle_event("apply_price", %{"value" => ""} = _params, socket) do
+    %{:form => form} = socket.assigns
+    selected_order = %{:price => form[:custom_price].value, :id => nil, :type_id => socket.assigns.item.type_id}
+    {:noreply, socket |> assign(:selected_order, selected_order) |> assign(:show_modal, false)}
+  end
   def handle_async(:get_market_orders, {:ok, result}, socket) do
     {:noreply, socket |> assign(:orders, result) |> assign(:is_loading?, false)}
   end
-
   # not sure why but this wont work when called from another module
   defp apply_color_on_status(sec_status) do
     case sec_status do

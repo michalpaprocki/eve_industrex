@@ -5,59 +5,35 @@ alias EveIndustrex.Utils
   def update_component(cid, %{:update => data}) do
     send_update(__MODULE__, id: cid, update: data)
   end
-  def update(%{:update => %{:material_cost => material}}, socket) do
 
-    %{:total_list => prev_total} = socket.assigns
-    total_list = Enum.map(prev_total,fn pt -> if pt.type_id == material.type_id, do: %{:type_id => pt.type_id, :id => material.id, :amount => pt.amount, :price => material.price} , else: pt end)
-
-    if Enum.any?(total_list, fn tl -> tl.price == nil end) do
-      {:ok, socket |> assign(:total_list, total_list)}
-    else
-
-      total = List.foldl(total_list ,0, fn x, acc -> acc + x.price * x.amount end)
-      EveIndustrexWeb.LpShop.IskOnLpReturn.update_component(socket.assigns.isk_per_lp_id, %{:update => %{:total_bp_materials_cost => total}})
-
-      {:ok, socket |> assign(:total_list, total_list) |> assign(:total, total)}
-    end
-  end
   def update(%{:update => %{:show_modal => boolean}}, socket) do
 
     {:ok, socket |> assign(:show_modal, boolean)}
   end
   def update(assigns, socket) do
-    amounts_and_orders = Enum.map(assigns.bp_materials, fn bpm -> %{:amount => bpm.amount, :type_id => bpm.material_type_id, :orders => Enum.filter(assigns.orders, fn o -> o.type_id == bpm.material_type_id end) |> Enum.filter(fn o -> o.is_buy_order == false end)} end)
 
-    total_list = Enum.map(amounts_and_orders, fn aao -> if length(aao.orders) > 0 , do: %{:type_id => aao.type_id, :price => hd(aao.orders).price , :amount =>  aao.amount, :id => hd(aao.orders).order_id}, else: %{:type_id => aao.type_id, :price => nil , :amount =>  aao.amount, :id => nil} end)
 
-    if Enum.any?(total_list, fn tl -> tl.id == nil end) do
-
-      total = nil
-      EveIndustrexWeb.LpShop.IskOnLpReturn.update_component(assigns.isk_per_lp_id, %{:update => %{:total_bp_materials_cost => total}})
-      {:ok, socket |> assign(assigns) |> assign(:show_modal, false) |> assign(:total_list, total_list) |> assign(:total, total)}
-
-    else
-
-      total = List.foldl(total_list, 0, fn x, acc -> acc + x.price * x.amount end)
-      EveIndustrexWeb.LpShop.IskOnLpReturn.update_component(assigns.isk_per_lp_id, %{:update => %{:total_bp_materials_cost => total}})
-      {:ok, socket |> assign(assigns) |> assign(:show_modal, false) |> assign(:total_list, total_list) |> assign(:total, total)}
-
-    end
-
+      {:ok, socket |> assign(assigns) |> assign(:show_modal, false) }
   end
 
   def render(assigns) do
-
     ~H"""
     <div class="">
-      <div phx-click={"toggle_modal"} phx-target={@myself} class={"cursor-pointer hover:text-white hover:bg-black transition p-1 flex flex-col justify-center #{if @total == nil, do: "bg-red-500 animate-pulse text-white"}"}>
-      <span>Production Materials Cost:</span>
-      <%= if @runs == 1 do %>
-        <span class="text-center">  <%= if @total != nil, do: Utils.format_with_coma(@total)<>" ISK", else: "N/A - missing prices" %> </span>
-      <% else %>
-        <span class="text-center">  <%= if @total != nil, do: Utils.format_with_coma(@total)<>" ISK per run", else: "N/A - missing prices" %> </span>
-        <span class="text-center">  <%= if @total != nil, do: Utils.format_with_coma(@total * @runs)<>" ISK total", else: "N/A - missing prices" %> </span>
-      <% end %>
+      <%= if Enum.any?(@bp_materials, fn bpm -> bpm.order == :missing_order end) do %>
+      <div phx-click={"toggle_modal"} phx-target={@myself} class={"cursor-pointer hover:text-white hover:bg-black transition p-1 flex flex-col justify-center bg-red-500 animate-pulse text-white"}>
+        <span class="text-center">N/A - missing prices</span>
       </div>
+    <% else %>
+        <div phx-click={"toggle_modal"} phx-target={@myself} class={"cursor-pointer hover:text-white hover:bg-black transition p-1 flex flex-col justify-center"}>
+          <%= if @runs == 1 do %>
+            <span class="text-center">  <%= Utils.format_with_coma(List.foldl(@bp_materials, 0, fn x, acc -> if x == 0, do: 0, else: x.order.price * x.amount + acc end))<>" ISK" %> </span>
+          <% else %>
+            <span class="text-center">  <%= Utils.format_with_coma(List.foldl(@bp_materials, 0, fn x, acc -> if x == 0, do: 0, else: x.order.price * x.amount + acc end))<>" ISK per run" %> </span>
+            <span class="text-center">  <%= Utils.format_with_coma(List.foldl(@bp_materials, 0, fn x, acc -> if x == 0, do: 0, else: x.order.price * x.amount + acc end) * @runs)<>" ISK total" %> </span>
+          <% end %>
+      </div>
+      <% end %>
+
       <%= if @show_modal do %>
 
         <.modal show={@show_modal} id={~s"modal_#{@id}"} on_cancel={JS.push("close_modal", target: @myself)}>
@@ -66,12 +42,12 @@ alias EveIndustrex.Utils
         <% end %>
           <%= for m <- @bp_materials do %>
           <div class="p-1 flex gap-2 items-center justify-between">
-          <div class="w-[50%] flex justify-between">
-            <span> <%= m.material_type.name %> </span>
-            <span> <%= m.amount %> </span>
+            <div class="w-[50%] flex justify-between">
+              <span> <%= m.name %> </span>
+              <span> <%= m.amount %> </span>
 
-          </div>
-              <.live_component module={EveIndustrexWeb.Common.MiniMarket} category={:bp_materials} bp_materials_cost_id={@id} amount={m.amount} product={false} id={@id<>"_#{m.material_type_id}_MiniMarket_BP_Materials"} item={%{:name => m.material_type.name, :type_id => m.material_type.type_id}} orders={Enum.filter(@orders, fn order -> order.type_id == m.material_type_id end)} selected_order={Enum.filter(@total_list, fn tl -> tl.type_id == m.material_type.type_id end)}/>
+            </div>
+            <.live_component module={EveIndustrexWeb.Common.MiniMarket} tax_rate={@tax_rate} category={:bp_materials} amount={m.amount} id={@id<>"_#{m.type_id}_MiniMarket_BP_Materials"} selected_order={m.order} selected_trade_hub={@selected_trade_hub} item={%{:type_id => m.type_id, :category_id => m.category_id, :name => m.name}} offer_id={@offer_id}/>
 
           </div>
           <% end %>

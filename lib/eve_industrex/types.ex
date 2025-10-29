@@ -59,16 +59,19 @@ defmodule EveIndustrex.Types do
 
     end) |> Enum.to_list
   end
-  def dev_get_market_groups() do
+  def get_market_groups() do
     from(mg in MarketGroup, where: is_nil(mg.parent_group_id), order_by: [asc: mg.name],
-    preload: [:types, :child_market_group,
+    preload: [:child_market_group,
       child_market_group: [:types, :child_market_group,
         child_market_group: [:types, :child_market_group,
           child_market_group: [:types, :child_market_group,
             child_market_group: [:types, :child_market_group,
               child_market_group: [:types, :child_market_group]]]]]]) |> Repo.all
   end
-  def get_market_groups() do
+  def get_market_type_ids() do
+    from(t in Type, where: not is_nil(t.market_group_id) and t.published == true, select: t.type_id) |> Repo.all
+  end
+  def obs_get_market_groups() do
     top_groups = Enum.sort(Enum.map(get_market_groups_without_parent(), fn m -> prep_map(m) end ), &(&1.name < &2.name))
     with_parents = get_market_groups_with_parents()
     first_wave = Enum.map(top_groups, fn tg -> Map.put(tg, :children, prep_map(Enum.sort(Enum.filter(with_parents, fn wp -> tg.market_group_id == wp.parent_group_id end), &(&1.name < &2.name))))end)
@@ -103,7 +106,7 @@ defmodule EveIndustrex.Types do
     end) |> Stream.run()
   end
   def update_types_from_dump_with_time_tc() do
-    {time, _result} = :timer.tc(fn -> update_types_from_dump()end , :seconds)
+    {time, _result} = :timer.tc(fn -> update_types_from_dump() end , :seconds)
     Logger.info("Done updating #{Type} in #{time} seconds")
   end
   def update_types_from_dump() do

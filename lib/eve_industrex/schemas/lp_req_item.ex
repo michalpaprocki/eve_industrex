@@ -7,7 +7,7 @@ defmodule EveIndustrex.Schemas.LpReqItem do
     field :quantity, :integer
     field :offer_id, :integer
     field :type_id, :integer
-    belongs_to :type, Type, references: :type_id, define_field: false
+    belongs_to :type, Type, references: :type_id, define_field: false, foreign_key: :type_id
     belongs_to :lp_offer, LpOffer, references: :offer_id, define_field: false, foreign_key: :offer_id
   end
 

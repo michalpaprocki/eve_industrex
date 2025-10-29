@@ -42,11 +42,11 @@ def mount(%{"path" => id} = _params, _session, socket) do
         <%= cond do %>
           <% @market_orders == []-> %>
           <div class="w-full">
-            <h2 class="text-lg font-semibold">Sellers</h2>
+            <h2 class="text-lg font-semibold text-white">Sellers</h2>
             <div class="h-[38vh] min-h-[325px] overflow-auto rounded-md">
               <.live_component id={"sell_orders"} module={EveIndustrexWeb.Market.Orders} data={[]} is_buy_list?={false}/>
             </div>
-            <h2 class="text-lg font-semibold">Buyers</h2>
+            <h2 class="text-lg font-semibold text-white">Buyers</h2>
             <div class="h-[38vh] min-h-[325px] overflow-auto rounded-md">
               <.live_component id={"buy_orders"} module={EveIndustrexWeb.Market.Orders} data={[]} is_buy_list?={true}/>
             </div>
@@ -60,20 +60,24 @@ def mount(%{"path" => id} = _params, _session, socket) do
             Can't fetch orders data, try again later
           <% @market_orders.ok? -> %>
           <div class="flex flex-col gap-2 justify-between h-[80vh] ">
-            <h2 class="text-lg font-semibold">Sellers</h2>
+            <h2 class="text-lg font-semibold text-white">Sellers</h2>
             <div class="h-[38vh] min-h-[325px] overflow-auto rounded-md">
             <%= if length(@market_orders.result.sell_orders) > 0 do %>
-              <.live_component id={"sell_orders"} module={EveIndustrexWeb.Market.Orders} data={if @filtered_orders !=[], do: @filtered_orders.sell_orders, else: @market_orders.result.sell_orders} is_buy_list?={false}/>
-              <% else %>
+                <.live_component id={"sell_orders"} module={EveIndustrexWeb.Market.Orders} data={if @filtered_orders !=[], do: @filtered_orders.sell_orders, else: @market_orders.result.sell_orders} is_buy_list?={false}/>
+            <% else %>
+              <span class="text-lg text-white font-semibold">
                 no sell orders for specified item
-              <% end %>
+              </span>
+            <% end %>
             </div>
-            <h2 class="text-lg font-semibold">Buyers</h2>
+            <h2 class="text-lg font-semibold text-white">Buyers</h2>
             <div class="h-[38vh] min-h-[325px] overflow-auto rounded-md">
               <%= if length(@market_orders.result.buy_orders) > 0 do %>
-              <.live_component id={"buy_orders"} module={EveIndustrexWeb.Market.Orders} data={if @filtered_orders !=[], do: @filtered_orders.buy_orders, else: @market_orders.result.buy_orders} is_buy_list?={true}/>
-                    <% else %>
-                no buy orders for specified item
+                <.live_component id={"buy_orders"} module={EveIndustrexWeb.Market.Orders} data={if @filtered_orders !=[], do: @filtered_orders.buy_orders, else: @market_orders.result.buy_orders} is_buy_list?={true}/>
+              <% else %>
+                <span class="text-lg text-white font-semibold">
+                  no buy orders for specified item
+                </span>
               <% end %>
             </div>
           </div>
@@ -101,6 +105,7 @@ def mount(%{"path" => id} = _params, _session, socket) do
 
       buy_orders = Enum.filter(fetched_market_orders, fn mo -> mo.is_buy_order == true end)
       sell_orders = Enum.filter(fetched_market_orders, fn mo -> mo.is_buy_order == false end)
+
     {:noreply, socket |> assign(:market_orders, AsyncResult.ok(market_orders, %{:buy_orders => buy_orders, :sell_orders => sell_orders}))}
   end
   def handle_async(:get_market_orders, {:exit, reason}, socket) do

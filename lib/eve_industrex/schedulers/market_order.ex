@@ -5,7 +5,7 @@ defmodule EveIndustrex.Schedulers.MarketOrder do
   @hour 1000 * 60 * 60
   def init(init_arg) do
     Logger.info("Starting #{__MODULE__} for region #{init_arg}...")
-    Process.send_after(self(), :update_region_orders, 1000 * 10)
+    # Process.send_after(self(), :update_region_orders, 1000 * 10)
     {:ok, %{:request => :pending, :region_id => init_arg}}
   end
   def start_link(arg) do
@@ -54,10 +54,13 @@ defmodule EveIndustrex.Schedulers.MarketOrder do
 
     case msg do
       :completed ->
-          Process.send_after(self(), :update_region_orders, @hour)
+
+        Process.send_after(self(), :update_region_orders, @hour)
         {:noreply, %{state |:request => :pending}}
       :task_failed ->
+
         # handle unfinished task
+        Process.send_after(self(), :update_region_orders, @hour)
         {:noreply, %{state |:request => :pending}}
     end
   end

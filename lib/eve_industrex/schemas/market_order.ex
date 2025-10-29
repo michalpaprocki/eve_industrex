@@ -9,7 +9,7 @@ defmodule EveIndustrex.Schemas.MarketOrder do
   schema "market_orders" do
     field :duration, :integer
     field :is_buy_order, :boolean
-    field :issued, :string
+    field :issued, :utc_datetime
     field :min_volume, :integer
     field :order_id, :integer
     field :price, :float

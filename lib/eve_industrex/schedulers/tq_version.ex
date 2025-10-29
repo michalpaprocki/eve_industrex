@@ -52,10 +52,13 @@ defmodule EveIndustrex.Schedulers.TqVersion do
   def handle_info({:overseer_reply, msg}, _state) do
     case msg do
       :completed ->
+
           Process.send_after(self(), :check_tq_version, @day)
         {:noreply, %{:request => :pending}}
       :task_failed ->
+
         # handle unfinished task
+          Process.send_after(self(), :check_tq_version, @day)
         {:noreply, %{:request => :pending}}
     end
   end

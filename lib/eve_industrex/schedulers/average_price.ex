@@ -52,11 +52,13 @@ defmodule EveIndustrex.Schedulers.AveragePrice do
   def handle_info({:overseer_reply, msg}, _state) do
     case msg do
       :completed ->
-        IO.puts("task completed")
+
         Process.send_after(self(), :update_average_prices, @day)
         {:noreply, %{:request => :pending}}
       :task_failed ->
+
         # handle unfinished task
+        Process.send_after(self(), :update_average_prices, @day)
         {:noreply, %{:request => :pending}}
     end
   end

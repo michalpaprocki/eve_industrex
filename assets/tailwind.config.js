@@ -33,7 +33,14 @@ module.exports = {
         "system0.3": "#c94711",
         "system0.2": "#bb1012",
         "system0.1": "#6d211a",
-        "system0.0": "#8f2f69"
+        "system0.0": "#8f2f69",
+        "rebeccapurple": '#663399',
+        "peach": '#ffb6b9',
+        "pinky": '#d291bc',
+        "cream": '#fceabb',
+      },
+       backgroundImage: {
+        'rebecca-gradient': 'linear-gradient(135deg, #663399, #d291bc, #fceabb)',
       },
       keyframes: {
         spin: {
@@ -43,10 +50,19 @@ module.exports = {
           "100%": {
             transform: "rotateZ(360deg)"
           }
-        }
+        },
+        fadein: {
+          "0%":{
+            opacity: 0
+          },
+          "100%":{
+            opacity: 100
+          }
+        },
       },
       animations: {
-        spin: "spin 0.1s ease infinite"
+        spin: "spin 0.1s ease infinite",
+        fadein: "fadein 0.5s ease-in forwards"
       }
     },
   },

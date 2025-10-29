@@ -49,9 +49,9 @@ defmodule EveIndustrexWeb.Tools.AppraiseLive do
   end
 
   def handle_event("appraise", %{"appraisal" => list_of_items}, socket) do
-    items = AppraisalParser.parse(list_of_items)
-    types = Enum.map(items, fn {t, a} -> {t, a, Types.get_type_by_name(t)} end)
+    # items = AppraisalParser.parse(list_of_items)
+    # types = Enum.map(items, fn {t, a} -> {t, a, Types.get_type_by_name(t)} end)
 
-    {:noreply, socket |> assign(:types, types)}
+    {:noreply, socket}
   end
 end

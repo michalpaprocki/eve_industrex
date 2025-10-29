@@ -1,10 +1,9 @@
 <.live_component module={EveIndustrexWeb.Header.Header} id="header"/>
-<main class="px-4 py-20 sm:px-6 lg:px-8">
-
+<main class="py-20">
     <.flash_group flash={@flash} />
-    <section class="flex md:flex-row flex-col gap-4 justify-start">
-        <div class="w-full">
+    <section class="flex flex-col gap-4 items-center">
+
           {@inner_content}
-        </div>
+
     </section>
 </main>

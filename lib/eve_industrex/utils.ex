@@ -45,7 +45,15 @@ defmodule EveIndustrex.Utils do
   def fetch_from_url!(url) do
     Req.get!(url).body
   end
+  def fetch_from_url_with_headers(url) do
+    case Req.get(url: url) do
+      {:error, exception} ->
+        {:error, {:req_exception, exception.reason, url}}
+      {:ok, %Req.Response{} = response} ->
 
+        {:ok, response}
+    end
+  end
   def calculate_time_difference(%DateTime{} = time) do
     {:ok, now} = DateTime.now("Etc/UTC")
     diff = DateTime.diff(now, time)
@@ -107,8 +115,7 @@ defmodule EveIndustrex.Utils do
   end
 
   def get_time_left(date, duration) do
-        {:ok, new_date, _offset} = DateTime.from_iso8601(date)
-        ends = DateTime.add(new_date, duration, :day)
+        ends = DateTime.add(date, duration, :day)
         now = DateTime.now!("Etc/UTC")
         format_time_left(DateTime.diff(ends, now, :second))
   end
@@ -143,7 +150,27 @@ defmodule EveIndustrex.Utils do
   end
 
   end
+  def date_string_to_date_time(date_string) do
 
+    with  {:ok, date} <- Date.from_iso8601(date_string),
+          {:ok, naive} <- NaiveDateTime.new(date, ~T[00:00:00]),
+          {:ok, date_time} <- DateTime.from_naive(naive, "Etc/UTC") do
+      {:ok, date_time}
+    else
+      error -> error
+    end
+  end
+  def date_string_to_date_time!(date_string) do
+
+    with  {:ok, date} <- Date.from_iso8601(date_string),
+          {:ok, naive} <- NaiveDateTime.new(date, ~T[00:00:00]),
+          {:ok, date_time} <- DateTime.from_naive(naive, "Etc/UTC") do
+      date_time
+    else
+      error ->
+        raise error
+    end
+  end
   def apply_color_on_status(sec_status) do
     case sec_status do
       "1.0" ->

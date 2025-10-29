@@ -37,7 +37,7 @@ alias EveIndustrex.Utils
           </tr>
             <% end %>
         </thead>
-        <tbody class=" overflow-auto">
+        <tbody class="overflow-auto text-white bg-black/70">
           <%= Enum.map(@data, fn o -> %>
             <tr class="px-2 font-sm hover:bg-black hover:text-white">
               <td class="pl-2 truncate"> <%= o.station.system.constellation.region.name %> </td>
@@ -55,7 +55,7 @@ alias EveIndustrex.Utils
               </td>
               <% end %>
               <td class="pl-2 text-start"> <%= Utils.get_time_left(o.issued, o.duration) %> </td>
-              <td class="pl-2 "> <%= Utils.calculate_time_difference(elem(DateTime.from_iso8601(o.issued), 1)) %> </td>
+              <td class="pl-2 "> <%= Utils.calculate_time_difference(o.issued) %> </td>
             </tr>
           <% end) %>
         </tbody>

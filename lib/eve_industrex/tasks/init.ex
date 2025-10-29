@@ -11,13 +11,8 @@ defmodule EveIndustrex.Tasks.Init do
     Logger.info("App's data preparation initiated by Supervisor...")
     Task.start_link(__MODULE__, :prep_app_on_startup, arg)
   end
-  def start() do
-    Logger.info("App's data preparation initiated manually...")
-    task = Task.async(__MODULE__, :prep_app_on_startup, [])
-    Task.await(task)
-  end
   def prep_app_on_startup() do
-    if Application.get_env(:eve_industrex, :MIX_ENV) == :prod do
+    # if Application.get_env(:eve_industrex, :MIX_ENV) == :prod do
       case Generic.get_present_records() do
         {false, counts }->
           Logger.info("Found empty DB rows... fetching SDE")
@@ -40,7 +35,7 @@ defmodule EveIndustrex.Tasks.Init do
         Supervisor.start_child(EveIndustrex.Supervisor, EveIndustrex.Schedulers.ScheduleSupervisor)
 
       end
-    end
+    # end
   end
   defp read_out_schema(schema, count) do
     Logger.info("#{count} entries of #{inspect(schema)} found... Updating... ")

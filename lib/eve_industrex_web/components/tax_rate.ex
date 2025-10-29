@@ -14,9 +14,9 @@ defmodule EveIndustrexWeb.Common.TaxRate do
     ~H"""
     <div>
       <.form for={@form} id={"tax_form"} phx-target={@myself} phx-change={"validate_form"} class="p-4 flex gap-4">
-            <div class={"flex gap-2 items-start"}>
+            <div class={"flex gap-2 items-start md:flex-row flex-col"}>
               <.input class="" field={@form[:tax_rate]} value={@form[:tax_rate].value} label="Sales Tax Range:" type={"range"} min={0} max={7.5} step={0.01} maxlength={3} name="sales tax range" id={"sales_tax_range"} phx-debounce={1000}/>
-              <.input class="" field={@form[:tax_rate]} value={@form[:tax_rate].value} label="Sales Tax Input:" type="number" min={0} max={7.5} step={0.01} maxlength={3} pattern="[0-9]" name="sales tax input" id={"sales_tax_input"} phx-debounce={1000}/>
+              <.input class="text-nowrap" field={@form[:tax_rate]} value={@form[:tax_rate].value} label="Sales Tax Input:" type="number" min={0} max={7.5} step={0.01} maxlength={3} pattern="[0-9]" name="sales tax input" id={"sales_tax_input"} phx-debounce={1000}/>
             </div>
             <.button phx-disable-with="Saving..." disabled={true} class={"hidden"}>
                   submit

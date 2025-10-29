@@ -133,6 +133,9 @@ defmodule EveIndustrex.Universe do
   def get_trade_hubs() do
     from(s in Station, where: s.station_id in @trade_hubs, order_by: [asc: s.name], select: %{name: s.name, station_id: s.station_id}) |> Repo.all
   end
+  def get_trade_hub_regions() do
+    from(r in Region, join: c in Constellation, on: r.region_id == c.region_id, join: s in System, on: c.constellation_id == s.constellation_id, join: station in Station, on: s.system_id == station.system_id, where: station.station_id in @trade_hubs, select: r.region_id) |> Repo.all
+  end
   def get_region(name) when is_binary(name), do: Repo.get_by(Region, name: name)
   def get_region(id) when is_integer(id), do: Repo.get_by(Region, region_id: id)
   def get_regions_count(), do: Repo.aggregate(Region, :count)

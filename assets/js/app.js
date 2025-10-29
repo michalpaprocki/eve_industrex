@@ -21,9 +21,29 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
+let Hooks = {}
+Hooks.HeaderScaling = {
+  mounted() {
+    const header = document.getElementById("_header")
+    window.onscroll=(e)=> scrollFunction(e)
+    const scrollFunction = (e) => {
+      if(document.body.scrollTop > 80 || document.documentElement.scrollTop > 80) {
 
+        header.style.paddingTop = '0.75rem'
+        header.style.paddingBottom =  '0.75rem'
+      } else {
+        header.style.paddingTop = '0.2rem'
+        header.style.paddingBottom =  '0.2rem'
+
+      }
+    }
+  }
+}
+
+window.addEventListener("phx-scroll-to-top", () => window.scrollTo({top: 0, behavior: 'smooth'}))
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {
+  hooks: Hooks,
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken}
 })

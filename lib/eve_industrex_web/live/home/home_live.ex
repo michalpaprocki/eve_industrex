@@ -7,7 +7,7 @@ defmodule EveIndustrexWeb.HomeLive do
 
   def render(assigns) do
     ~H"""
-      <section>
+      <section class="">
       home
       </section>
     """

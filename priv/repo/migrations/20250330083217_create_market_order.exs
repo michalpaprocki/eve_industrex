@@ -6,7 +6,7 @@ defmodule EveIndustrex.Repo.Migrations.CreateMarketOrder do
       add :id, :binary_id, primary_key: true
       add :duration, :integer
       add :is_buy_order, :boolean
-      add :issued, :string
+      add :issued, :utc_datetime
       add :location_id, :bigint
       add :min_volume, :bigint
       add :order_id, :bigint

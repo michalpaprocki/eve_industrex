@@ -31,7 +31,7 @@ defmodule EveIndustrex.Tasks.Update do
     :ok
   end
   def from_SDE(tq_version) do
-    populate_from_SDE()
+    # populate_from_SDE()
     Generic.upsert_tq_version(tq_version)
     :ok
   end
@@ -49,5 +49,8 @@ defmodule EveIndustrex.Tasks.Update do
   end
   def market_orders(region_id) do
     Market.update_market_orders(region_id)
+  end
+  def market_statistics(region_id, list_of_type_ids) do
+    Market.update_market_statistics(region_id, list_of_type_ids)
   end
 end

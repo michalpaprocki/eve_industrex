@@ -17,7 +17,7 @@ alias EveIndustrex.Utils
   def fetch_types() do
     current_pages = Utils.get_ESI_pages_amount(@types_url)
 
-    types = Utils.fetch_ESI_pages(@types_url, String.to_integer(current_pages))
+    types = Utils.fetch_ESI_pages(@types_url, current_pages)
 
     Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, Enum.with_index(types), fn {t, i} -> Utils.fetch_from_url(@types_url<>~s"#{t}", i) end) |>
     Enum.to_list()

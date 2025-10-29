@@ -41,7 +41,6 @@
   end
 
   def render(%{:selected_skill_level => _level} = assigns) do
-
     ~H"""
     <div class="flex flex-col gap-2 w-full">
       <span class="font-semibold"><%= if @category == :alchemy, do: "Reprocessed into:", else: "Product:" %></span>
@@ -78,7 +77,7 @@
   end
   def render(assigns) do
     ~H"""
-      <div class={"p-2 mx-auto h-6 w-6 rounded-full border-solid border-2 border-[black_transparent_black_transparent] animate-spin"}/>
+      <div class={"p-2 mx-auto h-6 w-6 rounded-full border-solid border-2 border-[white_transparent_white_transparent] animate-spin"}/>
     """
   end
 end

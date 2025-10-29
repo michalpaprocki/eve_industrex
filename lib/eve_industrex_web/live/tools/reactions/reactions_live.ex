@@ -19,7 +19,7 @@ defmodule EveIndustrexWeb.Tools.ReactionsLive do
    {:ok, socket
     |> assign(:reactions, reactions)
     |> assign(:orders, AsyncResult.loading())
-    |> start_async(:get_orders, fn ->  Market.get_market_orders_by_type_and_station(type_ids, hd(trade_hubs).station_id) end)
+    |> start_async(:get_orders, fn ->  Market.dev_get_market_orders_by_type_and_station(type_ids, hd(trade_hubs).station_id) end)
     |> assign(:options, trade_hubs)
     |> assign(:type_ids, type_ids)
     |> assign(:types, @types)
