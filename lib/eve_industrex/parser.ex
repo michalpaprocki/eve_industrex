@@ -43,22 +43,62 @@ defmodule EveIndustrex.Parser do
     task
   end
   def parse_html_to_latest_patch_notes_path(html) do
+    case extract_patch_path(html) do
+      nil ->
+        {:error, %{type: :parse_error, reason: :patch_path_not_found}}
+
+      path ->
+        {:ok, path}
+    end
+  end
+  defp extract_patch_path(html) do
     html
-      |> String.split("<")
-      |> Enum.filter(fn string -> String.contains?(string, "/news/view") end)
-      |> hd()
-      |> String.split("\"")
-      |> Enum.at(1)
-      |> String.split("/")
-      |> Enum.at(3)
+    |> String.split("<")
+    |> Enum.find(fn string -> String.contains?(string, "/news/view") end)
+    |> case do
+      nil ->
+        nil
+
+      match ->
+        match
+        |> String.split("\"")
+        |> Enum.at(1)
+        |> case do
+          nil -> nil
+          url -> extract_slug(url)
+        end
+      end
+  end
+
+  defp extract_slug(url) do
+    case String.split(url, "/") do
+      [_, _, _, slug | _] -> slug
+      _ -> nil
+    end
   end
   def parse_path_to_tq_version(path) do
-    if String.contains?(path, "expansion") do
-        path |> String.split("-") |> Enum.take(2) |> Enum.join(" ")
-      else
-        path |> String.split("-") |> Enum.take(-2) |> Enum.join(".")
-    end
+    case do_parse_version(path) do
+      nil ->
+        {:error, %{type: :parse_error, reason: :invalid_version_format, path: path}}
 
+      version ->
+        {:ok, version}
+    end
+  end
+
+  defp do_parse_version(path) do
+    parts = String.split(path, "-")
+
+    cond do
+      String.contains?(path, "expansion") ->
+        parts |> Enum.take(2) |> Enum.join(" ")
+
+      length(parts) >= 2 ->
+        parts |> Enum.take(-2) |> Enum.join(".")
+
+      true ->
+        nil
+    end
   end
   defp extract_yaml_categories(content) do
     Enum.map(List.flatten(content), fn c -> {elem(c, 0), Enum.sort(Enum.map(elem(c, 1), fn v ->  handle_value(v) end), &(&1 > &2))} end)
