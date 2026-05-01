@@ -21,6 +21,7 @@ defmodule EveIndustrex.Types do
       |> MarketGroup.changeset(mg)
       |> Repo.insert_or_update()
     end) |> Stream.run()
+    put_mg_assocs()
   end
   def update_market_groups_from_dump() do
     market_groups = Parser.parse_market_groups()
@@ -70,6 +71,28 @@ defmodule EveIndustrex.Types do
   end
   def get_market_type_ids() do
     from(t in Type, where: not is_nil(t.market_group_id) and t.published == true, select: t.type_id) |> Repo.all
+  end
+  def update_type(type_id) do
+    {:ok, t} = Types.fetch_type(type_id)
+      case get_market_group(t["market_group_id"]) do
+        nil ->
+          case get_type(t["type_id"]) do
+            nil ->
+            %Type{}
+            type ->
+              type
+          end
+            found_market_group ->
+         case get_type(t["type_id"]) do
+           nil ->
+            %Type{}
+            |> Ecto.Changeset.change(market_group_id: found_market_group.market_group_id)
+          type ->
+            type
+         end
+      end
+      |> Type.changeset(t)
+      |> Repo.insert_or_update()
   end
   def obs_get_market_groups() do
     top_groups = Enum.sort(Enum.map(get_market_groups_without_parent(), fn m -> prep_map(m) end ), &(&1.name < &2.name))
