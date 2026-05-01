@@ -20,7 +20,8 @@ defmodule EveIndustrex.ScheduleOverseer do
   alias EveIndustrex.Logger.EiLogger
   alias EveIndustrex.Utils
   alias EveIndustrex.Tasks.Update
-  alias EveIndustrex.Generic
+  alias EveIndustrex.TqVersionService
+  alias EveIndustrex.BootstrapService
   alias EveIndustrex.Tasks.CheckTqVersion
   use GenServer
 
@@ -209,7 +210,7 @@ defmodule EveIndustrex.ScheduleOverseer do
         end
 
       {:update, tq_version} ->
-        Generic.upsert_tq_version(tq_version)
+        Tq.upsert_tq_version(tq_version)
         send(client.pid, {:overseer_reply, :completed})
         if length(reserved_by) > 0 do
             Process.send_after(self(), {:handle_reserved}, 2000)
