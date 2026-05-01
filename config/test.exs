@@ -6,8 +6,9 @@ import Config
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :eve_industrex, EveIndustrex.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: "my_site_client",
+  password: "s1mpl3p4ssw0rd",
+  port: 5432,
   hostname: "localhost",
   database: "eve_industrex_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
