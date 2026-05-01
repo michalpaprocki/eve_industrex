@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Market do
+  alias EveIndustrex.Schemas.MarketGroup
   alias EveIndustrex.Logger.EiLogger
   alias EveIndustrex.Schemas.Type
   alias EveIndustrex.Schemas.AveragePrice
@@ -54,6 +55,25 @@ defmodule EveIndustrex.Market do
   end
   def get_latest_market_statistic(region_id, type_id) do
     from(ms in MarketStatistic, join: t in Type, on: ms.type_id == t.type_id, join: r in Region, on: r.region_id == ms.region_id, where: r.region_id == ^region_id and t.type_id == ^type_id, order_by: [desc: ms.date], limit: 1) |> Repo.one
+  end
+  def get_market_groups() do
+    from(mg in MarketGroup) |> Repo.all
+  end
+  def get_market_group(market_group_id) do
+    Repo.get_by(MarketGroup, market_group_id: market_group_id)
+  end
+  def update_market_groups() do
+    market_groups = EveIndustrex.ESI.Types.fetch_market_groups()
+    Enum.map(market_groups, fn mg ->
+      case get_market_group(mg["market_group_id"]) do
+        nil ->
+          %MarketGroup{}
+        m_group ->
+          m_group
+      end
+      |> MarketGroup.changeset(mg)
+      |> Repo.insert_or_update()
+    end)
   end
   def update_market_statistics(region_id, list_of_type_ids) do
 
