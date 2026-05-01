@@ -9,19 +9,25 @@ defmodule EveIndustrex.Application do
   def start(_type, _args) do
     children = [
       {Task.Supervisor, name: EveIndustrex.TaskSupervisor, strategy: :one_for_one},
+      EveIndustrex.SystemState,
+
+      # EveIndustrex.Schedulers.TqVersion,
+      # EveIndustrex.Schedulers.AveragePrice,
+      # EveIndustrex.Schedulers.ScheduleSupervisor,
       EveIndustrexWeb.Telemetry,
       EveIndustrex.Repo,
       {DNSCluster, query: Application.get_env(:eve_industrex, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: EveIndustrex.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: EveIndustrex.Finch},
+
       {Registry, keys: :unique, name: EveIndustrex.Registry},
-      {EveIndustrex.Tasks.Init, []},
+
       # Start a worker by calling: EveIndustrex.Worker.start_link(arg)
       # {EveIndustrex.Worker, arg},
       # Start to serve requests, typically the last entry
       EveIndustrexWeb.Endpoint
-    ]
+    ] ++ extra_children()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -35,5 +41,17 @@ defmodule EveIndustrex.Application do
   def config_change(changed, _new, removed) do
     EveIndustrexWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+
+  defp extra_children do
+    if Mix.env() == :test do
+      []
+    else
+      [
+        {EveIndustrex.Bootstrap.InitTask, []},
+        EveIndustrex.Jobs.QueueManager,
+      ]
+    end
   end
 end
