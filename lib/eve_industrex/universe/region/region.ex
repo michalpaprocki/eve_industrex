@@ -1,4 +1,4 @@
-defmodule EveIndustrex.Schemas.Region do
+defmodule EveIndustrex.Universe.Region.Region do
   use Ecto.Schema
   alias EveIndustrex.Schemas.{Constellation}
   import Ecto.Changeset
