@@ -230,7 +230,9 @@ defmodule EveIndustrex.Universe do
       {:error, error} ->
         {:error, error}
       {:ok, groups} ->
+
         Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, groups, fn  g ->
+
           insert_group(g)
         end) |> Stream.run()
     end

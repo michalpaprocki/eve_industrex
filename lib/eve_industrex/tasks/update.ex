@@ -1,8 +1,11 @@
 defmodule EveIndustrex.Tasks.Update do
   require Logger
+  alias EveIndustrex.BootstrapService
+  alias EveIndustrex.Schemas.TqVersion
+  alias EveIndustrex.TqVersionService
   alias EveIndustrex.Market
   alias EveIndustrex.Scraper
-  alias EveIndustrex.Generic
+
   alias EveIndustrex.Utils
   use Task
   def start_link_from_SDE(arg) do
@@ -27,18 +30,18 @@ defmodule EveIndustrex.Tasks.Update do
   def from_SDE() do
     tq_version = Scraper.get_latest_tq_version()
     populate_from_SDE()
-    Generic.upsert_tq_version(tq_version)
+    TqVersionService.upsert_tq_version(tq_version)
     :ok
   end
   def from_SDE(tq_version) do
     # populate_from_SDE()
-    Generic.upsert_tq_version(tq_version)
+    TqVersionService.upsert_tq_version(tq_version)
     :ok
   end
   defp populate_from_SDE() do
     case Utils.fetch_SDE() do
       :ok ->
-        Enum.map(Generic.get_used_schemas(), fn schema -> Generic.populate_db(schema) end)
+        Enum.map(BootstrapService.get_used_schemas(), fn schema -> BootstrapService.populate_db(schema) end)
         Utils.remove_SDE_files()
       {:error, {error, reason, url}} ->
         {:error, {error, reason, url}}

@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Reactor do
+  # to be removed
   alias EveIndustrex.Blueprints
   alias EveIndustrex.Materials
   alias EveIndustrex.Types

@@ -7,8 +7,8 @@ alias EveIndustrex.Utils
 
 
   def fetch_market_groups() do
-    market_groups_ids = Utils.fetch_from_url(@market_groups_url)
-    Enum.map(market_groups_ids, fn mgi -> Utils.fetch_from_url(@market_groups_url<>~s"#{mgi}") end)
+    market_groups_ids = Utils.fetch_from_url!(@market_groups_url)
+    Enum.map(market_groups_ids, fn mgi -> Utils.fetch_from_url!(@market_groups_url<>~s"#{mgi}") end)
 
   end
   def fetch_type(id) do

@@ -123,8 +123,8 @@ defmodule EveIndustrex.ESI.Universe do
       {:error, error} ->
         {:error, error}
       {:ok, pages} ->
-        groups_ids = Utils.fetch_ESI_pages(@groups_url, String.to_integer(pages))
-        groups = Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, groups_ids,fn g -> Utils.fetch_from_url(@groups_url<>~s"#{g}") end) |> Enum.map(fn x -> elem(x, 1) end)
+        groups_ids = Utils.fetch_ESI_pages(@groups_url, String.to_integer(hd(pages)))
+        groups = Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, groups_ids,fn g -> Utils.fetch_from_url!(@groups_url<>~s"#{g}") end) |> Enum.map(fn x -> elem(x, 1) end)
         {:ok, groups}
     end
   end
