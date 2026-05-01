@@ -1,5 +1,5 @@
-defmodule EveIndustrex.Generic do
-  alias EveIndustrex.Schemas.TqVersion
+defmodule EveIndustrex.BootstrapService do
+
   alias EveIndustrex.Repo
   alias EveIndustrex.{Blueprints, Corporation, Materials, Types, Universe, Repo}
   alias EveIndustrex.Schemas.{Region, Constellation, System, Station, Category, Group, MarketGroup,Type, Material, NpcCorp, LpOffer, Blueprint}
@@ -7,16 +7,7 @@ defmodule EveIndustrex.Generic do
   def get_tq_version() do
     Repo.one(TqVersion)
   end
-  def upsert_tq_version(string) do
-    case Repo.one(TqVersion) do
-      nil ->
-        %TqVersion{}
-      version ->
-        version
-    end
-    |> TqVersion.changeset(%{:version => string})
-    |> Repo.insert_or_update()
-  end
+
   def get_present_records() do
     counts = Enum.map(@used_schemas, fn s -> {s, Repo.aggregate(s, :count)} end)
     if Enum.any?(counts, fn {_schema, count} -> count == 0 end) do

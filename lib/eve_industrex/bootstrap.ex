@@ -1,26 +1,23 @@
-defmodule EveIndustrex.Tasks.Init do
-  @deprecated "Separated into different modules for clarity"
-  use Task
-  require Logger
-
+defmodule EveIndustrex.Bootstrap do
+  alias EveIndustrex.Scraper
+  alias EveIndustrex.Utils
   alias EveIndustrex.TqVersionService
   alias EveIndustrex.BootstrapService
-  alias EveIndustrex.Utils
-  alias EveIndustrex.Scraper
+  require Logger
 
 
-  def start_link(arg) do
-    Logger.info("App's data preparation initiated by Supervisor...")
-    Task.start_link(__MODULE__, :prep_app_on_startup, arg)
+  def run do
+    seed_if_needed()
+    sync_tq_version()
   end
-  def prep_app_on_startup() do
-    # if Application.get_env(:eve_industrex, :MIX_ENV) == :prod do
-      case BootstrapService.get_present_records() do
+
+  defp seed_if_needed do
+    case BootstrapService.get_present_records() do
         {false, counts }->
           Logger.info("Found empty DB rows... fetching SDE")
           Utils.fetch_SDE()
           Logger.info("Populating the DB...")
-          Enum.map(counts, fn {schema, count} -> read_out_schema(schema, count) |> BootstrapService.populate_db() end)
+          Enum.each(counts, fn {schema, count} -> read_out_schema(schema, count) |> BootstrapService.populate_db() end)
           Utils.remove_SDE_files()
 
           tq_version = Scraper.get_latest_tq_version()
@@ -29,8 +26,11 @@ defmodule EveIndustrex.Tasks.Init do
         {true} ->
           Logger.info("DB records present...")
           :ok
-      end
-
+    end
+  end
+  defp sync_tq_version do
+    tq_version = Scraper.get_latest_tq_version()
+    TqVersionService.upsert_tq_version(tq_version)
   end
   defp read_out_schema(schema, count) do
     Logger.info("#{count} entries of #{inspect(schema)} found... Updating... ")

@@ -1,6 +1,7 @@
 defmodule EveIndustrex.Tasks.CheckTqVersion do
   require Logger
-  alias EveIndustrex.Generic
+  alias EveIndustrex.TqVersionService
+
   alias EveIndustrex.Scraper
   use Task
 
@@ -14,7 +15,7 @@ defmodule EveIndustrex.Tasks.CheckTqVersion do
     Task.await(task)
   end
   def check_latest_game_version() do
-    stored_tq_version = Generic.get_tq_version()
+    stored_tq_version = TqVersionService.get_tq_version()
     result = Scraper.get_latest_tq_version()
     case result do
       {:ok, tq_version} ->
