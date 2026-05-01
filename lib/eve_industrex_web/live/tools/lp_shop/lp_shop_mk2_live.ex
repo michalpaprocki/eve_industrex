@@ -28,7 +28,7 @@ defmodule EveIndustrexWeb.Tools.LpShopMk2Live do
   end
 
   def render(assigns) do
-    ~H"""
+  ~H"""
       <div class="text-xl font-semibold mb-10 h-30 flex flex-col gap-5 mt-10">
         <div class="flex gap-3 flex-col items-center top-20 left-0 w-full">
           <h1 class=""><%= if @form[:selected_corp].value != nil, do:  hd(Enum.filter(@corps, fn c -> c.corp_id == @form[:selected_corp].value end)).name %> Loyalty Points Shop</h1>
@@ -69,13 +69,13 @@ defmodule EveIndustrexWeb.Tools.LpShopMk2Live do
         <% @offers.ok? -> %>
 
         <%= for {o, i} <- Enum.with_index(@offers.result) do %>
-          <.live_component id={~s"#{i}_#{o.type_id}"} module={EveIndustrexWeb.LpShop.LpShopItem} orders={@orders} offer={o} tax_rate={@initial_tax_rate}/>
+          <.live_component id={~s"#{i}_#{o.type_id}"} module={EveIndustrexWeb.LpShop.LpShopItem} orders={@orders} offer={o} tax_rate={@initial_tax_rate} />
         <% end %>
         <% true -> %>
 
         <% end %>
       </div>
-    """
+  """
   end
 
   def handle_async(:get_lp_offers, {:ok, result}, socket) do
@@ -83,6 +83,11 @@ defmodule EveIndustrexWeb.Tools.LpShopMk2Live do
     trade_hub_id = form[:selected_trade_hub].value
 
     sorted = result
+    # IO.puts("testing here...")
+    # x = Enum.map(result, fn x -> x end) |> Enum.filter(fn x -> x.type == nil end)
+    # x = Enum.filter(result, fn r -> String.contains?(String.downcase(r.type.name), "blueprint") end)
+    #     IO.puts("after ...")
+    # IO.inspect(x)
 
     bp_type_ids = Enum.filter(result, fn r -> String.contains?(String.downcase(r.type.name), "blueprint") end) |> Enum.map(fn offer -> Enum.map(offer.type.bp_products, fn bpp -> bpp.type_id end) end)
     mats_type_ids = Enum.filter(result, fn r -> String.contains?(String.downcase(r.type.name), "blueprint") end) |> Enum.map(fn offer -> Enum.map(offer.type.products, fn p -> p.material_type_id end) end)
@@ -92,6 +97,7 @@ defmodule EveIndustrexWeb.Tools.LpShopMk2Live do
 
     orders = Task.Supervisor.async(EveIndustrex.TaskSupervisor, fn -> Market.dev_get_market_orders_by_type_and_station(type_ids, trade_hub_id) end) |> Task.await()
     {:noreply, socket |> assign(:offers, AsyncResult.ok(sorted)) |> assign(:orders, %{:result => orders, :loading => false})}
+    # {:noreply, socket}
   end
     def handle_async(:get_orders, {:ok, result}, socket) do
     {:noreply, socket |> assign(:orders, AsyncResult.ok(result))}
