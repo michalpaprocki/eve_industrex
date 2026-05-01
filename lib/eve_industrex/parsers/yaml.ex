@@ -1,4 +1,5 @@
-defmodule EveIndustrex.Parser do
+defmodule EveIndustrex.Parsers.Yaml do
+
   require Logger
   @blueprints_path "data_dump/blueprints.yaml"
   @type_materials_path "data_dump/typeMaterials.yaml"
