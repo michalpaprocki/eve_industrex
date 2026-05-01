@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Logger.EiLogger do
+  @deprecated "Using a custom logger was a bad idea, backing off to `Logger`."
   @moduledoc """
   Logger for the App
   """
@@ -35,6 +36,7 @@ defmodule EveIndustrex.Logger.EiLogger do
     message: "#{Keyword.get(fun, :module)}.#{Keyword.get(fun, :name)}.#{Keyword.get(fun, :arity)} received #{type} as an argument, allowed args are: [#{Enum.map(@types_list, fn tl -> "\:"<>Atom.to_string(tl) end)}]."
   })
   end
+
   defp write_to_file(type, path, {status, reason, source}) when is_binary(reason) and is_binary(source) do
     msg = Atom.to_string(type)<>": "<>Atom.to_string(status)<>": "<>reason<>" | "<>source
     case type do
