@@ -1,20 +1,34 @@
 defmodule EveIndustrex.Schedulers.TqVersion do
+
+  alias Ecto.UUID
+  alias EveIndustrex.Jobs.Job
+  alias EveIndustrex.Jobs.Overseer
+  alias EveIndustrex.TqVersionService
   alias EveIndustrex.ScheduleOverseer
+
   require Logger
   use GenServer
   @day 1000 * 60 * 60 * 24
   def init(_init_arg) do
     Logger.info("Starting #{__MODULE__}...")
-    Process.send_after(self(), :check_tq_version, @day)
-    {:ok, %{:request => :pending}}
+    # tq_version = TqVersionService.get_tq_version()
+
+    job = %Job{
+      id: UUID.generate(),
+      args: [],
+      worker: :tq_version
+    }
+    send(self(), :check_tq_version)
+    {:ok, %{:job => job}}
   end
   def start_link(arg) do
     GenServer.start_link(__MODULE__, arg, name: __MODULE__)
   end
-    def get_state() do
+  def get_state() do
     GenServer.call(__MODULE__, :get_state)
   end
   def initiate_update() do
+    # for debuging
     GenServer.call(__MODULE__, :init_update)
   end
   def get_pid() do
@@ -36,18 +50,22 @@ defmodule EveIndustrex.Schedulers.TqVersion do
     pid = self()
     {:reply, pid, state}
   end
+  # def handle_info(:check_tq_version, state) do
+  #   if state.request == :pending do
+  #     reply = ScheduleOverseer.check_tq_version()
+  #     case reply do
+  #       :postponed ->
+  #         {:noreply, %{:request => reply}}
+  #       :working ->
+  #         {:noreply, %{:request => reply}}
+  #     end
+  #   else
+  #     {:noreply, state}
+  #   end
+  # end
   def handle_info(:check_tq_version, state) do
-    if state.request == :pending do
-      reply = ScheduleOverseer.check_tq_version()
-      case reply do
-        :postponed ->
-          {:noreply, %{:request => reply}}
-        :working ->
-          {:noreply, %{:request => reply}}
-      end
-    else
-      {:noreply, state}
-    end
+    Overseer.add_job(state.job)
+    {:noreply, state}
   end
   def handle_info({:overseer_reply, msg}, _state) do
     case msg do
