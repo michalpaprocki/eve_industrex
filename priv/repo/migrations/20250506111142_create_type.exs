@@ -4,7 +4,6 @@ defmodule EveIndustrex.Repo.Migrations.CreateType do
   def change do
 
     create table("types", primary_key: false) do
-      add :id, :binary_id, primary_key: true
       add :capacity, :float
       add :icon_id, :integer
       add :mass, :float
@@ -15,7 +14,7 @@ defmodule EveIndustrex.Repo.Migrations.CreateType do
       add :portion_size, :integer
       add :published, :boolean
       add :radius, :float
-      add :type_id, :bigint
+      add :type_id, :bigint, primary_key: true
       add :volume, :float
       add :market_group_id, references(:market_groups, column: :market_group_id, type: :bigint), null: true
 

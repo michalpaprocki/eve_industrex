@@ -7,6 +7,7 @@ defmodule EveIndustrex.Repo.Migrations.CreateLpReqItems do
       add :quantity, :bigint
       add :type_id, references(:types, column: :type_id, type: :bigint)
       add :offer_id, references(:lp_offers, column: :offer_id, type: :bigint)
+      timestamps()
     end
     create unique_index(:lp_req_items, [:id])
   end

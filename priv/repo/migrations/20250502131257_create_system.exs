@@ -3,9 +3,8 @@ defmodule EveIndustrex.Repo.Migrations.CreateSystem do
 
   def change do
     create table("systems", primary_key: false) do
-      add :id, :binary_id, primary_key: true
       add :name, :string
-      add :system_id, :bigint
+      add :system_id, :bigint, primary_key: true
       add :stations, {:array, :bigint}
       add :constellation_id, references(:constellations, column: :constellation_id, type: :bigint), null: false
 

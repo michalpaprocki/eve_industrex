@@ -3,8 +3,7 @@ defmodule EveIndustrex.Repo.Migrations.CreateCategoriesAndGroups do
 
   def change do
     create table("categories", primary_key: false) do
-      add :id, :binary_id, primary_key: true
-      add :category_id, :bigint
+      add :category_id, :bigint, primary_key: true
       add :name, :string
       add :published, :boolean
     end
@@ -12,9 +11,9 @@ defmodule EveIndustrex.Repo.Migrations.CreateCategoriesAndGroups do
     create unique_index(:categories, [:category_id])
 
     create table("groups", primary_key: false) do
-      add :id, :binary_id, primary_key: true
+
       add :category_id, references(:categories, column: :category_id, type: :bigint, on_delete: :delete_all)
-      add :group_id, :bigint
+      add :group_id, :bigint, primary_key: true
       add :name, :string
       add :published, :boolean
     end

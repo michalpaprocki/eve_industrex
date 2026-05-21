@@ -8,9 +8,5 @@ defmodule EveIndustrex.Repo.Migrations.CreateAveragePrice do
       add :type_id, references(:types, column: :type_id, type: :bigint)
       timestamps()
     end
-
-    alter table("types") do
-      add :average_price_id, :bigint
-    end
   end
 end

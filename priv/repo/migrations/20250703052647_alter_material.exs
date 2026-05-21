@@ -8,6 +8,8 @@ defmodule EveIndustrex.Repo.Migrations.AlterMaterial do
       remove :materials
       add :amount, :bigint
       add :material_type_id, :bigint
+      add :quantity_max, :bigint
+      add :quantity_min, :bigint
     end
   end
 end

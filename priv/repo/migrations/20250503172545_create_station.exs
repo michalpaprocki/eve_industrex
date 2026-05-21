@@ -3,9 +3,8 @@ defmodule EveIndustrex.Repo.Migrations.CreateStation do
 
   def change do
     create table("stations", primary_key: false) do
-      add :id, :binary_id, primary_key: true
       add :name, :string
-      add :station_id, :bigint
+      add :station_id, :bigint, primary_key: true
       add :services, {:array, :string}
       add :reprocessing_efficiency, :float
       add :reprocessing_stations_take, :float

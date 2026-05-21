@@ -3,13 +3,12 @@ defmodule EveIndustrex.Repo.Migrations.CreateMarketOrder do
 
   def change do
     create table("market_orders", primary_key: false) do
-      add :id, :binary_id, primary_key: true
       add :duration, :integer
       add :is_buy_order, :boolean
       add :issued, :utc_datetime
       add :location_id, :bigint
       add :min_volume, :bigint
-      add :order_id, :bigint
+      add :order_id, :bigint, primary_key: true
       add :price, :float
       add :range, :string
       add :type_id, :bigint

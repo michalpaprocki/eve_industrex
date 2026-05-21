@@ -2,13 +2,15 @@ defmodule EveIndustrex.Repo.Migrations.CreateBlueprintActivity do
   use Ecto.Migration
 
   def change do
-    create table("blueprint_activities", primary_key: false) do
-      add :id, :binary_id, primary_key: true
-      add :activity_type, :string
-      add :time, :bigint
-      add :probability, :float
-      add :quantity, :bigint
-      add :blueprint_type_id, :bigint
+    create table(:blueprint_activities) do
+      add :activity_type, :string, null: false
+      add :time, :bigint, null: false
+      add :blueprint_type_id, references(:blueprints, column: :blueprint_type_id, type: :bigint, on_delete: :delete_all), null: false
+      timestamps()
     end
+    create unique_index(:blueprint_activities, [:blueprint_type_id, :activity_type]
+           )
+
+    create index(:blueprint_activities, [:blueprint_type_id])
   end
 end

@@ -3,9 +3,9 @@ defmodule EveIndustrex.Repo.Migrations.CreateRegion do
 
   def change do
     create table("regions", primary_key: false) do
-      add :id, :binary_id, primary_key: true
-      add :region_id, :bigint
+      add :region_id, :bigint, primary_key: true
       add :name, :string
+      add :description, :text
       add :constellations, {:array, :bigint}
 
       timestamps()

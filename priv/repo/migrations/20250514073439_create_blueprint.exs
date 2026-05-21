@@ -4,11 +4,9 @@ defmodule EveIndustrex.Repo.Migrations.CreateBlueprint do
   def change do
 
     create table("blueprints", primary_key: false) do
-      add :id, :binary_id, primary_key: true
-      add :blueprintTypeID, :bigint
-      add :maxProductionLimit, :bigint
-      add :activities, :binary
+      add :blueprint_type_id, :bigint, primary_key: true
+      add :max_production_limit, :bigint
+      timestamps()
     end
-    create unique_index(:blueprints, [:blueprintTypeID])
   end
 end

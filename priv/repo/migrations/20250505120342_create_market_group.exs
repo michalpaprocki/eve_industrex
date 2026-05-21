@@ -3,10 +3,9 @@ defmodule EveIndustrex.Repo.Migrations.CreateMarketGroup do
 
   def change do
     create table("market_groups", primary_key: false) do
-      add :id, :binary_id, primary_key: true
       add :name, :string
       add :description, :text
-      add :market_group_id, :bigint
+      add :market_group_id, :bigint, primary_key: true
       add :types, {:array, :bigint}
       add :parent_group_id, :bigint
 
