@@ -61,6 +61,16 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :eve_industrex, Oban,
+  engine: Oban.Engines.Basic,
+  queues: [
+    schedulers: 1,
+    market_orders: 5,
+    esi_metadata: 1,
+    esi_general: 5
+    ],
+  repo: EveIndustrex.Repo
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
