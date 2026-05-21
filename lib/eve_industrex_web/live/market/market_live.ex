@@ -1,5 +1,5 @@
 defmodule EveIndustrexWeb.Market.MarketLive do
-alias EveIndustrex.Schemas.Type
+alias EveIndustrex.Universe.Type
 alias EveIndustrexWeb.Layouts
 alias EveIndustrex.Market
 alias Phoenix.LiveView.AsyncResult

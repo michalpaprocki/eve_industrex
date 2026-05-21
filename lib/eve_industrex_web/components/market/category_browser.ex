@@ -1,30 +1,21 @@
 defmodule EveIndustrexWeb.Market.CategoryBrowser do
   use EveIndustrexWeb, :live_component
   alias Phoenix.LiveView.AsyncResult
-  alias EveIndustrex.Types
+  alias EveIndustrex.Universe.MarketGroup.Store
   def update(assigns, socket) do
-    {:ok, socket |> assign(assigns) |> assign(:market_groups, AsyncResult.loading()) |> start_async(:get_market_groups, fn -> Types.get_market_groups() end)
+
+    {:ok, socket |> assign(assigns) |> assign(:market_groups, Store.get_init_market_groups())
 }
   end
   def render(assigns) do
     ~H"""
     <div class="h-full p-1 flex flex-col">
 
-      <%= cond do %>
-      <% @market_groups.loading -> %>
-      <div class="text-center text-xl font-bold my-20">
-        Loading market groups...
-        <div class={"mx-auto mt-20 h-14 w-14 rounded-full border-solid border-4 border-[white_transparent_white_transparent] animate-spin"}/>
-      </div>
-      <% @market_groups.failed -> %>
-      Can't fetch market groups data, try again later
-      <% @market_groups.ok? -> %>
         <div class="flex flex-col">
-        <%= for cat <- @market_groups.result do %>
-          <.live_component id={cat.market_group_id} module={EveIndustrexWeb.Market.Category} data={cat} indent={2}/>
+        <%= for mg <- @market_groups do %>
+          <.live_component id={elem(mg, 0)} module={EveIndustrexWeb.Market.Category} market_group={%{name: elem(mg, 1), market_group_id: elem(mg,0)}} indent={2}/>
         <% end %>
         </div>
-      <% end %>
     </div>
     """
   end
