@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Scraper do
   require Logger
 
-  alias EveIndustrex.Parser
+  alias EveIndustrex.Infrastructure.Parsers.Html
   alias EveIndustrex.Error
 
   @patch_notes_url "https://www.eveonline.com/news/t/patch-notes"
@@ -9,8 +9,8 @@ defmodule EveIndustrex.Scraper do
   @spec get_latest_tq_version() :: {:ok, String.t()} | {:error, map()}
   def get_latest_tq_version do
     with {:ok, body} <- fetch_patch_notes_html(),
-      {:ok, path} <- Parser.parse_html_to_latest_patch_notes_path(body),
-      {:ok, version} <- Parser.parse_path_to_tq_version(path) do
+      {:ok, path} <- Html.parse_html_to_latest_patch_notes_path(body),
+      {:ok, version} <- Html.parse_path_to_tq_version(path) do
       {:ok, version}
     else
       {:error, reason} ->
