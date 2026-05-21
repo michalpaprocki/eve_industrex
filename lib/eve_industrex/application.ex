@@ -14,8 +14,10 @@ defmodule EveIndustrex.Application do
       # EveIndustrex.Schedulers.TqVersion,
       # EveIndustrex.Schedulers.AveragePrice,
       # EveIndustrex.Schedulers.ScheduleSupervisor,
+      EveIndustrex.Infrastructure.Cache.Supervisor,
       EveIndustrexWeb.Telemetry,
       EveIndustrex.Repo,
+      {Oban, Application.fetch_env!(:eve_industrex, Oban)},
       {DNSCluster, query: Application.get_env(:eve_industrex, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: EveIndustrex.PubSub},
       # Start the Finch HTTP client for sending emails
@@ -49,7 +51,7 @@ defmodule EveIndustrex.Application do
       []
     else
       [
-        {EveIndustrex.Bootstrap.InitTask, []},
+        {EveIndustrex.Infrastructure.Bootstrap.InitTask, :run},
         EveIndustrex.Jobs.QueueManager,
       ]
     end
