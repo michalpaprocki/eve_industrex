@@ -51,8 +51,7 @@ defmodule EveIndustrex.Application do
       []
     else
       [
-        {EveIndustrex.Infrastructure.Bootstrap.InitTask, :run},
-        EveIndustrex.Jobs.QueueManager,
+        {EveIndustrex.Infrastructure.Bootstrap.InitTask, :run}
       ]
     end
   end
