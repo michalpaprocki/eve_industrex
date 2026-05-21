@@ -1,6 +1,8 @@
 defmodule EveIndustrex.Utils do
-@sde_files ["categories.yaml", "types.yaml", "groups.yaml", "blueprints.yaml", "typeMaterials.yaml", "marketGroups.yaml"]
-@sde_url "https://eve-static-data-export.s3-eu-west-1.amazonaws.com/tranquility/fsd.zip"
+@sde_files ["categories.jsonl", "types.jsonl", "groups.jsonl", "blueprints.jsonl", "typeMaterials.jsonl", "marketGroups.jsonl", "mapConstellations.jsonl", "mapRegions.jsonl", "mapSolarSystems.jsonl", "npcStations.jsonl", "npcCorporations.jsonl"]
+# @sde_files ["categories.yaml", "types.yaml", "groups.yaml", "blueprints.yaml", "typeMaterials.yaml", "marketGroups.yaml"]
+# @sde_url "https://eve-static-data-export.s3-eu-west-1.amazonaws.com/tranquility/fsd.zip"
+@sde_json_url "https://developers.eveonline.com/static-data/eve-online-static-data-latest-jsonl.zip"
   def get_pages_ammount(url) when is_binary(url) do
     request = Req.Request.new(url: url, method: :head)
     {_req, res} = Req.run(request)
@@ -199,10 +201,11 @@ defmodule EveIndustrex.Utils do
   end
    def fetch_SDE() do
     File.mkdir(Path.join(File.cwd!(), "/data_dump/"))
-    case Req.get(@sde_url) do
+    case Req.get(@sde_json_url) do
       {:ok, resp} ->
         if resp.status == 200 do
           sde = resp.body
+
           Enum.filter(sde, fn x -> String.contains?(List.to_string(elem(x, 0)), @sde_files) end)
           |> Enum.map(fn x -> File.write(Path.join(File.cwd!(), "/data_dump/"<>List.to_string(elem(x, 0))), elem(x, 1)) end)
           :ok
@@ -214,10 +217,9 @@ defmodule EveIndustrex.Utils do
     end
   end
   def remove_SDE_files() do
-    File.rm(Path.join(File.cwd!(), "/data_dump/*"))
+    {:ok, files} = File.ls(Path.join(File.cwd!(), "/data_dump/"))
+    Enum.map(files, fn f -> File.rm(Path.join(File.cwd!(), "/data_dump/#{f}")) end)
+
   end
-  def apfn() do
-    :timer.sleep(Enum.random(0..4000))
-    :ok
-  end
+
 end
