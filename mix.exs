@@ -59,7 +59,8 @@ defmodule EveIndustrex.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
       {:req, "~> 0.5"},
-      {:yamerl, "~> 0.4.0"}
+      {:yamerl, "~> 0.4.0"},
+      {:oban, "~> 2.19"}
     ]
   end
 
