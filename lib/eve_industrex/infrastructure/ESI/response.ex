@@ -1,3 +1,4 @@
 defmodule EveIndustrex.Infrastructure.ESI.Response do
-  defstruct [:status, :body, :etag, :expires_at, :pages, :rate_limit]
+  alias EveIndustrex.Infrastructure.ESI.Headers
+  defstruct [:status, :body, :route, headers: %Headers{}]
 end
