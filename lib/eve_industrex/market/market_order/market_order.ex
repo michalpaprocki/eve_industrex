@@ -4,13 +4,12 @@ defmodule EveIndustrex.Market.MarketOrder do
   use Ecto.Schema
   import Ecto.Changeset
 
-
+  @primary_key {:order_id, :integer, autogenerate: false}
   schema "market_orders" do
     field :duration, :integer
     field :is_buy_order, :boolean
     field :issued, :utc_datetime
     field :min_volume, :integer
-    field :order_id, :integer, primary_key: true
     field :price, :float
     field :range, :string
     field :type_id, :integer
@@ -19,6 +18,8 @@ defmodule EveIndustrex.Market.MarketOrder do
     field :location_id, :integer
     field :station_id, :integer
     field :system_id, :integer
+    field :sync_gen, :integer
+    field :expired, :boolean, default: false
     belongs_to :station, Station, references: :station_id, define_field: false
 
     timestamps(type: :utc_datetime)
