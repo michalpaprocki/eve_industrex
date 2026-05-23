@@ -10,7 +10,8 @@ defmodule EveIndustrex.Application do
     children = [
       {Task.Supervisor, name: EveIndustrex.TaskSupervisor, strategy: :one_for_one},
       EveIndustrex.SystemState,
-
+      EveIndustrex.Infrastructure.ESI.RateLimiter,
+      EveIndustrex.Infrastructure.ESI.EtagStore,
       # EveIndustrex.Schedulers.TqVersion,
       # EveIndustrex.Schedulers.AveragePrice,
       # EveIndustrex.Schedulers.ScheduleSupervisor,
