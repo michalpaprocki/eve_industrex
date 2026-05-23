@@ -1,7 +1,9 @@
 defmodule EveIndustrex.Infrastructure.Bootstrap.Service do
 
 
+  alias EveIndustrex.Infrastructure.ESI.Sync.SyncProvider
   alias EveIndustrex.Schemas.TqVersion
+  alias EveIndustrex.Infrastructure.ESI.Sync
   alias EveIndustrex.Repo
   alias EveIndustrex.Universe.{Region, Constellation, System, Station, Category, Group, MarketGroup, Type}
   alias EveIndustrex.Industry.{Blueprint, ReprocessMaterial}
@@ -33,7 +35,7 @@ defmodule EveIndustrex.Infrastructure.Bootstrap.Service do
   def populate_db(NpcCorp), do: NpcCorp.Import.from_dump()
   def populate_db(LpOffer), do: LpOffer.Import.from_esi()
   def populate_db(Blueprint), do: Blueprint.Import.from_dump()
-  def populate_cache do
+  def populate_cache() do
     Loader.Region.init()
     Loader.Constellation.init()
     Loader.System.init()
@@ -41,5 +43,59 @@ defmodule EveIndustrex.Infrastructure.Bootstrap.Service do
     Loader.Category.init()
     Loader.Group.init()
     Loader.MarketGroup.init()
+  end
+  def resources_missing?(), do: if(Sync.Query.get_resource_types_count() > 0, do: false, else: true)
+  def get_resources_with_missing_strategies() do
+    resource_types = Sync.Query.get_resource_types()
+    Enum.map(resource_types, fn r ->
+      if r.strategies_count == 0 || r.strategies_count == nil do
+        {false, r}
+      else
+        {true, nil}
+      end
+    end)
+    |> Enum.filter(fn {boolean, _r} ->
+      boolean == false
+    end)
+    |> Enum.map(fn {_boolean, r} -> r end)
+  end
+  def put_resources() do
+    Sync.Query.get_initial_resources()
+    |> Enum.map(fn r -> Sync.Mapper.to_resource_type(r) end)
+    |> Sync.Persistence.insert_all_resource_types()
+  end
+  def maybe_allocate_strategies do
+    get_resources_with_missing_strategies()
+    |> allocate_strategies()
+  end
+  def allocate_strategies(resource_types) do
+    # resource_types = Sync.Query.get_resource_types()
+    Enum.map(resource_types, fn r ->
+      targets = get_targets(r.name)
+      Sync.Persistence.update_resource_type_strategies_count(r.id, %{strategies_count: targets.count})
+
+      Enum.map(targets.ids, fn id ->
+        SyncProvider.default_market_order_strategy(id, r.id)
+      end)
+    end)
+    |> List.flatten()
+    |> Enum.chunk_every(1000)
+    |> Enum.each(fn chunk ->
+      Sync.Persistence.upsert_strategies(chunk)
+    end)
+  end
+
+  defp get_targets(resource_name) do
+    case resource_name do
+      "market_orders" ->
+        targets = Region.Store.get_ids()
+       %{
+          ids: targets,
+          count: length(targets)
+        }
+
+      _ ->
+        []
+    end
   end
 end

@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Infrastructure.Bootstrap do
+  alias EveIndustrex.Infrastructure.ESI.Sync
   alias EveIndustrex.Scraper
   alias EveIndustrex.Utils
   alias EveIndustrex.TqVersionService
@@ -9,6 +10,7 @@ defmodule EveIndustrex.Infrastructure.Bootstrap do
   def run do
     seed_if_needed()
     sync_tq_version()
+    start_scheduler()
   end
 
   defp seed_if_needed do
@@ -38,4 +40,15 @@ defmodule EveIndustrex.Infrastructure.Bootstrap do
     Logger.info("#{count} entries of #{inspect(schema)} found... Updating... ")
     schema
   end
+  defp start_scheduler() do
+    if Service.resources_missing?() do
+      Logger.info("ESI Resources missing... Populating...")
+      Service.put_resources()
+    end
+    Logger.info("Checking for Resources Strategies...")
+    Service.maybe_allocate_strategies()
+
+    :start_worker
+  end
+
 end
