@@ -18,8 +18,10 @@ defmodule EveIndustrex.Market.MarketOrder do
     field :location_id, :integer
     field :station_id, :integer
     field :system_id, :integer
-    field :sync_gen, :integer
+    field :constellation_id, :integer
+    field :region_id, :integer
     field :expired, :boolean, default: false
+    field :generation, :integer, default: 1
     belongs_to :station, Station, references: :station_id, define_field: false
 
     timestamps(type: :utc_datetime)
@@ -27,7 +29,7 @@ defmodule EveIndustrex.Market.MarketOrder do
 
   def changeset(market_order, attrs) do
     market_order
-    |> cast(attrs, [:duration, :is_buy_order, :issued, :location_id, :min_volume, :order_id, :price, :range, :system_id, :type_id, :volume_remain, :volume_total])
+    |> cast(attrs, [:duration, :is_buy_order, :issued, :location_id, :min_volume, :order_id, :price, :range, :station_id, :system_id, :type_id, :volume_remain, :volume_total, :region_id, :generation])
     |> unique_constraint(:order_id, name: :market_orders_order_id_index)
   end
 end
