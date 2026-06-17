@@ -60,7 +60,9 @@ defmodule EveIndustrex.MixProject do
       {:bandit, "~> 1.5"},
       {:req, "~> 0.5"},
       {:yamerl, "~> 0.4.0"},
-      {:oban, "~> 2.19"}
+      {:oban, "~> 2.19"},
+      {:date_time_parser, "~> 1.2"},
+      {:tz, "~> 0.26.5"}
     ]
   end
 

@@ -62,6 +62,9 @@ config :logger, :console,
 config :phoenix, :json_library, Jason
 
 config :eve_industrex, Oban,
+  plugins: [
+    {Oban.Plugins.Pruner, max_age: 18000}
+  ],
   engine: Oban.Engines.Basic,
   queues: [
     schedulers: 1,
@@ -70,7 +73,9 @@ config :eve_industrex, Oban,
     esi_general: 5
     ],
   repo: EveIndustrex.Repo
-
+config :logger, level: :debug
+config :oban, log: :debug
+config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
