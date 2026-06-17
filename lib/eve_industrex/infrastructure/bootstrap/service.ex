@@ -1,7 +1,9 @@
 defmodule EveIndustrex.Infrastructure.Bootstrap.Service do
+require Logger
 
-
+  alias EveIndustrex.Infrastructure.ESI.Sync.Persistence
   alias EveIndustrex.Infrastructure.ESI.Sync.SyncProvider
+  alias EveIndustrex.Infrastructure.ESI
   alias EveIndustrex.Schemas.TqVersion
   alias EveIndustrex.Infrastructure.ESI.Sync
   alias EveIndustrex.Repo
@@ -43,6 +45,11 @@ defmodule EveIndustrex.Infrastructure.Bootstrap.Service do
     Loader.Category.init()
     Loader.Group.init()
     Loader.MarketGroup.init()
+    Loader.Type.init()
+    Loader.NpcCorp.init()
+    Loader.LpOffers.init()
+    Loader.CorpOffers.init()
+    Loader.Blueprint.init()
   end
   def resources_missing?(), do: if(Sync.Query.get_resource_types_count() > 0, do: false, else: true)
   def get_resources_with_missing_strategies() do
@@ -67,11 +74,14 @@ defmodule EveIndustrex.Infrastructure.Bootstrap.Service do
   def maybe_allocate_strategies do
     get_resources_with_missing_strategies()
     |> allocate_strategies()
+    |> read_out_strats_count()
   end
   def allocate_strategies(resource_types) do
+
     # resource_types = Sync.Query.get_resource_types()
     Enum.map(resource_types, fn r ->
       targets = get_targets(r.name)
+
       Sync.Persistence.update_resource_type_strategies_count(r.id, %{strategies_count: targets.count})
 
       Enum.map(targets.ids, fn id ->
@@ -83,8 +93,14 @@ defmodule EveIndustrex.Infrastructure.Bootstrap.Service do
     |> Enum.each(fn chunk ->
       Sync.Persistence.upsert_strategies(chunk)
     end)
+    resource_types
   end
-
+  def read_out_strats_count(resource_types) do
+    Enum.map(resource_types, fn r ->
+      count = Sync.Query.aggregate_strats_count(r.id)
+      Logger.info(Integer.to_string(count)<>" strategies inserted for #{inspect(r.name)}.")
+    end)
+  end
   defp get_targets(resource_name) do
     case resource_name do
       "market_orders" ->
@@ -98,4 +114,5 @@ defmodule EveIndustrex.Infrastructure.Bootstrap.Service do
         []
     end
   end
+
 end
