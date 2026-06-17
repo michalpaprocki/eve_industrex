@@ -38,4 +38,5 @@ defmodule EveIndustrex.Universe.MarketGroup.Persistence do
 
     end) |> Enum.to_list
   end
+  def delete_all(), do: Repo.delete_all(MarketGroup)
 end
