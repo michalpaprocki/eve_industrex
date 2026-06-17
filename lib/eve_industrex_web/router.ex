@@ -26,7 +26,9 @@ alias Tools
     live "/tools/alchemy", AlchemyLive
     live "/tools/appraise", Tools.AppraiseLive
     live "/tools/lp_shop", Tools.LpShopLive
-    live "/tools/lp_shop_mk2", Tools.LpShopMk2Live
+    live "/tools/lp_shop/:hub_id", Tools.LpShopLive
+    live "/tools/lp_shop/:hub_id/:corp_id", Tools.LpShopLive
+    live "/tools/lp_shop/:hub_id/:corp_id/:order_type", Tools.LpShopLive
     live "/tools/production", Tools.ProductionLive
     live "/tools/reactions", Tools.ReactionsLive
   end
