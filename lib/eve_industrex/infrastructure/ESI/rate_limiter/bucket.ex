@@ -1,20 +1,13 @@
 defmodule EveIndustrex.Infrastructure.ESI.RateLimiter.Bucket do
-  defstruct [:limit, :remaining, :updated_at, :cost, :group_penalty_cost]
+  defstruct [:limit, :remaining, :updated_at, :cooldown_until]
   alias EveIndustrex.Infrastructure.ESI.Headers
-  alias EveIndustrex.Infrastructure.ESI.RateLimiter.Penalty
-  def reserve(%__MODULE__{} = bucket) do
-    bucket
-    |> Map.update(:remaining, bucket.remaining, fn rem -> rem - bucket.group_penalty_cost end)
-    |> Map.replace(:updated_at, DateTime.utc_now())
-  end
 
-  def new(%Headers{} = headers) do
+  def new(%Headers{} = headers, cooldown \\ nil) do
     %__MODULE__{
       limit: parse_limit(headers.rate_limit),
       remaining: String.to_integer(headers.rate_limit_remaining),
       updated_at: DateTime.utc_now() |> DateTime.truncate(:second),
-      cost: String.to_integer(headers.rate_limit_used),
-      group_penalty_cost: Penalty.get_group(headers.rate_limit_group)
+      cooldown_until: cooldown
     }
   end
   defp parse_limit(nil), do: nil

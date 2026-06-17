@@ -13,8 +13,8 @@ defmodule EveIndustrex.Infrastructure.ESI.RateLimiter do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  def request(rate_limit_group) do
-    GenServer.call(__MODULE__, {:request, rate_limit_group})
+  def available?(rate_limit_group, threshold \\ 10) do
+    GenServer.call(__MODULE__, {:available?, rate_limit_group, threshold})
   end
   def check() do
       GenServer.call(__MODULE__, {:check})
@@ -22,29 +22,43 @@ defmodule EveIndustrex.Infrastructure.ESI.RateLimiter do
   def observe(%Headers{} = headers) do
     GenServer.cast(__MODULE__, {:observe, headers})
   end
+  def cooldown(%Headers{} = headers) do
+    GenServer.cast(__MODULE__, {:cooldown, headers})
+  end
   def handle_call({:check}, _from, state) do
     rl = :ets.tab2list(:rate_limiter)
     {:reply, rl, state}
   end
-  def handle_call({:request, rate_limit_group}, _from, state) do
+  def handle_call({:available?, rate_limit_group, threshold}, _from, state) do
     group = rate_limit_group
-
 
     case :ets.lookup(:rate_limiter, group) do
       [{^group, %Bucket{} = bucket}] ->
-
-        if bucket.remaining > bucket.group_penalty_cost do
-          :ets.insert(:rate_limiter, {group, Bucket.reserve(bucket)})
-          {:reply, :ok, state}
-        else
-          {:reply, :postpone, state}
+        cond do
+          cooldown_active?(bucket) ->
+            {:reply, false, state}
+          bucket.remaining > threshold ->
+            {:reply, true, state}
+          true ->
+            {:reply, false, state}
         end
       [] ->
-        {:reply, :ok, state}
+        {:reply, true, state}
     end
   end
   def handle_cast({:observe, %Headers{} = headers}, state) do
     :ets.insert(:rate_limiter, {headers.rate_limit_group, Bucket.new(headers)})
     {:noreply, state}
+  end
+  def handle_cast({:cooldown, %Headers{} = headers}, state) do
+    cooldown =
+    DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.add(headers.retry_after, :second)
+    :ets.insert(:rate_limiter, {headers.rate_limit_group, Bucket.new(headers, cooldown)})
+    {:noreply, state}
+  end
+  defp cooldown_active?(%Bucket{cooldown_until: nil} = _bucket), do: false
+
+  defp cooldown_active?(%Bucket{} = bucket) do
+     DateTime.before?(DateTime.utc_now(), bucket.cooldown_until)
   end
 end
