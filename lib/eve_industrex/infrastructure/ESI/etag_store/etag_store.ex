@@ -12,18 +12,19 @@ defmodule EveIndustrex.Infrastructure.ESI.EtagStore do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  def get_metadata(rate_limit_group, id, page) do
-    GenServer.call(__MODULE__, {:get_metadata, rate_limit_group, id, page})
+  def get_metadata(rate_limit_group, id) do
+    GenServer.call(__MODULE__, {:get_metadata, rate_limit_group, id})
   end
 
-  def upsert_metadata(rate_limit_group, id, page, headers) do
-    GenServer.cast(__MODULE__, {:upsert_metadata, rate_limit_group, id, page, headers})
+  def upsert_metadata(rate_limit_group, id, headers) do
+
+    GenServer.cast(__MODULE__, {:upsert_metadata, rate_limit_group, id, headers})
   end
 
-  def handle_call({:get_metadata, rate_limit_group, id, page}, _from, state) do
+  def handle_call({:get_metadata, rate_limit_group, id}, _from, state) do
     metadata =
-    case :ets.lookup(:etag_store, {rate_limit_group, id, page}) do
-      [{{^rate_limit_group, ^id, ^page}, metadata}] ->
+    case :ets.lookup(:etag_store, {rate_limit_group, id}) do
+      [{{^rate_limit_group, ^id}, metadata}] ->
         metadata
       [] ->
         :not_found
@@ -32,10 +33,15 @@ defmodule EveIndustrex.Infrastructure.ESI.EtagStore do
     {:reply, metadata, state}
   end
 
-  def handle_cast({:upsert_metadata, rate_limit_group, id, page, headers}, state) do
-    tuple = {{rate_limit_group, id, page}, %Metadata{etag: headers.etag, expires_at: headers.expires_at}}
-    :ets.insert(:etag_store, tuple)
+  def handle_cast({:upsert_metadata, rate_limit_group, id, headers}, state) do
+      if is_nil(headers.expires_at) do
+        {:noreply, state}
+      else
 
-    {:noreply, state}
+        tuple = {{rate_limit_group, id}, %Metadata{etag: headers.etag, expires_at: DateTimeParser.parse_datetime!(headers.expires_at, to_utc: true)|> DateTime.from_naive!("Etc/UTC")|>DateTime.truncate(:second)}}
+        :ets.insert(:etag_store, tuple)
+        {:noreply, state}
+      end
+
   end
 end
