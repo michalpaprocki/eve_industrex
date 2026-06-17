@@ -1,11 +1,10 @@
 defmodule EveIndustrex.Infrastructure.Bootstrap do
-  alias EveIndustrex.Infrastructure.ESI.Sync
+  alias EveIndustrex.Infrastructure.Schedulers
   alias EveIndustrex.Scraper
   alias EveIndustrex.Utils
   alias EveIndustrex.TqVersionService
   alias EveIndustrex.Infrastructure.Bootstrap.Service
   require Logger
-
 
   def run do
     seed_if_needed()
@@ -33,7 +32,7 @@ defmodule EveIndustrex.Infrastructure.Bootstrap do
       Service.populate_cache()
   end
   defp sync_tq_version do
-    tq_version = Scraper.get_latest_tq_version()
+    {:ok, tq_version} = Scraper.get_latest_tq_version()
     TqVersionService.upsert_tq_version(tq_version)
   end
   defp read_out_schema(schema, count) do
@@ -48,7 +47,13 @@ defmodule EveIndustrex.Infrastructure.Bootstrap do
     Logger.info("Checking for Resources Strategies...")
     Service.maybe_allocate_strategies()
 
-    :start_worker
+
+    Schedulers.ProjectionScheduler.new(%{}) |> Oban.insert()
+    Schedulers.StrategyCleanUpScheduler.new(%{}) |> Oban.insert()
+    Schedulers.TelemetryScheduler.new(%{}) |> Oban.insert()
+    Schedulers.StrategyScheduler.new(%{}) |> Oban.insert()
+
+
   end
 
 end
