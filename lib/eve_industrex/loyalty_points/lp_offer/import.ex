@@ -13,7 +13,8 @@ defmodule EveIndustrex.LoyaltyPoints.LpOffer.Import do
     offers = Mapper.filter_out_empty(fetched_offers) |> Mapper.flatten_and_get_unique_offers()
 
     Persistence.upsert_all(Enum.map(offers, fn o -> Mapper.from_esi(o) end))
-    EveIndustrex.LoyaltyPoints.CorpOffer.Persistence.upsert_all(Mapper.map_corp_and_offers_ids(fetched_offers) |> Enum.chunk_every(1000))
+
+    Mapper.map_corp_and_offers_ids(fetched_offers) |> Enum.chunk_every(100) |> Enum.each(fn chunk -> EveIndustrex.LoyaltyPoints.CorpOffer.Persistence.upsert_all(chunk) end)
 
     type_ids = EveIndustrex.LoyaltyPoints.LpReqItem.Mapper.get_offer_type_ids(offers) |> Enum.uniq() |> Enum.sort(:asc)
     present_types = EveIndustrex.Universe.Type.Query.get_types_ids(type_ids)
