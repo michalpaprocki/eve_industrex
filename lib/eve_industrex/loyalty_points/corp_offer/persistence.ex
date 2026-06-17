@@ -18,5 +18,7 @@ defmodule EveIndustrex.LoyaltyPoints.CorpOffer.Persistence do
       on_conflict: :nothing,
       conflict_target: [:corp_id, :offer_id]
     )
+
   end
+
 end
