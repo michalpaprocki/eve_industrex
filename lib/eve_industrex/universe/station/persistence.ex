@@ -25,4 +25,7 @@ defmodule EveIndustrex.Universe.Station.Persistence do
     |> Station.changeset(station)
     |> Repo.insert(on_conflict: {:replace, [:name, :reprocessing_efficiency, :reprocessing_stations_take, :system_id, :updated_at, :services]}, conflict_target: :station_id)
   end
+  def delete_all() do
+    Repo.delete_all(Station)
+  end
 end
