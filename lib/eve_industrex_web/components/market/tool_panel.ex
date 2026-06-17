@@ -22,7 +22,7 @@ defmodule EveIndustrexWeb.Market.ToolPanel do
         <div class={"#{if @tree, do: "w-64", else: "w-0"} overflow-auto transition-all duration-700"}>
         <.live_component id={"market_category_browser"} module={EveIndustrexWeb.Market.CategoryBrowser} />
         </div>
-        <div class={"#{if @filters, do: "w-64", else: "w-0"} items-center flex flex-col overflow-clip transition-all duration-700"}>
+        <div class={"#{if @filters, do: "w-64", else: "w-0"} items-center flex flex-col overflow-hidden transition-all duration-700"}>
         <.live_component id={"item_showcase"} module={EveIndustrexWeb.Market.Showcase} />
         <.live_component id={"market_filter"} module={EveIndustrexWeb.Market.Filter} />
         <.live_component id={"item_search"} module={EveIndustrexWeb.Market.Search} />

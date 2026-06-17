@@ -39,11 +39,12 @@ alias EveIndustrex.Utils
         </thead>
         <tbody class="overflow-auto text-white bg-black/70">
           <%= Enum.map(@data, fn o -> %>
+            <%= if o.location != nil do %>
             <tr class="px-2 font-sm hover:bg-black hover:text-white">
-              <td class="pl-2 truncate"> <%= o.station.system.constellation.region.name %> </td>
+              <td class="pl-2 truncate"> <%= o.location.region %> </td>
               <td class="pl-2 text-end"> <%= Utils.format_with_coma(o.volume_remain) %> / <%= Utils.format_with_coma(o.volume_total) %> </td>
               <td class="pl-2 text-end truncate"> <%= Utils.format_with_coma(o.price) %> &nbsp;ISK </td>
-              <td class="pl-2 text-start truncate">  <span class={apply_color_on_status(:erlang.float_to_binary(o.station.system.security_status, [decimals: 1]))}><%= :erlang.float_to_binary(o.station.system.security_status, [decimals: 1]) %></span>&nbsp;<%= o.station.name %> </td>
+              <td class="pl-2 text-start truncate">  <span class={apply_color_on_status(:erlang.float_to_binary(o.location.security_status, [decimals: 1]))}><%= :erlang.float_to_binary(o.location.security_status, [decimals: 1]) %></span>&nbsp;<%= o.location.name %> </td>
               <%= if @is_buy_list? do %>
               <td class="text-end">
                 <%= if Regex.run(~r/[0-9]/, o.range), do: o.range<>" jumps", else: o.range %>
@@ -57,6 +58,7 @@ alias EveIndustrex.Utils
               <td class="pl-2 text-start"> <%= Utils.get_time_left(o.issued, o.duration) %> </td>
               <td class="pl-2 "> <%= Utils.calculate_time_difference(o.issued) %> </td>
             </tr>
+            <% end %>
           <% end) %>
         </tbody>
       </table>

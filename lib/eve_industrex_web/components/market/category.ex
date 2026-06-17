@@ -5,7 +5,7 @@ alias EveIndustrex.Universe.MarketGroup.Store
   def update(assigns, socket) do
       cat_indent = "ml-"<>~s"#{assigns.indent}"
       %{:market_group => market_group} = assigns
-    {:ok, socket |> assign(assigns) |> assign(:cat_indent, cat_indent) |> assign(:types, []) |> assign(:open, false) |> assign(:open_types, false) |> assign(:children, Store.get_market_group_children(market_group.market_group_id)) |> assign(:types, Store.get_market_group_types(market_group.market_group_id))}
+    {:ok, socket |> assign(assigns) |> assign(:cat_indent, cat_indent) |> assign(:types, []) |> assign(:open, false) |> assign(:open_types, false) |> assign(:children, Store.get_market_group_children(market_group.market_group_id)) |> assign(:types, Enum.sort(Store.get_market_group_types(market_group.market_group_id)))}
   end
 
   def render(assigns) do
@@ -20,6 +20,7 @@ alias EveIndustrex.Universe.MarketGroup.Store
 
       <%= for c <- @children do %>
         <div class={@cat_indent<>" #{if @open, do: "block", else: "hidden"}"}>
+
          <.live_component id={c.market_group_id} market_group={c} module={__MODULE__} indent={@indent}/>
         </div>
       <% end %>
