@@ -19,7 +19,7 @@ defmodule EveIndustrex.Universe.System do
   end
   def changeset(system, attrs) do
     system
-    |> cast(attrs, [:name, :system_id, :stations, :constellation_id, :security_status])
+    |> cast(attrs, [:name, :system_id, :constellation_id, :security_status])
     |> unique_constraint([:system_id])
     |> validate_required([:system_id])
   end
