@@ -1,6 +1,5 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
   require Logger
-  alias EveIndustrex.Market
   alias EveIndustrex.Infrastructure.ESI.ClientHandler
   alias EveIndustrex.Infrastructure.ESI.Headers
   alias EveIndustrex.Infrastructure.ESI.Sync.{EsiSyncGeneration, EsiSyncStrategy}
@@ -46,7 +45,6 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
             {:rate_limited, %Headers{} = headers} ->
               upsert_sync_gen_page(page, generation_id, :rate_limited, attempt)
 
-              # upsert_esi_sync_cache(strategy.id, headers, page)
               RateLimiter.cooldown(headers)
               {:snooze, calc_delay(attempt)}
 
@@ -158,9 +156,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
       map
     end
   end
-  def delete_orders_from_prev_generations(target_id, generation) do
-    Market.MarketOrder.Persistence.delete_all_expired(target_id, generation)
-  end
+
   def advance_page_completed(generation_id, total_pages) do
     Sync.Persistence.increment_generation_pages_completed(generation_id, total_pages)
   end
@@ -191,14 +187,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
       |> Sync.EsiSyncGenerationPage.changeset(%{page_number: page, esi_sync_generation_id: esi_sync_generation_id, status: status, attempts: attempt, last_error: last_error})
       |> Sync.Persistence.upsert_sync_generation_page()
   end
-  defp upsert_esi_sync_cache(strategy_id, headers, page) do
-    Sync.Persistence.upsert_esi_sync_cache(Sync.Mapper.to_cache(strategy_id, headers, page))
-  end
-  defp apply_common_effects(strategy, headers, page) do
-    RateLimiter.observe(headers)
-    # upsert_esi_sync_cache(strategy.id, headers, page)
 
-  end
   defp maybe_update_route_group(resource_name, rate_limit_group) do
     case RouteGroups.get(resource_name) do
       nil ->

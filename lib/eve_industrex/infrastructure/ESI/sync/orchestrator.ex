@@ -94,7 +94,7 @@ strategy = Sync.Query.get_strategy(strategy_id)
             last_successful_sync: OrchestratorService.now(),
             next_run_at: OrchestratorService.calc_next_run(strategy.sync_interval_seconds, generation.started_at)
             })
-            # OrchestratorService.delete_orders_from_prev_generations(generation.generation)
+
             :ok
           end
         :completed ->
@@ -105,7 +105,7 @@ strategy = Sync.Query.get_strategy(strategy_id)
             last_successful_sync: OrchestratorService.now(),
             next_run_at: OrchestratorService.calc_next_run(strategy.sync_interval_seconds, generation.started_at)
             })
-            # OrchestratorService.delete_orders_from_prev_generations(generation.generation)
+
             :ok
         :critical ->
            Logger.error("Finalizer critical")
