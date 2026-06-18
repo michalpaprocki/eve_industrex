@@ -1,6 +1,7 @@
 defmodule Domain.Market.MarketGroup.PersistenceTest do
-  alias EveIndustrex.Market.MarketGroup.Persistence
-  alias EveIndustrex.Market.MarketGroup
+Persistence
+  alias EveIndustrex.Universe.MarketGroup.Persistence
+  alias EveIndustrex.Universe.MarketGroup
   use EveIndustrex.DataCase
 
   @market_group %{

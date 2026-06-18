@@ -1,6 +1,6 @@
 defmodule Domain.Market.MarketGroup.MapperTest do
   use ExUnit.Case
-  alias EveIndustrex.Market.MarketGroup.Mapper
+  alias EveIndustrex.Universe.MarketGroup.Mapper
   setup_all  do
     mock_dump_market_groups = [
       %{

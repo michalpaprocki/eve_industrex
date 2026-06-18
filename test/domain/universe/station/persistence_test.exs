@@ -69,7 +69,7 @@ defmodule Domain.Universe.Station.PersistenceTest do
 
   test "updates multiple stations" do
     {_num_of_inserted, nil} = Persistence.upsert_all(@stations)
-    updated = Enum.map(@stations, fn c -> %{:system_id => c.system_id, :services => c.services, :name => "updated_name", :reprocessing_stations_take => c.reprocessing_stations_take, :reprocessing_efficiency => c.reprocessing_efficiency } end)
+    updated = Enum.map(@stations, fn c -> %{c | :system_id => c.system_id, :services => c.services, :name => "updated_name", :reprocessing_stations_take => c.reprocessing_stations_take, :reprocessing_efficiency => c.reprocessing_efficiency } end)
     assert {num_of_updated, data} = Persistence.upsert_all(updated, true)
     assert num_of_updated == 2
     assert Enum.map(data, fn d -> d.name == "updated_name" end)

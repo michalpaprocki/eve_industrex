@@ -48,7 +48,7 @@ defmodule Domain.Universe.Contellation.PersistenceTest do
 
   test "updates multiple constellations" do
     {_num_of_inserted, nil} = Persistence.upsert_all(@constellations)
-    updated = Enum.map(@constellations, fn c -> %{:region_id => c.region_id, :name => "updated_name"} end)
+    updated = Enum.map(@constellations, fn c -> %{c | :region_id => c.region_id, :name => "updated_name"} end)
     assert {num_of_updated, data} = Persistence.upsert_all(updated, true)
     assert num_of_updated == 2
     assert Enum.map(data, fn d -> d.name == "updated_name" end)

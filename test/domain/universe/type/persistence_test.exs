@@ -56,7 +56,7 @@ use EveIndustrex.DataCase
   setup do
     {:ok, _} = EveIndustrex.Universe.Category.Persistence.upsert(@category)
     {:ok, _} = EveIndustrex.Universe.Group.Persistence.upsert(@group)
-    {:ok, _} = EveIndustrex.Market.MarketGroup.Persistence.upsert(@market_group)
+    {:ok, _} = EveIndustrex.Universe.MarketGroup.Persistence.upsert(@market_group)
     {:ok, %{}}
   end
   test "inserts a single type" do
