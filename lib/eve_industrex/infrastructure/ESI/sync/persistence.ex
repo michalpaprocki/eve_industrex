@@ -107,9 +107,6 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Persistence do
     from(g in EsiSyncGeneration, where: g.id == ^generation_id)
     |> Repo.update_all(inc: [pages_completed: 1], set: [pages_total: total_pages])
   end
-  def upsert_esi_sync_cache(cache) do
-    Repo.insert(cache, on_conflict: :replace_all, conflict_target: [:esi_sync_strategy_id, :page_number])
-  end
   def upsert_sync_generation_page(page) do
     Repo.insert(page, on_conflict: :replace_all, conflict_target: [:esi_sync_generation_id, :page_number])
   end
