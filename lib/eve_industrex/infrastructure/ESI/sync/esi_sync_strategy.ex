@@ -19,6 +19,6 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.EsiSyncStrategy do
   end
   def changeset(strategy, attrs) do
     strategy
-    |> cast(attrs, [:sync_interval_seconds, :target_id, :last_successful_sync, :status, :next_run_at, :enabled, :next_generation])
+    |> cast(attrs, [:sync_interval_seconds, :target_id, :last_successful_sync, :status, :next_run_at, :enabled, :next_generation, :resource_type_id])
   end
 end
