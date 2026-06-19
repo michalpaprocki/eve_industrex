@@ -13,7 +13,7 @@ defmodule EveIndustrex.Infrastructure.ESI.ClientHandler do
       status == 304 ->
         {:not_modified, headers}
       status == 404 ->
-        {:not_found, body, headers}
+        {:not_found, body, headers, status}
       status == 429 ->
         {:rate_limited, headers}
       status >= 500 ->
