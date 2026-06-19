@@ -76,32 +76,32 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
 
               {:snooze, calc_delay(attempt)}
 
-            {:not_found, body, %Headers{} = headers} ->
+            {:not_found, _body, %Headers{} = headers, status} ->
 
               RateLimiter.observe(headers)
+              upsert_sync_gen_page(page, generation_id, :critical, attempt, Integer.to_string(status))
               update_generation(generation_id, %{
                   status: :critical,
                   last_error: "not found",
                   finished_at: now(),
                   }
                 )
-              upsert_sync_gen_page(page, generation_id, :critical, attempt, body)
               :ok
 
-            {:client_error, body, %Headers{} = headers, _status} ->
+            {:client_error, _body, %Headers{} = headers, status} ->
 
               RateLimiter.observe(headers)
+              upsert_sync_gen_page(page, generation_id, :critical, attempt, Integer.to_string(status))
               update_generation(generation_id, %{
                   status: :critical,
                   last_error: "client error",
                   finished_at: now(),
                   }
                 )
-              upsert_sync_gen_page(page, generation_id, :critical, attempt, body)
               :ok
 
-              {:unexpected_response, _headers, _status} ->
-                upsert_sync_gen_page(page, generation_id, :critical, attempt, :unexpected_response)
+              {:unexpected_response, _headers, status} ->
+                upsert_sync_gen_page(page, generation_id, :critical, attempt, Integer.to_string(status))
 
                 update_generation(generation_id, %{
                   status: :critical,
@@ -111,9 +111,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                 )
                 # somehow track and report that behavior changed
               :ok
-              {:invalid_status, _headers, _status} ->
-                upsert_sync_gen_page(page, generation_id, :critical, attempt, :invalid_status)
+              {:invalid_status, _headers, status} ->
 
+                upsert_sync_gen_page(page, generation_id, :critical, attempt, Integer.to_string(status))
                 update_generation(generation_id, %{
                   status: :critical,
                   last_error: "invalid_status",
@@ -123,6 +123,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
               :ok
           end
   end
+
+  # not sure what was the idea here
+
   def compare_diff(:not_found, _), do: false
   def compare_diff(%{:etag => nil, :expires_at => nil}, _), do: false
   def compare_diff(metadata, now), do: DateTime.compare(metadata.expires_at, now) == :gt
@@ -134,7 +137,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
         |> Sync.EsiSyncGeneration.changeset(%{generation: next_generation ,esi_sync_strategy_id: strategy_id, started_at: now, target_id: target_id, status: :running, pages_completed: 0})
         |> Sync.Persistence.insert_generation()
         gen
-      end
+  end
   def calc_delay(attempt) do
     min(trunc(:math.pow(2, attempt) * 15), 1800)
   end
