@@ -14,4 +14,8 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.ResourceType do
     resource_type
     |> cast(attrs, [:strategies_count])
   end
+  def changeset(resource_type, attrs) do
+    resource_type
+    |> cast(attrs, [:name, :strategies_count])
+  end
 end
