@@ -1,13 +1,12 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.Persistence do
 
-  alias EveIndustrex.Infrastructure.ESI.Sync.RateLimitGroup
   alias EveIndustrex.Infrastructure.ESI.Sync.EsiSyncGeneration
   alias EveIndustrex.Infrastructure.ESI.Sync.EsiSyncCache
   alias EveIndustrex.Infrastructure.ESI.Sync.EsiSyncStrategy
   alias EveIndustrex.Repo
   alias EveIndustrex.Infrastructure.ESI.Sync.ResourceType
   import Ecto.Query
-  import Ecto.Changeset
+
   def delete_resources() do
     Repo.delete_all(ResourceType)
   end
@@ -26,6 +25,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Persistence do
     delete_strategies()
     delete_resources()
   end
+  def insert_resource_type(resource_type) do
+    Repo.insert!(resource_type)
+  end
   def insert_all_resource_types(list_of_resource_types) do
     Repo.insert_all(
       ResourceType,
@@ -38,6 +40,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Persistence do
     Repo.get(ResourceType, id)
     |> ResourceType.update_strategies_count_changeset(count)
     |> Repo.update()
+  end
+  def insert_strategy(strategy) do
+    Repo.insert!(strategy)
   end
   def upsert_strategies(list_of_strategies) do
     now = get_now()
@@ -52,7 +57,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Persistence do
     Repo.insert_all(
       EsiSyncStrategy,
       rows,
-      on_conflict: {:replace_all_except, [:inserted_at, ]},
+      on_conflict: {:replace_all_except, [:inserted_at]},
       conflict_target: [:resource_type_id, :target_id]
     )
 
