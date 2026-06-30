@@ -98,13 +98,16 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
     case type do
       :product ->
         offer = put_in(offer[:prices][:products][type_id], price)
-        put_in(offer[:isk_on_lp], maybe_calc_isk_per_lp(offer))
+        offer = put_in(offer[:isk_on_lp], maybe_calc_isk_per_lp(offer))
+        put_in(offer,[:profit], calc_profit(offer))
       :req_item ->
         offer = put_in(offer[:prices][:req_items][type_id], price)
-        put_in(offer[:isk_on_lp], maybe_calc_isk_per_lp(offer))
+        offer = put_in(offer[:isk_on_lp], maybe_calc_isk_per_lp(offer))
+        put_in(offer,[:profit], calc_profit(offer))
       :bp_materials ->
         offer = put_in(offer[:prices][:materials][type_id], price)
-        put_in(offer[:isk_on_lp], maybe_calc_isk_per_lp(offer))
+        offer = put_in(offer[:isk_on_lp], maybe_calc_isk_per_lp(offer))
+        put_in(offer,[:profit], calc_profit(offer))
     end
   end
   defp maybe_calc_isk_per_lp(offer) do
