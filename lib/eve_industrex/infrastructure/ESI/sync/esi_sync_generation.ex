@@ -14,13 +14,16 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.EsiSyncGeneration do
     field :target_id, :integer
     field :last_error, :string
     field :pages_total, :integer
+    field :snapshot_etag, :string
+    field :snapshot_expires_at, :utc_datetime
+    field :snapshot_last_modified, :utc_datetime
     field :pages_completed, :integer, default: 0
-    field :status, Ecto.Enum, values: [:running, :completed, :failed, :partial, :critical]
+    field :status, Ecto.Enum, values: [:running, :completed, :failed, :critical, :not_modified, :superseded]
     has_many :generation_pages, EsiSyncGenerationPage, foreign_key: :esi_sync_generation_id
     timestamps(type: :utc_datetime)
   end
   def changeset(generation, attrs) do
     generation
-    |> cast(attrs, [:priority, :generation, :pages_completed ,:pages_total,:started_at, :finished_at, :duration_ms, :target_id, :last_error, :status, :esi_sync_strategy_id])
+    |> cast(attrs, [:priority, :generation, :pages_completed, :snapshot_last_modified ,:pages_total, :started_at, :finished_at, :duration_ms, :target_id, :last_error, :status, :esi_sync_strategy_id, :snapshot_etag, :snapshot_expires_at])
   end
 end
