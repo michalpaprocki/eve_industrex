@@ -6,7 +6,6 @@ defmodule EveIndustrex.Market.MarketOrder.Query do
   require Logger
 
   def get_count(), do: Repo.aggregate(MarketOrder, :count)
-  def get_all(), do: Repo.all(MarketOrder)
   def get_by_region(region_id) do
     from(mo in MarketOrder, where: mo.region_id == ^region_id) |> Repo.all
   end
@@ -24,4 +23,7 @@ defmodule EveIndustrex.Market.MarketOrder.Query do
     from(mo in MarketOrder, where: mo.generation == subquery(max_gen) and mo.region_id == ^region_id)
     |> Repo.all
   end
+  def get_all_count(), do: Repo.aggregate(MarketOrder, :count)
+
+
 end
