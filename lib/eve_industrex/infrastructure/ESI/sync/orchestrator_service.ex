@@ -6,73 +6,117 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
   alias EveIndustrex.Infrastructure.ESI.Sync
   alias EveIndustrex.Market.MarketOrder
   alias EveIndustrex.Infrastructure.ESI.RouteGroups
-  alias EveIndustrex.Infrastructure.ESI.EtagStore
+  # alias EveIndustrex.Infrastructure.ESI.EtagStore
   alias EveIndustrex.Infrastructure.ESI.RateLimiter
-  def orchestrate(fetch_fn, generation_id, generation, attempt, strategy, metadata, page) do
-    # possible egde case when etag expires during fn call/ maybe use duration_ms from generations to estimate what's the appropriate window / or save etag in db and check if incoming etag same as this in db
+  def orchestrate(fetch_fn, generation_id, generation, attempt, max_attempts, strategy, metadata, page) do
+    gen = Sync.Query.get_generation(generation_id)
+    if gen.status != :running do
+      :ok
+    else
+
 
     case ClientHandler.handle_response(fetch_fn.(strategy.target_id, page, metadata)) do
             {:success, body, %Headers{} = headers} ->
-              if page == 1 do
-
-                EtagStore.upsert_metadata(headers.rate_limit_group, strategy.target_id, headers)
-
-              end
-
-              RateLimiter.observe(headers)
-
-              upsert_sync_gen_page(page, generation_id, :completed, attempt)
-
-              upsert(body, strategy.resource_type.name, generation, strategy.target_id)
-
-              if page == 1 do
-                maybe_update_route_group(strategy.resource_type.name, headers.rate_limit_group)
-              end
-              advance_page_completed(generation_id, String.to_integer(headers.pages))
-              cond do
-                String.to_integer(headers.pages) > 1 && page == 1 ->
-                  {:fanout, String.to_integer(headers.pages)}
-
-                page == 1 ->
-                  {:ok, String.to_integer(headers.pages), generation_id}
-                true ->
-
-                  :ok
-
-              end
+              snapshot_last_modified = DateTimeParser.parse_datetime!(headers.last_modified, to_utc: true)|> DateTime.from_naive!("Etc/UTC")|>DateTime.truncate(:second)
+              {:ok, gen} =
+                if page == 1 do
+                  snapshot_expires_at = DateTimeParser.parse_datetime!(headers.expires_at, to_utc: true)|> DateTime.from_naive!("Etc/UTC")|>DateTime.truncate(:second)
+                  maybe_update_route_group(strategy.resource_type.name, headers.rate_limit_group)
 
 
-            {:rate_limited, %Headers{} = headers} ->
-              upsert_sync_gen_page(page, generation_id, :rate_limited, attempt)
-
-              RateLimiter.cooldown(headers)
-              {:snooze, calc_delay(attempt)}
-
-            {:not_modified, %Headers{} = headers} ->
-
-              Logger.info("NOT MODDED")
-
-              upsert_sync_gen_page(page, generation_id, :matched, attempt)
+                    update_generation(generation_id, %{
+                      snapshot_etag: headers.etag,
+                      snapshot_expires_at: snapshot_expires_at,
+                      snapshot_last_modified: snapshot_last_modified
+                    }
+                  )
+                  else
+                    {:ok, gen}
+                end
 
               RateLimiter.observe(headers)
-              if page == 1 do
-                maybe_update_route_group(strategy.resource_type.name, headers.rate_limit_group)
-              end
+              # Logger.info("snapshot last modded: #{snapshot_last_modified}")
+              # Logger.info("gen last modded: #{gen.snapshot_last_modified}")
+                  # add additional check for remainig < estimated_gen_duration(or remaining, gotta pull it from metrics in future), snooze if it takes longer than expires_at
+              if snapshot_last_modified == gen.snapshot_last_modified do
+                # notinue when last_modified havent changed
+                upsert_sync_gen_page(page, generation_id, :completed, attempt)
 
+                upsert(body, strategy.resource_type.name, generation, strategy.target_id)
+
+
+                advance_page_completed(generation_id, String.to_integer(headers.pages))
+
+                cond do
+                  String.to_integer(headers.pages) > 1 && page == 1 ->
+                    {:fanout, String.to_integer(headers.pages)}
+
+                  page == 1 ->
+                    {:ok, String.to_integer(headers.pages), generation_id}
+
+
+                  true ->
+
+                    :ok
+                end
+              else
+                # mark as superseded and restart
                 update_generation(generation_id, %{
-                  status: :completed,
-                  last_error: "not_modified",
+                  status: :superseded,
+                  last_error: "last_modified_missmatch",
                   finished_at: now(),
                   pages_total: String.to_integer(headers.pages),
                   pages_completed: String.to_integer(headers.pages)
                   }
                 )
               :ok
+              end
 
 
-            {:server_error, %Headers{} = _headers, status} ->
+
+            {:rate_limited, %Headers{} = headers} ->
+
+
+              upsert_sync_gen_page(page, generation_id, :rate_limited, attempt, "page rate limited "<>Integer.to_string(attempt)<>" times")
+
+              RateLimiter.cooldown(headers)
+
+              if attempt >= max_attempts do
+              update_generation(generation_id, %{
+                  status: :failed,
+                  last_error: "max_attempts_exceeded",
+                  finished_at: now(),
+                  pages_total: String.to_integer(headers.pages),
+                  pages_completed: String.to_integer(headers.pages)
+                  }
+                )
+                :ok
+              else
+
+                {:snooze, calc_delay(attempt)}
+              end
+
+            {:not_modified, %Headers{} = headers} ->
+
+              Logger.info("NOT MODDED")
+
+              upsert_sync_gen_page(page, generation_id, :matched, attempt)
+              update_generation(generation_id, %{
+                  status: :not_modified,
+                  last_error: nil,
+                  finished_at: now(),
+                  pages_total: String.to_integer(headers.pages),
+                  pages_completed: String.to_integer(headers.pages)
+                  }
+                )
+              RateLimiter.observe(headers)
+
+              :ok
+
+
+            {:server_error, %Headers{} = headers, status} ->
               upsert_sync_gen_page(page, generation_id, :retryable, attempt, Integer.to_string(status))
-
+               RateLimiter.observe(headers)
 
               {:snooze, calc_delay(attempt)}
 
@@ -100,9 +144,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                 )
               :ok
 
-              {:unexpected_response, _headers, status} ->
+              {:unexpected_response, headers, status} ->
                 upsert_sync_gen_page(page, generation_id, :critical, attempt, Integer.to_string(status))
-
+                 RateLimiter.observe(headers)
                 update_generation(generation_id, %{
                   status: :critical,
                   last_error: "unexpected_response",
@@ -111,8 +155,8 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                 )
                 # somehow track and report that behavior changed
               :ok
-              {:invalid_status, _headers, status} ->
-
+              {:invalid_status, headers, status} ->
+                 RateLimiter.observe(headers)
                 upsert_sync_gen_page(page, generation_id, :critical, attempt, Integer.to_string(status))
                 update_generation(generation_id, %{
                   status: :critical,
@@ -122,6 +166,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                 )
               :ok
           end
+    end
   end
 
   # not sure what was the idea here
@@ -186,6 +231,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
 
   end
   defp upsert_sync_gen_page(page, esi_sync_generation_id, status, attempt, last_error \\ nil) do
+
     %Sync.EsiSyncGenerationPage{}
       |> Sync.EsiSyncGenerationPage.changeset(%{page_number: page, esi_sync_generation_id: esi_sync_generation_id, status: status, attempts: attempt, last_error: last_error})
       |> Sync.Persistence.upsert_sync_generation_page()
