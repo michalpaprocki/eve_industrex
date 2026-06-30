@@ -12,7 +12,7 @@ defmodule EveIndustrex.Infrastructure.Schedulers.StrategyScheduler do
   def perform(_job) do
     Logger.info("Strategy scheduler running...")
     {:ok, strats} = Query.claim_due_strategies()
-
+    Logger.info("Got #{inspect(length(strats))} due strats...")
     strats
     |> Enum.map(fn strategy ->
      worker = Map.fetch!(@workers, strategy.resource_type.name)
