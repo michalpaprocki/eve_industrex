@@ -24,6 +24,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Persistence do
     delete_generations()
     delete_strategies()
     delete_resources()
+    EveIndustrex.Market.MarketOrder.Persistence.delete_all()
   end
   def insert_resource_type(resource_type) do
     Repo.insert!(resource_type)
@@ -89,6 +90,8 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Persistence do
           started_at: fragment("EXCLUDED.started_at"),
           finished_at: fragment("EXCLUDED.finished_at"),
           updated_at: fragment("EXCLUDED.updated_at"),
+          snapshot_expires_at: fragment("EXCLUDED.snapshot_expires_at"),
+          snapshot_etag: fragment("EXCLUDED.snapshot_etag"),
           duration_ms: fragment("EXCLUDED.duration_ms"),
           last_error: fragment("EXCLUDED.last_error")
           ],
