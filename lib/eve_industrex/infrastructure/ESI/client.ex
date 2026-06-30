@@ -4,12 +4,8 @@ defmodule EveIndustrex.Infrastructure.ESI.Client do
   alias EveIndustrex.Infrastructure.ESI.Endpoints.{MarketOrders, Station, MarketGroup}
   def get_market_orders_route(region_id, page), do: MarketOrders.compose(region_id, page)
   def get_stations_route(station_id), do: Station.compose(station_id)
-  def fetch_market_orders(region_id, page, :not_found) do
 
-    fetch(MarketOrders.compose(region_id, page))
-  end
   def fetch_market_orders(region_id, page, metadata) do
-
     if is_nil(metadata.etag) do
       fetch(MarketOrders.compose(region_id, page))
     else
@@ -30,7 +26,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Client do
     case Req.get(url) do
       {:ok, %Req.Response{status: status, headers: headers, body: body, private: _private, trailers: _trailers} = _response} ->
 
-        {:ok, %Response{status: status, body: body, route: url, headers: %Headers{retry_after: get_header(headers, "retry-after") ,pages: get_header(headers, "x-pages"), etag: get_header(headers, "etag"), expires_at: get_header(headers, "expires"), rate_limit: get_header(headers, "x-ratelimit-limit"), rate_limit_used: get_header(headers, "x-ratelimit-used"), rate_limit_remaining: get_header(headers, "x-ratelimit-remaining"), rate_limit_group: get_header(headers, "x-ratelimit-group")}}}
+        {:ok, %Response{status: status, body: body, route: url, headers: %Headers{last_modified: get_header(headers, "last-modified"), retry_after: get_header(headers, "retry-after") ,pages: get_header(headers, "x-pages"), etag: get_header(headers, "etag"), expires_at: get_header(headers, "expires"), rate_limit: get_header(headers, "x-ratelimit-limit"), rate_limit_used: get_header(headers, "x-ratelimit-used"), rate_limit_remaining: get_header(headers, "x-ratelimit-remaining"), rate_limit_group: get_header(headers, "x-ratelimit-group")}}}
 
       {:error, exception} ->
         {:error, exception}
@@ -43,9 +39,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Client do
 
     case Req.request(req) do
 
-     {:ok, %Req.Response{status: status, headers: headers, body: body, private: _private, trailers: _trailers} = response} ->
+     {:ok, %Req.Response{status: status, headers: headers, body: body, private: _private, trailers: _trailers} = _response} ->
 
-      {:ok, %Response{status: status, body: body, route: url, headers: %Headers{retry_after: get_header(headers, "retry-after") ,pages: get_header(headers, "x-pages"), etag: get_header(headers, "etag"), expires_at: get_header(headers, "expires"), rate_limit: get_header(headers, "x-ratelimit-limit"), rate_limit_used: get_header(headers, "x-ratelimit-used"), rate_limit_remaining: get_header(headers, "x-ratelimit-remaining"), rate_limit_group: get_header(headers, "x-ratelimit-group")}}}
+      {:ok, %Response{status: status, body: body, route: url, headers: %Headers{last_modified: get_header(headers, "last-modified"), retry_after: get_header(headers, "retry-after") ,pages: get_header(headers, "x-pages"), etag: get_header(headers, "etag"), expires_at: get_header(headers, "expires"), rate_limit: get_header(headers, "x-ratelimit-limit"), rate_limit_used: get_header(headers, "x-ratelimit-used"), rate_limit_remaining: get_header(headers, "x-ratelimit-remaining"), rate_limit_group: get_header(headers, "x-ratelimit-group")}}}
 
     {:error, exception} ->
         {:error, exception}
