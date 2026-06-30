@@ -9,10 +9,10 @@ use Oban.Worker, queue: :market_orders, max_attempts: 5
 
 # maybe check etag store for expires_at and start job right after expiry to prevent esi cache refresh during job
   @impl Oban.Worker
-  def perform(%Oban.Job{args: args, attempt: attempt}) do
+  def perform(%Oban.Job{args: args, attempt: attempt, max_attempts: max_attempts}) do
     %{"strategy_id" => strategy_id} = args
 
-      case Orchestrator.initiate_paginated_resource_sync(strategy_id, attempt, &Client.fetch_market_orders/3) do
+      case Orchestrator.initiate_paginated_resource_sync(strategy_id, attempt, max_attempts, &Client.fetch_market_orders/3) do
         {:snooze, delay} ->
           Logger.info("Snoozing root worker")
           {:snooze, delay}
@@ -42,7 +42,7 @@ use Oban.Worker, queue: :market_orders, max_attempts: 5
 
           :ok
         :ok ->
-          Logger.error("should neveeeeeeeeeeeeeeeeeeeeeeeer run")
+
           :ok
       end
 

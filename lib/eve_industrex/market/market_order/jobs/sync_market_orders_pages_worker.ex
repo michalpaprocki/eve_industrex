@@ -11,9 +11,9 @@ use Oban.Worker, queue: :market_orders, max_attempts: 5
 
 require Logger
   @impl Oban.Worker
-  def perform(%Oban.Job{args: args, attempt: attempt}) do
+  def perform(%Oban.Job{args: args, attempt: attempt, max_attempts: max_attempts}) do
     %{"strategy_id" => strategy_id, "generation_id" => generation_id, "page" => page} = args
-      case Orchestrator.sync_paginated_resource(strategy_id, generation_id, attempt, &Client.fetch_market_orders/3, page) do
+      case Orchestrator.sync_paginated_resource(strategy_id, generation_id, attempt, max_attempts, &Client.fetch_market_orders/3, page) do
         {:snooze, delay} ->
            Logger.info("Snoozing pages worker")
           {:snooze, delay}
