@@ -155,9 +155,9 @@ defmodule EveIndustrexWeb.LpShop.LpMiniMarket do
     params = %{custom_price: form[:custom_price].value, order_type: order_type}
     order_type =
       if order_type == "SELL" do
-        "sell_orders"
+        "sell"
       else
-        "buy_orders"
+        "buy"
       end
     changeset =
     {%{}, @form_types}
@@ -266,6 +266,7 @@ defmodule EveIndustrexWeb.LpShop.LpMiniMarket do
     end
   end
   defp get_order_on_type(orders, order_type, category) do
+
     cond do
       order_type == "sell" and category == :req_item ->
         Enum.sort(orders.sell_orders, &(&1.price <= &2.price))
@@ -277,7 +278,7 @@ defmodule EveIndustrexWeb.LpShop.LpMiniMarket do
         Enum.sort(orders.buy_orders, &(&1.price >= &2.price))
       order_type == "sell" and category == :product ->
         Enum.sort(orders.sell_orders, &(&1.price <= &2.price))
-      order_type == "buy_" and category == :product ->
+      order_type == "buy" and category == :product ->
         Enum.sort(orders.buy_orders, &(&1.price >= &2.price))
       order_type == "sell_buy" and category == :product ->
         Enum.sort(orders.buy_orders, &(&1.price >= &2.price))
