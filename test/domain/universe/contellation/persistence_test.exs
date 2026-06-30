@@ -34,7 +34,7 @@ defmodule Domain.Universe.Contellation.PersistenceTest do
   end
 
 
-  test "updates a single constellation", context do
+  test "updates a single constellation" do
     assert {:ok, %Constellation{} = constellation} = Persistence.upsert(Map.replace(@constellation, :name, "updated_name"))
     assert constellation.constellation_id == 1
     assert constellation.name == "updated_name"

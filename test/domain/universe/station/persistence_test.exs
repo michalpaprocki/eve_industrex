@@ -56,7 +56,7 @@ defmodule Domain.Universe.Station.PersistenceTest do
   end
 
 
-  test "updates a single station", context do
+  test "updates a single station" do
     assert {:ok, %Station{} = system} = Persistence.upsert(Map.replace(@station, :name, "updated_name"))
     assert system.station_id == 1
     assert system.name == "updated_name"

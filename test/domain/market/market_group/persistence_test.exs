@@ -19,9 +19,9 @@ Persistence
     }
   ]
   test "inserts a single market_group" do
-    {:ok, %MarketGroup{} = market_group} = Persistence.upsert(@market_group)
+    {:ok, %MarketGroup{} = _market_group} = Persistence.upsert(@market_group)
   end
-  test "updates a single market_group", context do
+  test "updates a single market_group" do
     assert {:ok, %MarketGroup{} = market_group} = Persistence.upsert(Map.replace(@market_group, :name, "updated_name"))
     assert market_group.market_group_id == 1
     assert market_group.name == "updated_name"

@@ -23,7 +23,7 @@ defmodule Domain.Universe.Group.PersistenceTest do
     }
   ]
   setup  do
-    {:ok, category} = EveIndustrex.Universe.Category.Persistence.upsert(@category)
+    {:ok, category} = Category.Persistence.upsert(@category)
     {:ok, %{:category => category}}
   end
   test "inserts a single group" do
@@ -36,7 +36,7 @@ defmodule Domain.Universe.Group.PersistenceTest do
   end
 
 
-  test "updates a single group", context do
+  test "updates a single group" do
     assert {:ok, %Group{} = group} = Persistence.upsert(Map.replace(@group, :name, "updated_name"))
     assert group.category_id == 0
     assert group.published == true

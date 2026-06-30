@@ -41,7 +41,7 @@ defmodule Domain.Universe.System.PersistenceTest do
   end
 
 
-  test "updates a single system", context do
+  test "updates a single system" do
     assert {:ok, %System{} = system} = Persistence.upsert(Map.replace(@system, :name, "updated_name"))
     assert system.system_id == 0
     assert system.name == "updated_name"

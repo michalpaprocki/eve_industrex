@@ -24,7 +24,7 @@ defmodule Domain.Universe.Region.PersistenceTest do
   end
 
 
-  test "updates a single region", context do
+  test "updates a single region" do
     assert {:ok, %Region{} = region} = Persistence.upsert(Map.replace(@region, :name, "updated_name"))
     assert region.region_id == 0
     assert region.description == "Test description1"

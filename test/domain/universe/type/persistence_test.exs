@@ -60,9 +60,9 @@ use EveIndustrex.DataCase
     {:ok, %{}}
   end
   test "inserts a single type" do
-    {:ok, %Type{} = type} = Persistence.upsert(@single_type)
+    {:ok, %Type{} = _type} = Persistence.upsert(@single_type)
   end
-  test "updates a single type", context do
+  test "updates a single type" do
     assert {:ok, %Type{} = type} = Persistence.upsert(Map.replace(@single_type, :name, "updated_name"))
     assert type.type_id == 1
     assert type.name == "updated_name"

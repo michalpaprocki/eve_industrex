@@ -27,7 +27,7 @@ defmodule Domain.Universe.Category.PersistenceTest do
     {:ok, %{:category => category}}
   end
 
-  test "updates a single category", context do
+  test "updates a single category" do
     assert {:ok, %Category{} = category} = Persistence.upsert(Map.replace(@category, :name, "updated_name"))
     assert category.category_id == 0
     assert category.published == true
