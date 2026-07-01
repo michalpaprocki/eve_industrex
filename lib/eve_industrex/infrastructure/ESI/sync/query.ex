@@ -54,7 +54,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Query do
   end
   def get_strategy_with_generation(id) do
     gen_query = from(g in EsiSyncGeneration, order_by: [desc: g.generation], limit: 1)
-    from(s in EsiSyncStrategy, where: s.id == ^id)
+    from(s in EsiSyncStrategy, where: s.id == ^id, preload: :resource_type)
     |> Repo.one()
     |> Repo.preload(generations: gen_query, generations: [:generation_pages])
   end
