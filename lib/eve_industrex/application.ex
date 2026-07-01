@@ -15,6 +15,7 @@ defmodule EveIndustrex.Application do
       EveIndustrex.Infrastructure.ESI.EtagStore,
       EveIndustrex.Infrastructure.Cache.Supervisor,
       EveIndustrexWeb.Telemetry,
+      EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor,
       EveIndustrex.Repo,
       {Oban, Application.fetch_env!(:eve_industrex, Oban)},
       {DNSCluster, query: Application.get_env(:eve_industrex, :dns_cluster_query) || :ignore},

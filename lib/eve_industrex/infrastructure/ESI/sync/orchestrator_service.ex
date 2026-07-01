@@ -1,5 +1,6 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
   require Logger
+  alias EveIndustrex.Infrastructure.ESI.Sync.SyncEvents
   alias EveIndustrex.Infrastructure.ESI.ClientHandler
   alias EveIndustrex.Infrastructure.ESI.Headers
   alias EveIndustrex.Infrastructure.ESI.Sync.{EsiSyncGeneration, EsiSyncStrategy}
@@ -30,6 +31,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                       snapshot_last_modified: snapshot_last_modified
                     }
                   )
+
                   else
                     {:ok, gen}
                 end
@@ -43,6 +45,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                 upsert_sync_gen_page(page, generation_id, :completed, attempt)
 
                 upsert(body, strategy.resource_type.name, generation, strategy.target_id)
+                SyncEvents.runtime(gen, page)
 
 
                 advance_page_completed(generation_id, String.to_integer(headers.pages))
@@ -61,7 +64,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                 end
               else
                 # mark as superseded and restart
-                update_generation(generation_id, %{
+                {:ok, gen} = update_generation(generation_id, %{
                   status: :superseded,
                   last_error: "last_modified_missmatch",
                   finished_at: now(),
@@ -69,6 +72,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                   pages_completed: String.to_integer(headers.pages)
                   }
                 )
+                SyncEvents.runtime(gen, page)
               :ok
               end
 
@@ -78,18 +82,19 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
 
 
               upsert_sync_gen_page(page, generation_id, :rate_limited, attempt, "page rate limited "<>Integer.to_string(attempt)<>" times")
-
               RateLimiter.cooldown(headers)
 
               if attempt >= max_attempts do
-              update_generation(generation_id, %{
+               {:ok, gen} = update_generation(generation_id, %{
                   status: :failed,
                   last_error: "max_attempts_exceeded",
                   finished_at: now(),
                   pages_total: String.to_integer(headers.pages),
                   pages_completed: String.to_integer(headers.pages)
-                  }
+                }
                 )
+                SyncEvents.runtime(gen, page)
+
                 :ok
               else
 
@@ -101,7 +106,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
               Logger.info("NOT MODDED")
 
               upsert_sync_gen_page(page, generation_id, :matched, attempt)
-              update_generation(generation_id, %{
+              {:ok, gen} = update_generation(generation_id, %{
                   status: :not_modified,
                   last_error: nil,
                   finished_at: now(),
@@ -109,6 +114,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                   pages_completed: String.to_integer(headers.pages)
                   }
                 )
+                SyncEvents.runtime(gen, page)
               RateLimiter.observe(headers)
 
               :ok
@@ -124,46 +130,52 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
 
               RateLimiter.observe(headers)
               upsert_sync_gen_page(page, generation_id, :critical, attempt, Integer.to_string(status))
-              update_generation(generation_id, %{
-                  status: :critical,
-                  last_error: "not found",
-                  finished_at: now(),
-                  }
-                )
+              {:ok, gen} = update_generation(generation_id, %{
+                status: :critical,
+                last_error: "not found",
+                finished_at: now(),
+              }
+              )
+              SyncEvents.runtime(gen, page)
+
               :ok
 
             {:client_error, _body, %Headers{} = headers, status} ->
-
               RateLimiter.observe(headers)
               upsert_sync_gen_page(page, generation_id, :critical, attempt, Integer.to_string(status))
-              update_generation(generation_id, %{
-                  status: :critical,
-                  last_error: "client error",
-                  finished_at: now(),
-                  }
-                )
+              {:ok, gen} = update_generation(generation_id, %{
+                status: :critical,
+                last_error: "client error",
+                finished_at: now(),
+              }
+              )
+              SyncEvents.runtime(gen, page)
               :ok
 
               {:unexpected_response, headers, status} ->
                 upsert_sync_gen_page(page, generation_id, :critical, attempt, Integer.to_string(status))
+
                  RateLimiter.observe(headers)
-                update_generation(generation_id, %{
+                {:ok, gen} = update_generation(generation_id, %{
                   status: :critical,
                   last_error: "unexpected_response",
                   finished_at: now(),
                   }
                 )
                 # somehow track and report that behavior changed
+                SyncEvents.runtime(gen, page)
               :ok
               {:invalid_status, headers, status} ->
                  RateLimiter.observe(headers)
+
                 upsert_sync_gen_page(page, generation_id, :critical, attempt, Integer.to_string(status))
-                update_generation(generation_id, %{
+                {:ok, gen} = update_generation(generation_id, %{
                   status: :critical,
                   last_error: "invalid_status",
                   finished_at: now(),
                   }
                 )
+                SyncEvents.runtime(gen, page)
               :ok
           end
     end
@@ -215,8 +227,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
 
 
 
-
-    generation
+   generation
     |> EsiSyncGeneration.changeset(map)
     |> Sync.Persistence.update_generation()
   end

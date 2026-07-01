@@ -1,5 +1,6 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
 
+  alias EveIndustrex.Infrastructure.ESI.Sync.SyncEvents
   alias EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService
   alias EveIndustrex.Infrastructure.ESI.RouteGroups
   alias EveIndustrex.Infrastructure.ESI.RateLimiter
@@ -70,7 +71,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
        strategy = Sync.Query.get_strategy_with_generation(strategy_id)
 
        generation = Enum.at(strategy.generations, 0)
-        Logger.info("#{inspect(generation.status)}")
+
        case generation.status do
         :running  ->
           cond do
@@ -79,8 +80,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
               OrchestratorService.update_generation(generation.id, %{
                 status: :completed,
                 finished_at: OrchestratorService.now()
-              })
-              Logger.info("Finalizer complete - strategy done")
+                })
+                Logger.info("Finalizer complete - strategy done")
+                SyncEvents.generation_completed(generation, strategy)
             OrchestratorService.finalize_strategy(strategy, %{
               last_modified: generation.snapshot_last_modified,
               status: :idle,
@@ -97,6 +99,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
           end
 
         :completed ->
+          SyncEvents.generation_completed(generation, strategy)
            Logger.info("Finalizer complete - strategy done")
           OrchestratorService.finalize_strategy(strategy, %{
             last_modified: generation.snapshot_last_modified,
@@ -111,6 +114,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
             :ok
         :not_modified ->
            Logger.info("Finalizer complete - not modified")
+           SyncEvents.generation_not_modified(generation, strategy)
           OrchestratorService.finalize_strategy(strategy, %{
             status: :idle,
             next_generation: strategy.next_generation + 1,
@@ -121,6 +125,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
             :ok
         :superseded ->
           Logger.error("Finalizer done - dataset invalid")
+          SyncEvents.generation_superseded(generation, strategy)
            OrchestratorService.finalize_strategy(strategy, %{
             last_modified: generation.snapshot_last_modified,
             status: :idle,
@@ -131,6 +136,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
           :ok
         :critical ->
            Logger.error("Finalizer critical")
+           SyncEvents.generation_critical(generation, strategy)
            OrchestratorService.finalize_strategy(strategy, %{
             status: :critical,
             next_generation: strategy.next_generation + 1,
@@ -139,7 +145,8 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
             })
           :ok
         :failed ->
-           Logger.error("Finalizer failure")
+          Logger.error("Finalizer failure")
+           SyncEvents.generation_failed(generation, strategy)
            OrchestratorService.finalize_strategy(strategy, %{
             status: :failed,
             next_generation: strategy.next_generation + 1,
