@@ -19,11 +19,11 @@ alias EveIndustrex.Utils
     ~H"""
       <div class="flex flex-col">
       <%= cond do %>
-        <% Map.has_key?(@offer, :blueprint) and @offer.prices.products[hd(Enum.find(@offer.blueprint.activities, fn a -> a.activity == :manufacturing end).products).type_id] == nil -> %>
+        <% Map.has_key?(@offer, :blueprint) and @offer.prices.products[hd(@offer.blueprint.activities.manufacturing.products).type_id] == nil -> %>
         No product price set
         <% !Map.has_key?(@offer, :blueprint) and @offer.prices.products[@offer.type.type_id] == nil -> %>
         No product price set
-        <% Map.has_key?(@offer, :blueprint) and Enum.any?(Enum.find(@offer.blueprint.activities, fn a -> a.activity == :manufacturing end).materials, fn m -> @offer.prices.materials[m.type_id] == nil end) -> %>
+        <% Map.has_key?(@offer, :blueprint) and Enum.any?(@offer.blueprint.activities.manufacturing.materials, fn m -> @offer.prices.materials[m.type_id] == nil end) -> %>
           Missing material item price
         <% length(@offer.req_items) > 0 and Enum.any?(@offer.req_items, fn ri -> @offer.prices.req_items[ri.type_id] == nil end) -> %>
           Missing req item price

@@ -27,8 +27,8 @@ defmodule EveIndustrexWeb.LpShop.LpShopItem do
             </div>
           <div class="flex flex-col justify-center">
             <%= if String.contains?(@offer.type.name, "Blueprint") and !String.contains?(@offer.type.name, "Crate") do %>
-              <%= Enum.map(Enum.find(@offer.blueprint.activities, fn a -> a.activity == :manufacturing end).products, fn bpp -> "Portion size #{bpp.quantity}"  end) %>
-              <%= for bpp <- Enum.find(@offer.blueprint.activities, fn a -> a.activity == :manufacturing end).products do %>
+              <%= Enum.map(@offer.blueprint.activities.manufacturing.products, fn bpp -> "Portion size #{bpp.quantity}"  end) %>
+              <%= for bpp <- @offer.blueprint.activities.manufacturing.products do %>
                   <.live_component module={EveIndustrexWeb.LpShop.LpMiniMarket} offer_id={@offer.offer_id} selected_trade_hub={@selected_trade_hub}  tax_rate={@tax_rate} category={:product} id={"#{@id}_Product"} item={%{:category_id => @offer.type.category_id,:name => bpp.name, :type_id => bpp.type_id, :price => @offer.prices.products[bpp.type_id]}} order_type={@order_type}/>
 
               <% end %>
@@ -66,7 +66,7 @@ defmodule EveIndustrexWeb.LpShop.LpShopItem do
         <div class="w-[15%]">
           <%= if String.contains?(@offer.type.name, "Blueprint") and !String.contains?(@offer.type.name, "Crate") do %>
             <span>Production Materials Cost:</span>
-              <.live_component module={EveIndustrexWeb.LpShop.LpBpMaterials} selected_trade_hub={@selected_trade_hub} id={"#{@id}_BP_Materials"} bp_materials={Enum.find(@offer.blueprint.activities, fn a -> a.activity == :manufacturing end).materials} bp_material_prices={@offer.prices.materials} production_product={@offer.type.name} runs={@offer.quantity} order_type={@order_type} offer_id={@offer.offer_id}/>
+              <.live_component module={EveIndustrexWeb.LpShop.LpBpMaterials} selected_trade_hub={@selected_trade_hub} id={"#{@id}_BP_Materials"} bp_materials={@offer.blueprint.activities.manufacturing.materials} bp_material_prices={@offer.prices.materials} production_product={@offer.type.name} runs={@offer.quantity} order_type={@order_type} offer_id={@offer.offer_id}/>
           <% end %>
         </div>
 

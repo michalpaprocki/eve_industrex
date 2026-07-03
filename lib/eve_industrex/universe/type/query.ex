@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Universe.Type.Query do
+  alias EveIndustrex.Universe.Category
   alias EveIndustrex.Universe.Group
   alias EveIndustrex.Universe.Type
   alias EveIndustrex.Repo
@@ -9,14 +10,16 @@ defmodule EveIndustrex.Universe.Type.Query do
   def get_type_by_name(name), do: Repo.get_by(Type, name: name)
   def get_types_by_name(query), do: from(t in Type, where: ilike(t.name, ^"%#{query}%") and t.published == true)  |> Repo.all()
   def get_published_types_with_details() do
-    from(t in Type, join: g in Group, on: t.group_id == g.group_id, where: t.published == true, select: {t.type_id, %{
+    from(t in Type, join: g in Group, on: t.group_id == g.group_id, join: c in Category, on: g.category_id == c.category_id, where: t.published == true, select: {t.type_id, %{
       type_id: t.type_id,
       description: t.description,
       mass: t.mass,
       name: t.name,
       packaged_volume: t.packaged_volume,
       volume: t.volume,
-      category_id: g.category_id
+      category_id: g.category_id,
+      category: c.name,
+      group: g.name
       }})
       |> Repo.all()
 
