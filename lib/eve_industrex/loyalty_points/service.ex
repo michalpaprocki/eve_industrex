@@ -15,10 +15,14 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
         nil ->
           offer
           |> put_in([:type, :category_id], Type.Store.get_type_id_details(offer.type.type_id).category_id)
+          |> put_in([:type, :category], Type.Store.get_type_id_details(offer.type.type_id).category)
+          |> put_in([:type, :group], Type.Store.get_type_id_details(offer.type.type_id).group)
 
         bp ->
           Map.put(offer, :blueprint, bp)
           |> put_in([:type, :category_id], Type.Store.get_type_id_details(offer.type.type_id).category_id)
+          |> put_in([:type, :category], Type.Store.get_type_id_details(offer.type.type_id).category)
+          |> put_in([:type, :group], Type.Store.get_type_id_details(offer.type.type_id).group)
       end
     end)
     |> Map.new(fn o ->
@@ -130,7 +134,7 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
         nil
       Map.has_key?(offer, :blueprint) and !String.contains?(String.downcase(offer.type.name), "crate") ->
         materials_cost = calc_materials_cost(offer, offer.prices.materials)
-        product_price = offer.prices.products[hd(Enum.find(offer.blueprint.activities, fn a -> a.activity == :manufacturing end).products).type_id]
+        product_price = offer.prices.products[hd(offer.blueprint.activities.manufacturing.products).type_id]
 
         if materials_cost == nil || product_price == nil do
           nil
@@ -156,7 +160,7 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
     end
   end
   defp calc_materials_cost(offer, prices) do
-    materials = Enum.find(offer.blueprint.activities, fn a -> a.activity == :manufacturing end).materials
+    materials = offer.blueprint.activities.manufacturing.materials
     if !Enum.all?(materials, fn m ->
       prices[m.type_id]
     end) do
@@ -181,7 +185,7 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
   end
   defp maybe_parse_bp(offer, orders, key) do
      if Map.has_key?(offer, :blueprint) do
-      Map.new(Enum.find(offer.blueprint.activities, fn a -> a.activity == :manufacturing end).materials, fn %{name: _, category_id: _, type_id: type_id, quantity: _} ->
+      Map.new(offer.blueprint.activities.manufacturing.materials, fn %{name: _, category_id: _, type_id: type_id, quantity: _} ->
         {type_id, Map.get(orders[type_id], key)}
       end)
      else
@@ -190,7 +194,7 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
   end
   defp parse_product_price(offer, orders, key) do
     if String.contains?(String.downcase(offer.type.name), "blueprint") and !String.contains?(String.downcase(offer.type.name), "crate") do
-      Map.new(Enum.find(offer.blueprint.activities, fn a -> a.activity == :manufacturing end).products, fn %{name: _, category_id: _, type_id: type_id, quantity: _, probability: _} ->
+      Map.new(offer.blueprint.activities.manufacturing.products, fn %{name: _, category_id: _, type_id: type_id, quantity: _, probability: _} ->
       {type_id, Map.get(orders[type_id], key)}
       end)
     else
@@ -220,7 +224,7 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
 
     mats_prod_type_ids = Enum.map(offers, fn {_id, o} ->
       if Map.has_key?(o, :blueprint) do
-         Enum.map(o.blueprint.activities, fn a ->
+         Enum.map(o.blueprint.activities, fn {_k, a} ->
         [
           Enum.map(a.materials, fn m ->
             m.type_id
@@ -251,12 +255,12 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
   end
   defp prepare_offer_blueprints(offers) do
     bps = get_offer_blueprints(offers)
-    Enum.map(bps, fn bp ->
+        Enum.map(bps, fn bp ->
       %{
         blueprint_type_id: bp.blueprint_type_id,
         max_production_limit: bp.max_production_limit,
-        activities: Enum.map(bp.activities, fn a ->
-          %{
+        activities: Map.new(bp.activities, fn a ->
+          {a.activity, %{
             time: a.time,
             materials: Enum.map(a.materials, fn m ->
               %{
@@ -274,12 +278,40 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
               probability: p.probability,
               category_id: Type.Store.get_type_id_details(p.type_id).category_id
               }
-            end),
-            activity: a.activity
-          }
+            end)
+          }}
         end)
       }
     end)
+    # Enum.map(bps, fn bp ->
+    #   %{
+    #     blueprint_type_id: bp.blueprint_type_id,
+    #     max_production_limit: bp.max_production_limit,
+    #     activities: Enum.map(bp.activities, fn a ->
+    #       %{
+    #         time: a.time,
+    #         materials: Enum.map(a.materials, fn m ->
+    #           %{
+    #             type_id: m.type_id,
+    #             quantity: m.quantity,
+    #             name: Type.Store.get_type_id_details(m.type_id).name,
+    #             category_id: Type.Store.get_type_id_details(m.type_id).category_id
+    #           }
+    #         end),
+    #         products: Enum.map(a.products, fn p ->
+    #           %{
+    #           type_id: p.type_id,
+    #           quantity: p.quantity,
+    #           name: Type.Store.get_type_id_details(p.type_id).name,
+    #           probability: p.probability,
+    #           category_id: Type.Store.get_type_id_details(p.type_id).category_id
+    #           }
+    #         end),
+    #         activity: a.activity
+    #       }
+    #     end)
+    #   }
+    # end)
 
   end
 end
