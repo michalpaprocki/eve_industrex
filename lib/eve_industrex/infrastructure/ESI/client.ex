@@ -6,10 +6,10 @@ defmodule EveIndustrex.Infrastructure.ESI.Client do
   def get_stations_route(station_id), do: Station.compose(station_id)
 
   def fetch_market_orders(region_id, page, metadata) do
-    if is_nil(metadata.etag) do
-      fetch(MarketOrders.compose(region_id, page))
-    else
+    if page == 1 and not is_nil(metadata.etag) do
       fetch(MarketOrders.compose(region_id, page), metadata.etag)
+    else
+      fetch(MarketOrders.compose(region_id, page))
     end
   end
   def fetch_station(station_id) do
