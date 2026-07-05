@@ -21,7 +21,7 @@ defmodule EveIndustrex.Infrastructure.Schedulers.StrategyScheduler do
         |> worker.new()
         |> Oban.insert()  end)
 
-    {:snooze, 120}
+    {:snooze, 60}
   end
 
 end
