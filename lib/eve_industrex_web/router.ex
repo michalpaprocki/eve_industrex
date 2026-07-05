@@ -31,6 +31,7 @@ alias Tools
     live "/tools/lp_shop/:hub_id/:corp_id/:order_type", Tools.LpShopLive
     live "/tools/production", Tools.ProductionLive
     live "/tools/reactions", Tools.ReactionsLive
+    live "/nook/telemetry", Dashboard.DashboardLive
   end
 
   # Other scopes may use custom stacks.
