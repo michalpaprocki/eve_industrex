@@ -12,7 +12,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
 
     :ets.insert(:sync_metrics, [
       {:generations_completed, 0},
-      {:generations_superseeded, 0},
+      {:generations_superseded, 0},
       {:generations_not_modified, 0},
       {:generations_failed, 0},
       {:generations_critical, 0},
@@ -57,8 +57,11 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
     }})
     {:noreply, state}
   end
-  def handle_info({:telemetry, [:eve_industrex, :sync, :generation, :completed], _measurements, metadata}, state) do
-
+  def handle_info({:telemetry, [:eve_industrex, :sync, :generation, :completed], measurements, metadata}, state) do
+    if is_number(measurements.duration_ms) do
+      :ets.update_counter(:sync_metrics, :duration_total_ms, measurements.duration_ms, {:duration_total_ms, 0})
+      :ets.update_counter(:sync_metrics, :duration_count, 1, {:duration_count, 0})
+    end
     :ets.update_counter(:sync_metrics, :generations_completed, 1, {:generations_completed, 0})
 
     :ets.insert(:sync_events, {System.unique_integer(), %{
@@ -71,8 +74,11 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
     }})
     {:noreply, state}
   end
-  def handle_info({:telemetry, [:eve_industrex, :sync, :generation, :superseded], _measurements, metadata}, state) do
-
+  def handle_info({:telemetry, [:eve_industrex, :sync, :generation, :superseded], measurements, metadata}, state) do
+    if is_number(measurements.duration_ms) do
+      :ets.update_counter(:sync_metrics, :duration_total_ms, measurements.duration_ms, {:duration_total_ms, 0})
+      :ets.update_counter(:sync_metrics, :duration_count, 1, {:duration_count, 0})
+    end
     :ets.update_counter(:sync_metrics, :generations_superseded, 1, {:generations_superseded, 0})
 
     :ets.insert(:sync_events, {System.unique_integer(), %{
@@ -86,8 +92,11 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
     }})
     {:noreply, state}
   end
-  def handle_info({:telemetry, [:eve_industrex, :sync, :generation, :not_modified], _measurements, metadata}, state) do
-
+  def handle_info({:telemetry, [:eve_industrex, :sync, :generation, :not_modified], measurements, metadata}, state) do
+    if is_number(measurements.duration_ms) do
+      :ets.update_counter(:sync_metrics, :duration_total_ms, measurements.duration_ms, {:duration_total_ms, 0})
+      :ets.update_counter(:sync_metrics, :duration_count, 1, {:duration_count, 0})
+    end
     :ets.update_counter(:sync_metrics, :generations_not_modified, 1, {:generations_not_modified, 0})
 
     :ets.insert(:sync_events, {System.unique_integer(), %{
@@ -133,16 +142,25 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
   end
 
   def handle_info({:telemetry, [:eve_industrex, :sync, :page, :runtime], _measurements, metadata}, state) do
-    IO.puts("runtime event")
-    :ets.insert(:sync_runtime, {metadata.strategy_id, %{
-      generation: metadata.generation,
-      page: metadata.page,
-      started_at: metadata.started_at,
-      pages_total: metadata.pages_total,
-      status: metadata.status,
-      strategy_id: metadata.strategy_id,
-      target_id: metadata.target_id,
-    }})
+    case metadata.status do
+      :completed ->
+        :ets.update_counter(:sync_metrics, :pages_completed, 1, {:pages_completed, 0})
+      :rate_limited ->
+        :ets.update_counter(:sync_metrics, :pages_rate_limited, 1, {:pages_rate_limited, 0})
+      :superseded ->
+        :ets.update_counter(:sync_metrics, :pages_retried, 1, {:pages_retried, 0})
+      _ ->
+        :noop
+    end
+    # :ets.insert(:sync_runtime, {metadata.strategy_id, %{
+    #   generation: metadata.generation,
+    #   page: metadata.page,
+    #   started_at: metadata.started_at,
+    #   pages_total: metadata.pages_total,
+    #   status: metadata.status,
+    #   strategy_id: metadata.strategy_id,
+    #   target_id: metadata.target_id,
+    # }})
 
   {:noreply, state}
   end

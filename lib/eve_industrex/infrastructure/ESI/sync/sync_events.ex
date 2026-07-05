@@ -105,12 +105,12 @@ require Logger
       }
     )
   end
-  def runtime(generation, page) do
+  def runtime(status, generation, page) do
     :telemetry.execute(
       [:eve_industrex, :sync, :page, :runtime],
       %{},
       %{
-        status: generation.status,
+        status: status,
         generation: generation.generation,
         strategy_id: generation.esi_sync_strategy_id,
         started_at: generation.started_at,
