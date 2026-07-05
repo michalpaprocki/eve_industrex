@@ -28,7 +28,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                     update_generation(generation_id, %{
                       snapshot_etag: headers.etag,
                       snapshot_expires_at: snapshot_expires_at,
-                      snapshot_last_modified: snapshot_last_modified
+                      snapshot_last_modified: snapshot_last_modified,
+                      last_error: "",
+                      pages_total: String.to_integer(headers.pages)
                     }
                   )
 
@@ -37,15 +39,13 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                 end
 
               RateLimiter.observe(headers)
-              # Logger.info("snapshot last modded: #{snapshot_last_modified}")
-              # Logger.info("gen last modded: #{gen.snapshot_last_modified}")
-                  # add additional check for remainig < estimated_gen_duration(or remaining, gotta pull it from metrics in future), snooze if it takes longer than expires_at
+
               if snapshot_last_modified == gen.snapshot_last_modified do
-                # notinue when last_modified havent changed
+
                 upsert_sync_gen_page(page, generation_id, :completed, attempt)
 
                 upsert(body, strategy.resource_type.name, generation, strategy.target_id)
-                SyncEvents.runtime(gen, page)
+                SyncEvents.runtime(:completed, gen, page)
 
 
                 advance_page_completed(generation_id, String.to_integer(headers.pages))
@@ -68,11 +68,10 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                   status: :superseded,
                   last_error: "last_modified_missmatch",
                   finished_at: now(),
-                  pages_total: String.to_integer(headers.pages),
-                  pages_completed: String.to_integer(headers.pages)
+                  pages_total: String.to_integer(headers.pages)
                   }
                 )
-                SyncEvents.runtime(gen, page)
+                SyncEvents.runtime(:superseded, gen, page)
               :ok
               end
 
@@ -93,7 +92,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                   pages_completed: String.to_integer(headers.pages)
                 }
                 )
-                SyncEvents.runtime(gen, page)
+                SyncEvents.runtime(:rate_limited, gen, page)
 
                 :ok
               else
@@ -102,19 +101,22 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
               end
 
             {:not_modified, %Headers{} = headers} ->
-
+              snapshot_last_modified = DateTimeParser.parse_datetime!(headers.last_modified, to_utc: true)|> DateTime.from_naive!("Etc/UTC")|>DateTime.truncate(:second)
+              snapshot_expires_at = DateTimeParser.parse_datetime!(headers.expires_at, to_utc: true)|> DateTime.from_naive!("Etc/UTC")|>DateTime.truncate(:second)
               Logger.info("NOT MODDED")
-
               upsert_sync_gen_page(page, generation_id, :matched, attempt)
               {:ok, gen} = update_generation(generation_id, %{
                   status: :not_modified,
                   last_error: nil,
+                  snapshot_etag: headers.etag,
+                  snapshot_expires_at: snapshot_expires_at,
+                  snapshot_last_modified: snapshot_last_modified,
                   finished_at: now(),
                   pages_total: String.to_integer(headers.pages),
                   pages_completed: String.to_integer(headers.pages)
                   }
                 )
-                SyncEvents.runtime(gen, page)
+                SyncEvents.runtime(:not_modified, gen, page)
               RateLimiter.observe(headers)
 
               :ok
@@ -136,7 +138,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                 finished_at: now(),
               }
               )
-              SyncEvents.runtime(gen, page)
+              SyncEvents.runtime(:critical, gen, page)
 
               :ok
 
@@ -149,7 +151,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                 finished_at: now(),
               }
               )
-              SyncEvents.runtime(gen, page)
+              SyncEvents.runtime(:critical, gen, page)
               :ok
 
               {:unexpected_response, headers, status} ->
@@ -163,7 +165,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                   }
                 )
                 # somehow track and report that behavior changed
-                SyncEvents.runtime(gen, page)
+                SyncEvents.runtime(:unexpected_response, gen, page)
               :ok
               {:invalid_status, headers, status} ->
                  RateLimiter.observe(headers)
@@ -175,7 +177,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                   finished_at: now(),
                   }
                 )
-                SyncEvents.runtime(gen, page)
+                SyncEvents.runtime(:invalid_status, gen, page)
               :ok
           end
     end
@@ -187,13 +189,16 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
   def compare_diff(%{:etag => nil, :expires_at => nil}, _), do: false
   def compare_diff(metadata, now), do: DateTime.compare(metadata.expires_at, now) == :gt
   def prepare_generation(strategy_id, target_id, next_generation) do
+      now = DateTime.utc_now() |> DateTime.truncate(:second)
+      {:ok, gen} =
+          %Sync.EsiSyncGeneration{}
+          |> Sync.EsiSyncGeneration.changeset(%{generation: next_generation ,esi_sync_strategy_id: strategy_id, started_at: now, target_id: target_id, status: :running, pages_completed: 0})
+          |> Sync.Persistence.insert_generation()
+          gen
 
-    now = DateTime.utc_now() |> DateTime.truncate(:second)
-     {:ok, gen} =
-        %Sync.EsiSyncGeneration{}
-        |> Sync.EsiSyncGeneration.changeset(%{generation: next_generation ,esi_sync_strategy_id: strategy_id, started_at: now, target_id: target_id, status: :running, pages_completed: 0})
-        |> Sync.Persistence.insert_generation()
-        gen
+  end
+  def delete_superseded_gen(gen_id) do
+    Sync.Persistence.delete_generation(gen_id)
   end
   def calc_delay(attempt) do
     min(trunc(:math.pow(2, attempt) * 15), 1800)
