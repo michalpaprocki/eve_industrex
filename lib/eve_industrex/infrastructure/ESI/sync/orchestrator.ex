@@ -77,12 +77,12 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
           cond do
             generation.pages_completed == generation.pages_total ->
               Logger.info("Completed in #{inspect(attempt)} attempts / #{inspect(max_attempts)}")
-              OrchestratorService.update_generation(generation.id, %{
+              {:ok, gen} = OrchestratorService.update_generation(generation.id, %{
                 status: :completed,
                 finished_at: OrchestratorService.now()
                 })
                 Logger.info("Finalizer complete - strategy done")
-                SyncEvents.generation_completed(generation, strategy)
+                SyncEvents.generation_completed(gen, strategy)
             OrchestratorService.finalize_strategy(strategy, %{
               last_modified: generation.snapshot_last_modified,
               status: :idle,
@@ -118,6 +118,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
           OrchestratorService.finalize_strategy(strategy, %{
             status: :idle,
             next_generation: strategy.next_generation + 1,
+            last_modified: generation.snapshot_last_modified,
+            last_etag: generation.snapshot_etag,
+            last_expires_at: generation.snapshot_expires_at,
             last_successful_sync: OrchestratorService.now(),
             next_run_at: OrchestratorService.calc_next_run(strategy.sync_interval_seconds, generation.started_at)
             })
@@ -126,13 +129,13 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
         :superseded ->
           Logger.error("Finalizer done - dataset invalid")
           SyncEvents.generation_superseded(generation, strategy)
-           OrchestratorService.finalize_strategy(strategy, %{
-            last_modified: generation.snapshot_last_modified,
-            status: :idle,
+          OrchestratorService.finalize_strategy(strategy, %{
+            status: :failed,
             next_generation: strategy.next_generation,
             next_run_at: OrchestratorService.now(),
-            enabled: false
+            enabled: true
             })
+            OrchestratorService.delete_superseded_gen(generation.id)
           :ok
         :critical ->
            Logger.error("Finalizer critical")
