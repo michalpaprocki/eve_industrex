@@ -38,7 +38,7 @@ defmodule EveIndustrex.Infrastructure.Cache do
     GenServer.call(__MODULE__, {:get_current_gen, store})
   end
   def update_generation(store, gen) do
-    GenServer.cast(__MODULE__, {:update_generation, store, gen})
+    GenServer.call(__MODULE__, {:update_generation, store, gen})
   end
   def handle_call(:create_trade_hub_bid_ask_spread_table, _from,state) do
       new_tid = :ets.new(:undefined, [:bag, :public, read_concurrency: true, write_concurrency: true])
@@ -59,10 +59,11 @@ defmodule EveIndustrex.Infrastructure.Cache do
       {:reply, :non_existent, state}
     end
   end
-  def handle_cast({:update_generation, store, gen}, state) do
+  def handle_call({:update_generation, store, gen}, _from, state) do
+    Logger.info("Updating #{store} generation to #{gen}")
     map = put_in(state[:generations][store], gen)
 
-    {:noreply, map}
+    {:reply,:ok , map}
   end
 
 end
