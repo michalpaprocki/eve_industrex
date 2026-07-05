@@ -6,19 +6,10 @@ defmodule EveIndustrex.Market.MarketOrder.Jobs.MarketStoreProjectionWorker do
   require Logger
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: args, attempt: _attempt}) do
-    %{"resource_name" => resource_name} = args
-    case Cache.get_current_generation(:market_orders) do
-      :non_existent ->
-        Logger.info("Projecting init...")
-        new_tid = Cache.create_market_orders_table()
-        new_bid_ask_tid = Cache.create_trade_hub_bid_ask_spread_table()
-        EveIndustrex.Market.MarketOrder.Service.project_orders_to_cache(new_tid)
-        EveIndustrex.Market.MarketOrder.Service.project_bid_ask_for_trade_hub(new_bid_ask_tid)
-        current_gen = EveIndustrex.Infrastructure.ESI.Sync.Query.get_current_gen(resource_name)
-        Cache.update_generation(:market_orders, current_gen)
+  def perform(%Oban.Job{args: _args, attempt: _attempt}) do
 
-        generation ->
+    Logger.info("current_gen: #{Cache.get_current_generation(:market_orders)}")
+    generation = Cache.get_current_generation(:market_orders)
 
         expected_strategies_count = Sync.Query.get_resource_strategies_count("market_orders")
         current_with_status = Sync.Query.get_current_resource_generation_and_status(expected_strategies_count.id)
@@ -29,20 +20,26 @@ defmodule EveIndustrex.Market.MarketOrder.Jobs.MarketStoreProjectionWorker do
           new_bid_ask_tid = Cache.create_trade_hub_bid_ask_spread_table()
           EveIndustrex.Market.MarketOrder.Service.project_orders_to_cache(new_tid)
           EveIndustrex.Market.MarketOrder.Service.project_bid_ask_for_trade_hub(new_bid_ask_tid)
-          current_gen = EveIndustrex.Infrastructure.ESI.Sync.Query.get_current_gen(resource_name)
 
-          Cache.update_generation(:market_orders, current_gen)
+          Logger.info("Cache generation before: #{Cache.get_current_generation(:market_orders)}")
+
+          latest_gen =
+            current_with_status
+            |> Enum.map(&elem(&1, 0))
+            |> Enum.max()
+          Logger.info("Publishing generation #{latest_gen}")
+          Cache.update_generation(:market_orders, latest_gen)
+          Logger.info("Cache generation after: #{Cache.get_current_generation(:market_orders)}")
         else
           Logger.info(":noop")
 
         end
-    end
     :ok
   end
 
   defp all_generations_completed?(generations) do
     Enum.all?(generations, fn {_gen, status} ->
-      status == :completed
+      status == :completed || status == :not_modified
     end)
   end
   defp fresh_gen?(store_gen, fetched_gens) do
