@@ -19,7 +19,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.EsiSyncGeneration do
     field :snapshot_last_modified, :utc_datetime
     field :pages_completed, :integer, default: 0
     field :status, Ecto.Enum, values: [:running, :completed, :failed, :critical, :not_modified, :superseded]
-    has_many :generation_pages, EsiSyncGenerationPage, foreign_key: :esi_sync_generation_id
+    has_many :generation_pages, EsiSyncGenerationPage, foreign_key: :esi_sync_generation_id, on_delete: :delete_all
     timestamps(type: :utc_datetime)
   end
   def changeset(generation, attrs) do
