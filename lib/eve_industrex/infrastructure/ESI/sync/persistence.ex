@@ -16,6 +16,14 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Persistence do
   def delete_generations() do
     Repo.delete_all(EsiSyncGeneration)
   end
+  def delete_generation(id) do
+    case Repo.get(EsiSyncGeneration, id) do
+      nil ->
+        :ok
+      gen ->
+        Repo.delete(gen)
+    end
+  end
   def delete_caches() do
     Repo.delete_all(EsiSyncCache)
   end
