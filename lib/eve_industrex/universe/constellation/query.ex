@@ -1,6 +1,5 @@
 defmodule EveIndustrex.Universe.Constellation.Query do
-  import Ecto.Query
-  alias EveIndustrex.Universe.System
+
   alias EveIndustrex.Universe.Constellation
   alias EveIndustrex.Repo
 
