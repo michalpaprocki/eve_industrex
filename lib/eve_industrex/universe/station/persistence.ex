@@ -1,6 +1,7 @@
 defmodule EveIndustrex.Universe.Station.Persistence do
 
-  @trade_hubs [60003760,60008494,60011866,60004588,60005686]
+  # @trade_hubs [60003760,60008494,60011866,60004588,60005686]
+
   alias EveIndustrex.Repo
   alias EveIndustrex.Universe.Station
   def upsert_all(list_of_stations, return? \\ false) when is_list(list_of_stations) do

@@ -1,9 +1,6 @@
 defmodule EveIndustrex.Infrastructure.Bootstrap.Service do
 require Logger
-
-  alias EveIndustrex.Infrastructure.ESI.Sync.Persistence
   alias EveIndustrex.Infrastructure.ESI.Sync.SyncProvider
-  alias EveIndustrex.Infrastructure.ESI
   alias EveIndustrex.Schemas.TqVersion
   alias EveIndustrex.Infrastructure.ESI.Sync
   alias EveIndustrex.Repo

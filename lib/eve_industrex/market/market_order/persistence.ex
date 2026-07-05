@@ -1,8 +1,5 @@
 defmodule EveIndustrex.Market.MarketOrder.Persistence do
-  alias EveIndustrex.Universe.Constellation
-  alias EveIndustrex.Universe.System
-  alias EveIndustrex.Universe.Station
-  alias EveIndustrex.Universe.Region
+
   alias EveIndustrex.Universe
   alias EveIndustrex.Repo
   alias EveIndustrex.Market.MarketOrder

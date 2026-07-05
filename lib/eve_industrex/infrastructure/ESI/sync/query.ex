@@ -1,5 +1,5 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.Query do
-  alias EveIndustrex.Infrastructure.ESI.Sync.RateLimitGroup
+
   alias EveIndustrex.Infrastructure.ESI.Sync.EsiSyncGeneration
   alias EveIndustrex.Infrastructure.ESI.Sync.EsiSyncCache
   alias EveIndustrex.Infrastructure.ESI.Sync.EsiSyncStrategy
@@ -77,9 +77,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Query do
     from(gen in EsiSyncGeneration, order_by: [gen.updated_at], limit: 1, select: gen.duration_ms) |> Repo.all
   end
   def get_caches(), do: Repo.all(EsiSyncCache)
-  def get_sync_cache(strategy_id, page) do
-    # from(s in EsiSyncStrategy, joinwhere: strategy_id == ^id )
-  end
+
    def get_missing_rate_limit_groups() do
 
     from(s in EsiSyncStrategy, left_join: g in assoc(s, :rate_limit_group), where: is_nil(g.id), preload: [:resource_type]) |> Repo.all |> Enum.map(fn strat ->

@@ -1,5 +1,5 @@
 defmodule EveIndustrex.LoyaltyPoints.NpcCorp.Query do
-  alias EveIndustrex.LoyaltyPoints.{NpcCorp, LpOffer, CorpOffer}
+  alias EveIndustrex.LoyaltyPoints.{NpcCorp}
   alias EveIndustrex.LoyaltyPoints.NpcCorp.Store
   alias EveIndustrex.Repo
   import Ecto.Query
