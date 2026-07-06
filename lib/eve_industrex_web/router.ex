@@ -31,6 +31,8 @@ alias Tools
     live "/tools/lp_shop/:hub_id/:corp_id/:order_type", Tools.LpShopLive
     live "/tools/production", Tools.ProductionLive
     live "/tools/reactions", Tools.ReactionsLive
+    live "/tools/reactions/:hub_id", Tools.ReactionsLive
+    live "/tools/reactions/:hub_id/:order_type", Tools.ReactionsLive
     live "/nook/telemetry", Dashboard.DashboardLive
   end
 
