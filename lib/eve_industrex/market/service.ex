@@ -40,7 +40,7 @@ defmodule EveIndustrex.Market.Service do
 
   end
 
-  def get_initial_prices_for_lp_view(location_id, type_ids) do
+  def get_initial_prices_for_view(location_id, type_ids) do
     Map.new(type_ids, fn type_id ->
       {type_id, MarketOrder.Store.get_ask_bid_from_hub(location_id, type_id)}
     end)
