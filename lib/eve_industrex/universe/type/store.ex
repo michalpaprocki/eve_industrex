@@ -16,4 +16,7 @@ defmodule EveIndustrex.Universe.Type.Store do
       _-> nil
     end
   end
+  def get_all() do
+    :ets.tab2list(:types)
+  end
 end
