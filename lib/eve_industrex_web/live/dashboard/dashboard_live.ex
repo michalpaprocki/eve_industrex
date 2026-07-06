@@ -181,6 +181,7 @@ defmodule EveIndustrexWeb.Dashboard.DashboardLive do
   def handle_info({:metrics}, socket) do
     Process.send_after(self(), {:metrics}, socket.assigns.form[:step].value * 1000)
     sync_metrics = :ets.tab2list(:sync_metrics) |> Enum.sort(&(elem(&1, 0) < elem(&2, 0)))
-    {:noreply, socket |> assign(:metrics, sync_metrics)}
+     rate_limit = RateLimiter.check()
+    {:noreply, socket |> assign(:metrics, sync_metrics) |> assign(:rate_limit, rate_limit)}
   end
 end
