@@ -29,11 +29,11 @@ defmodule EveIndustrexWeb.LpShop.LpShopItem do
             <%= if String.contains?(@offer.type.name, "Blueprint") and !String.contains?(@offer.type.name, "Crate") do %>
               <%= Enum.map(@offer.blueprint.activities.manufacturing.products, fn bpp -> "Portion size #{bpp.quantity}"  end) %>
               <%= for bpp <- @offer.blueprint.activities.manufacturing.products do %>
-                  <.live_component module={EveIndustrexWeb.LpShop.LpMiniMarket} offer_id={@offer.offer_id} selected_trade_hub={@selected_trade_hub}  tax_rate={@tax_rate} category={:product} id={"#{@id}_Product"} item={%{:category_id => @offer.type.category_id,:name => bpp.name, :type_id => bpp.type_id, :price => @offer.prices.products[bpp.type_id]}} order_type={@order_type}/>
+                  <.live_component module={EveIndustrexWeb.MiniMarket} target_id={@offer.offer_id} selected_trade_hub={@selected_trade_hub}  tax_rate={@tax_rate} category={:product} id={"#{@id}_Product"} item={%{:category_id => @offer.type.category_id,:name => bpp.name, :type_id => bpp.type_id, :price => @offer.prices.products[bpp.type_id]}} order_type={@order_type}/>
 
               <% end %>
             <% else %>
-              <.live_component module={EveIndustrexWeb.LpShop.LpMiniMarket} offer_id={@offer.offer_id} selected_trade_hub={@selected_trade_hub} tax_rate={@tax_rate} category={:product} id={"#{@id}_Product"} item={%{:category_id => @offer.type.category_id,:name => @offer.type.name, :type_id => @offer.type.type_id, :price => @offer.prices.products[@offer.type.type_id]}} order_type={@order_type} />
+              <.live_component module={EveIndustrexWeb.MiniMarket} target_id={@offer.offer_id} selected_trade_hub={@selected_trade_hub} tax_rate={@tax_rate} category={:product} id={"#{@id}_Product"} item={%{:category_id => @offer.type.category_id,:name => @offer.type.name, :type_id => @offer.type.type_id, :price => @offer.prices.products[@offer.type.type_id]}} order_type={@order_type} />
             <% end %>
           </div>
         </div>
@@ -55,7 +55,7 @@ defmodule EveIndustrexWeb.LpShop.LpShopItem do
                 <span> <%= ri.name %></span>
                 <span> <%= ri.quantity%></span>
               </div>
-                <.live_component module={EveIndustrexWeb.LpShop.LpMiniMarket} offer_id={@offer.offer_id} selected_trade_hub={@selected_trade_hub} tax_rate={@tax_rate} amount={ri.quantity} category={:req_item}  id={"#{@id}_req_item_#{ri.type_id}"} item={%{:category_id => ri.category_id,:name =>ri.name, :type_id => ri.type_id, :price => @offer.prices.req_items[ri.type_id]}} order_type={@order_type} />
+                <.live_component module={EveIndustrexWeb.MiniMarket} target_id={@offer.offer_id} selected_trade_hub={@selected_trade_hub} tax_rate={@tax_rate} amount={ri.quantity} category={:req_item}  id={"#{@id}_req_item_#{ri.type_id}"} item={%{:category_id => ri.category_id,:name =>ri.name, :type_id => ri.type_id, :price => @offer.prices.req_items[ri.type_id]}} order_type={@order_type} />
             <% end %>
             </div>
           <% end %>
@@ -66,7 +66,7 @@ defmodule EveIndustrexWeb.LpShop.LpShopItem do
         <div class="w-[15%]">
           <%= if String.contains?(@offer.type.name, "Blueprint") and !String.contains?(@offer.type.name, "Crate") do %>
             <span>Production Materials Cost:</span>
-              <.live_component module={EveIndustrexWeb.LpShop.LpBpMaterials} selected_trade_hub={@selected_trade_hub} id={"#{@id}_BP_Materials"} bp_materials={@offer.blueprint.activities.manufacturing.materials} bp_material_prices={@offer.prices.materials} production_product={@offer.type.name} runs={@offer.quantity} order_type={@order_type} offer_id={@offer.offer_id}/>
+              <.live_component module={EveIndustrexWeb.LpShop.LpBpMaterials} selected_trade_hub={@selected_trade_hub} id={"#{@id}_BP_Materials"} bp_materials={@offer.blueprint.activities.manufacturing.materials} bp_material_prices={@offer.prices.materials} production_product={@offer.type.name} runs={@offer.quantity} order_type={@order_type} target_id={@offer.offer_id}/>
           <% end %>
         </div>
 

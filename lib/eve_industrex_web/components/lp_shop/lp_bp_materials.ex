@@ -57,7 +57,7 @@ alias EveIndustrex.Utils
               <span> <%= m.quantity %> </span>
 
             </div>
-            <.live_component module={EveIndustrexWeb.LpShop.LpMiniMarket} category={:bp_materials} amount={m.quantity} id={@id<>"_#{m.type_id}_MiniMarket_BP_Materials"} selected_trade_hub={@selected_trade_hub} item={%{:type_id => m.type_id, :category_id => m.category_id, :name => m.name, :price => @bp_material_prices[m.type_id]}} order_type={@order_type} offer_id={@offer_id}/>
+            <.live_component module={EveIndustrexWeb.MiniMarket} category={:bp_materials} amount={m.quantity} id={@id<>"_#{m.type_id}_MiniMarket_BP_Materials"} selected_trade_hub={@selected_trade_hub} item={%{:type_id => m.type_id, :category_id => m.category_id, :name => m.name, :price => @bp_material_prices[m.type_id]}} order_type={@order_type} target_id={@target_id}/>
 
           </div>
           <% end %>

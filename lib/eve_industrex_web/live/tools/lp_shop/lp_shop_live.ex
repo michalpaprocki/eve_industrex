@@ -74,10 +74,10 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
             <img class="w-80 h-80 blur-sm fixed -z-10" src={"https://images.evetech.net/corporations/#{@form[:selected_corp].value}/logo?size=256"} />
           <% end %>
         </div>
-      <%= if Map.has_key?(assigns, :number_of_offers) do %>
-        <span><%= @number_of_offers %> Offers Found</span>
-      <% end %>
-      </div>
+        <%= if Map.has_key?(assigns, :number_of_offers) do %>
+          <span><%= @number_of_offers %> Offers Found</span>
+        <% end %>
+        </div>
        <div class="flex justify-evenly gap-4 items-center flex-col">
         <details class="max-w-[95%] md:max-w-[75%] text-base font-semibold bg-black/70 text-white rounded-md transition">
           <summary class="p-4 hover:bg-white hover:text-black transition rounded-md">Want to filter?</summary>
@@ -104,7 +104,8 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
         Hint: You can click on a product or material price to adjust it to your liking.
         </div>
       </div>
-      <div class={"flex w-full bg-black/70 backdrop-blur-sm top-20 left-0 sticky justify-between transition-all xl:justify-center shadow-sm shadow-black delay-0 duration-500 rounded-b-md z-10  #{if @show_form, do: "h-[12rem] lg:h-[8rem]", else: "h-0"}"} id={"lp_form_container"}>
+
+      <div class={"flex w-full bg-black/70 backdrop-blur-sm top-20 left-0 sticky justify-between transition-all xl:justify-center shadow-sm shadow-black py-2 delay-0 duration-500 rounded-b-md z-10  #{if @show_form, do: "h-[12rem] lg:h-[8rem]", else: "h-0"}"} id={"lp_form_container"}>
           <div class="flex order-last gap-1 p-2 h-fit">
           <.button title="minimize or maximize" phx-click="toggle_form" type="button" aria-description="minimize or maximaze the form" class="z-10 top-24 h-10 w-10"> <%= if @show_form, do: "＿", else: "⬜" %> </.button>
           <.button title="scroll to top" phx-click={JS.dispatch("phx-scroll-to-top")} type="button" aria-description="scroll to top" class="z-10 top-24 h-10 w-10">▲</.button>
@@ -119,8 +120,8 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
           </div>
 
           <div class="flex items-center lg:self-center self-end gap-2 justify-between px-4">
-            <.input field={@form[:filter]} phx-debounce={1000} label="Search Item" type={"text"} class={"mt-0 min-w-[15ch] text-base #{if @offers == nil , do: "cursor-not-allowed"}"} />
-            <.input field={@form[:sorter]} label="Sort" type={"select"} class={"mt-0 min-w-[15ch] text-base #{if @offers == nil , do: "cursor-not-allowed"}"}  options={Enum.map(@sorting_options, fn so -> [key: so.name, value: so.type] end)} value={@form[:sorter].value}/>
+            <.input field={@form[:filter]} phx-debounce={1000} label="Search Item" type={"text"} class={"mt-0 min-w-[15ch] text-base"} />
+            <.input field={@form[:sorter]} label="Sort" type={"select"} class={"mt-0 min-w-[15ch] text-base"}   options={Enum.map(@sorting_options, fn so -> [key: so.name, value: so.type] end)} value={@form[:sorter].value}/>
           </div>
 
           <.button phx-disable-with="Saving..." disabled={true} class={"hidden"}>
@@ -163,7 +164,7 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
 
     {:noreply, socket |> assign(:offers,AsyncResult.ok(result))
       |> assign(:number_of_offers, length(Map.keys(result))) |> assign(:orders, AsyncResult.loading())
-      |> start_async(:get_orders, fn -> Market.Service.get_initial_prices_for_lp_view(params.selected_trade_hub, type_ids) end) }
+      |> start_async(:get_orders, fn -> Market.Service.get_initial_prices_for_view(params.selected_trade_hub, type_ids) end) }
   end
     def handle_async(:get_orders, {:ok, result}, socket) do
       %{:offers => offers, :form => form} = socket.assigns
@@ -219,13 +220,13 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
              path = "/tools/lp_shop/#{trade_hub}/#{form[:selected_corp].value}/#{form[:order_type].value}"<>maybe_compose_query(filter, sorter)
 
               type_ids = LoyaltyPoints.Service.extract_offers_type_ids(offers.result)
-            {:noreply, socket |> assign(:form, to_form(changeset, as: :lp_shop_form)) |> start_async(:get_orders, fn -> Market.Service.get_initial_prices_for_lp_view(trade_hub, type_ids) end) |> push_patch(to: path, replace: true)}
+            {:noreply, socket |> assign(:form, to_form(changeset, as: :lp_shop_form)) |> start_async(:get_orders, fn -> Market.Service.get_initial_prices_for_view(trade_hub, type_ids) end) |> push_patch(to: path, replace: true)}
 
           order_type != form[:order_type].value ->
              path = "/tools/lp_shop/#{form[:selected_trade_hub].value}/#{form[:selected_corp].value}/#{order_type}"<>maybe_compose_query(filter, sorter)
 
               type_ids = LoyaltyPoints.Service.extract_offers_type_ids(offers.result)
-            {:noreply, socket |> assign(:form, to_form(changeset, as: :lp_shop_form)) |> start_async(:get_orders, fn -> Market.Service.get_initial_prices_for_lp_view(trade_hub, type_ids) end) |> push_patch(to: path, replace: true)}
+            {:noreply, socket |> assign(:form, to_form(changeset, as: :lp_shop_form)) |> start_async(:get_orders, fn -> Market.Service.get_initial_prices_for_view(trade_hub, type_ids) end) |> push_patch(to: path, replace: true)}
 
           true ->
 
@@ -242,7 +243,7 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
 
     {:noreply, socket}
   end
-  def handle_info({:update_price, type, %{offer_id: offer_id, type_id: type_id, price: price}}, socket) do
+  def handle_info({:update_price, type, %{target_id: offer_id, type_id: type_id, price: price}}, socket) do
     %{:offers => offers, :filtered_offers => filtered_offers} = socket.assigns
     if is_map(filtered_offers) and Map.has_key?(filtered_offers, offer_id) do
       filtered_update = Map.replace(filtered_offers, offer_id, LoyaltyPoints.Service.update_offer(Map.get(filtered_offers, offer_id), type, price, type_id))
