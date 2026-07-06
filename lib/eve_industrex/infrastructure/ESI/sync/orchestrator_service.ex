@@ -113,7 +113,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                   snapshot_last_modified: snapshot_last_modified,
                   finished_at: now(),
                   pages_total: String.to_integer(headers.pages),
-                  pages_completed: String.to_integer(headers.pages)
+                  pages_completed: 0
                   }
                 )
                 SyncEvents.runtime(:not_modified, gen, page)
