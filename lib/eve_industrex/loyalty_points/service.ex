@@ -5,7 +5,8 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
 
   def get_lp_shop_view(corp_id) do
     offers = LoyaltyPoints.CorpOffer.Query.get_corp_offers(corp_id)
-    bps = prepare_offer_blueprints(offers)
+    bps = get_offer_blueprints(offers)
+    bps = Industry.Service.prepare_blueprints(bps)
     bp_by_type_id =
       Map.new(bps, fn bp ->
       {bp.blueprint_type_id, bp}
@@ -34,11 +35,11 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
       "sell" ->
         Map.new(offers, fn {id, o} ->
           {id, Map.put(o, :prices, %{
-            products: parse_product_price(o, orders, :min_sell),
+            products: assign_product_price(o, orders, :min_sell),
             req_items: Map.new(o.req_items, fn %{name: _, category_id: _, type_id: type_id, quantity: _} ->
               {type_id, orders[type_id].min_sell}
             end),
-            materials: maybe_parse_bp(o, orders, :min_sell),
+            materials: maybe_assign_materials_price(o, orders, :min_sell),
           })}
         end)
         |> Map.new(fn {id, o} ->
@@ -50,11 +51,11 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
       "buy" ->
         Map.new(offers, fn {id, o} ->
           {id, Map.put(o, :prices, %{
-            products: parse_product_price(o, orders, :max_buy),
+            products: assign_product_price(o, orders, :max_buy),
             req_items: Map.new(o.req_items, fn %{name: _, category_id: _, type_id: type_id, quantity: _} ->
               {type_id, orders[type_id].max_buy}
             end),
-            materials: maybe_parse_bp(o, orders, :max_buy),
+            materials: maybe_assign_materials_price(o, orders, :max_buy),
           })}
         end)
         |> Map.new(fn {id, o} ->
@@ -66,11 +67,11 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
       "sell_buy" ->
         Map.new(offers, fn {id, o} ->
           {id, Map.put(o, :prices, %{
-            products: parse_product_price(o, orders, :max_buy),
+            products: assign_product_price(o, orders, :max_buy),
             req_items: Map.new(o.req_items, fn %{name: _, category_id: _, type_id: type_id, quantity: _} ->
               {type_id, orders[type_id].min_sell}
             end),
-            materials: maybe_parse_bp(o, orders, :min_sell),
+            materials: maybe_assign_materials_price(o, orders, :min_sell),
           })}
         end)
         |> Map.new(fn {id, o} ->
@@ -82,11 +83,11 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
       "buy_sell" ->
         Map.new(offers, fn {id, o} ->
           {id, Map.put(o, :prices, %{
-            products: parse_product_price(o, orders, :min_sell),
+            products: assign_product_price(o, orders, :min_sell),
             req_items: Map.new(o.req_items, fn %{name: _, category_id: _, type_id: type_id, quantity: _} ->
               {type_id, orders[type_id].max_buy}
             end),
-            materials: maybe_parse_bp(o, orders, :max_buy),
+            materials: maybe_assign_materials_price(o, orders, :max_buy),
           })}
         end)
         |> Map.new(fn {id, o} ->
@@ -183,20 +184,16 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
     end)
   end
   end
-  defp maybe_parse_bp(offer, orders, key) do
+  defp maybe_assign_materials_price(offer, orders, key) do
      if Map.has_key?(offer, :blueprint) do
-      Map.new(offer.blueprint.activities.manufacturing.materials, fn %{name: _, category_id: _, type_id: type_id, quantity: _} ->
-        {type_id, Map.get(orders[type_id], key)}
-      end)
+      Industry.Service.assign_bp_materials_price(offer.blueprint, orders, key)
      else
       nil
      end
   end
-  defp parse_product_price(offer, orders, key) do
+  defp assign_product_price(offer, orders, key) do
     if String.contains?(String.downcase(offer.type.name), "blueprint") and !String.contains?(String.downcase(offer.type.name), "crate") do
-      Map.new(offer.blueprint.activities.manufacturing.products, fn %{name: _, category_id: _, type_id: type_id, quantity: _, probability: _} ->
-      {type_id, Map.get(orders[type_id], key)}
-      end)
+      Industry.Service.assign_bp_product_price(offer.blueprint, orders, key)
     else
       Map.new([offer.type.type_id], fn type_id ->
         {type_id,  Map.get(orders[type_id], key)}
@@ -224,16 +221,7 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
 
     mats_prod_type_ids = Enum.map(offers, fn {_id, o} ->
       if Map.has_key?(o, :blueprint) do
-         Enum.map(o.blueprint.activities, fn {_k, a} ->
-        [
-          Enum.map(a.materials, fn m ->
-            m.type_id
-          end),
-          Enum.map(a.products, fn p ->
-            p.type_id
-          end)
-        ]
-      end) |> List.flatten() |> List.flatten()
+        Industry.Service.extract_bp_type_ids(o.blueprint)
       else
         nil
       end
@@ -253,65 +241,5 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
     |> Industry.Blueprint.Query.get_blueprints_from_bp_ids()
 
   end
-  defp prepare_offer_blueprints(offers) do
-    bps = get_offer_blueprints(offers)
-        Enum.map(bps, fn bp ->
-      %{
-        blueprint_type_id: bp.blueprint_type_id,
-        max_production_limit: bp.max_production_limit,
-        activities: Map.new(bp.activities, fn a ->
-          {a.activity, %{
-            time: a.time,
-            materials: Enum.map(a.materials, fn m ->
-              %{
-                type_id: m.type_id,
-                quantity: m.quantity,
-                name: Type.Store.get_type_id_details(m.type_id).name,
-                category_id: Type.Store.get_type_id_details(m.type_id).category_id
-              }
-            end),
-            products: Enum.map(a.products, fn p ->
-              %{
-              type_id: p.type_id,
-              quantity: p.quantity,
-              name: Type.Store.get_type_id_details(p.type_id).name,
-              probability: p.probability,
-              category_id: Type.Store.get_type_id_details(p.type_id).category_id
-              }
-            end)
-          }}
-        end)
-      }
-    end)
-    # Enum.map(bps, fn bp ->
-    #   %{
-    #     blueprint_type_id: bp.blueprint_type_id,
-    #     max_production_limit: bp.max_production_limit,
-    #     activities: Enum.map(bp.activities, fn a ->
-    #       %{
-    #         time: a.time,
-    #         materials: Enum.map(a.materials, fn m ->
-    #           %{
-    #             type_id: m.type_id,
-    #             quantity: m.quantity,
-    #             name: Type.Store.get_type_id_details(m.type_id).name,
-    #             category_id: Type.Store.get_type_id_details(m.type_id).category_id
-    #           }
-    #         end),
-    #         products: Enum.map(a.products, fn p ->
-    #           %{
-    #           type_id: p.type_id,
-    #           quantity: p.quantity,
-    #           name: Type.Store.get_type_id_details(p.type_id).name,
-    #           probability: p.probability,
-    #           category_id: Type.Store.get_type_id_details(p.type_id).category_id
-    #           }
-    #         end),
-    #         activity: a.activity
-    #       }
-    #     end)
-    #   }
-    # end)
 
-  end
 end
