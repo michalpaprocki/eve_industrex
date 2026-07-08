@@ -1,6 +1,6 @@
 defmodule EveIndustrex.Industry.SystemCostIndex do
   use Ecto.Schema
-  alias EveIndustrex.Universe.{Type, System}
+  alias EveIndustrex.Universe.System
   import Ecto.Changeset
   schema "system_cost_indices" do
     field :cost_index, :float
