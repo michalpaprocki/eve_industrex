@@ -5,11 +5,11 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
   alias EveIndustrex.Infrastructure.ESI.Headers
   alias EveIndustrex.Infrastructure.ESI.Sync.{EsiSyncGeneration, EsiSyncStrategy}
   alias EveIndustrex.Infrastructure.ESI.Sync
-  alias EveIndustrex.Market.MarketOrder
+  alias EveIndustrex.Market.{AveragePrice, MarketOrder}
   alias EveIndustrex.Infrastructure.ESI.RouteGroups
-  # alias EveIndustrex.Infrastructure.ESI.EtagStore
   alias EveIndustrex.Infrastructure.ESI.RateLimiter
-  def orchestrate(fetch_fn, generation_id, generation, attempt, max_attempts, strategy, metadata, page) do
+
+  def orchestrate(fetch_fn, generation_id, generation, attempt, max_attempts, strategy, metadata, page \\ 1) do
     gen = Sync.Query.get_generation(generation_id)
     if gen.status != :running do
       :ok
@@ -30,7 +30,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                       snapshot_expires_at: snapshot_expires_at,
                       snapshot_last_modified: snapshot_last_modified,
                       last_error: "",
-                      pages_total: String.to_integer(headers.pages)
+                      pages_total: maybe_insert_pages_total(headers)
                     }
                   )
 
@@ -42,17 +42,21 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
 
               if snapshot_last_modified == gen.snapshot_last_modified do
 
-                upsert_sync_gen_page(page, generation_id, :completed, attempt)
+                if not is_nil(headers.pages) do
+                  upsert_sync_gen_page(page, generation_id, :completed, attempt)
+                  advance_page_completed(generation_id, String.to_integer(headers.pages))
+                end
 
                 upsert(body, strategy.resource_type.name, generation, strategy.target_id)
                 SyncEvents.runtime(:completed, gen, page)
 
 
-                advance_page_completed(generation_id, String.to_integer(headers.pages))
-
                 cond do
-                  String.to_integer(headers.pages) > 1 && page == 1 ->
+                  not is_nil(headers.pages) and String.to_integer(headers.pages) > 1 && page == 1 ->
                     {:fanout, String.to_integer(headers.pages)}
+
+                  is_nil(headers.pages) and page == 1 ->
+                    :ok
 
                   page == 1 ->
                     {:ok, String.to_integer(headers.pages), generation_id}
@@ -79,17 +83,18 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
 
             {:rate_limited, %Headers{} = headers} ->
 
-
-              upsert_sync_gen_page(page, generation_id, :rate_limited, attempt, "page rate limited "<>Integer.to_string(attempt)<>" times")
+              if not is_nil(headers.pages) do
+                upsert_sync_gen_page(page, generation_id, :rate_limited, attempt, "page rate limited "<>Integer.to_string(attempt)<>" times")
+              end
               RateLimiter.cooldown(headers)
 
               if attempt >= max_attempts do
                {:ok, gen} = update_generation(generation_id, %{
                   status: :failed,
-                  last_error: "max_attempts_exceeded",
+                  last_error: "max_attempts_exceeded: rate limited",
                   finished_at: now(),
-                  pages_total: String.to_integer(headers.pages),
-                  pages_completed: String.to_integer(headers.pages)
+                  pages_total: maybe_insert_pages_total(headers),
+                  pages_completed: 0
                 }
                 )
                 SyncEvents.runtime(:rate_limited, gen, page)
@@ -112,7 +117,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                   snapshot_expires_at: snapshot_expires_at,
                   snapshot_last_modified: snapshot_last_modified,
                   finished_at: now(),
-                  pages_total: String.to_integer(headers.pages),
+                  pages_total: maybe_insert_pages_total(headers),
                   pages_completed: 0
                   }
                 )
@@ -122,9 +127,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
               :ok
 
 
-            {:server_error, %Headers{} = headers, status} ->
+            {:server_error, %Headers{} = _headers, status} ->
               upsert_sync_gen_page(page, generation_id, :retryable, attempt, Integer.to_string(status))
-               RateLimiter.observe(headers)
+              #  RateLimiter.observe(headers)
 
               {:snooze, calc_delay(attempt)}
 
@@ -155,8 +160,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
               :ok
 
               {:unexpected_response, headers, status} ->
-                upsert_sync_gen_page(page, generation_id, :critical, attempt, Integer.to_string(status))
-
+                if not is_nil(headers.pages) do
+                  upsert_sync_gen_page(page, generation_id, :critical, attempt, Integer.to_string(status))
+                end
                  RateLimiter.observe(headers)
                 {:ok, gen} = update_generation(generation_id, %{
                   status: :critical,
@@ -169,11 +175,12 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
               :ok
               {:invalid_status, headers, status} ->
                  RateLimiter.observe(headers)
-
-                upsert_sync_gen_page(page, generation_id, :critical, attempt, Integer.to_string(status))
+                if not is_nil(headers.pages) do
+                  upsert_sync_gen_page(page, generation_id, :critical, attempt, Integer.to_string(status))
+                end
                 {:ok, gen} = update_generation(generation_id, %{
                   status: :critical,
-                  last_error: "invalid_status",
+                  last_error: "invalid_status - #{status}",
                   finished_at: now(),
                   }
                 )
@@ -192,7 +199,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
       now = DateTime.utc_now() |> DateTime.truncate(:second)
       {:ok, gen} =
           %Sync.EsiSyncGeneration{}
-          |> Sync.EsiSyncGeneration.changeset(%{generation: next_generation ,esi_sync_strategy_id: strategy_id, started_at: now, target_id: target_id, status: :running, pages_completed: 0})
+          |> Sync.EsiSyncGeneration.changeset(%{generation: next_generation, esi_sync_strategy_id: strategy_id, started_at: now, target_id: target_id, status: :running, pages_completed: 0})
           |> Sync.Persistence.insert_generation()
           gen
 
@@ -236,11 +243,16 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
     |> EsiSyncGeneration.changeset(map)
     |> Sync.Persistence.update_generation()
   end
+  # possibly pass a ready function into the orchestrate fn instead of matching here
   defp upsert(body, resource_type, generation, target_id) do
     case resource_type do
       "market_orders" ->
           orders = Enum.map(body, fn order -> MarketOrder.Mapper.from_esi(order, generation, target_id) end)
           MarketOrder.Persistence.upsert_all(orders)
+      "average_prices" ->
+        average_prices = Enum.map(body, fn ap -> AveragePrice.Mapper.from_esi(ap) end) |> Enum.chunk_every(5000)
+
+        Enum.map(average_prices, fn chunk -> AveragePrice.Persistence.upsert_all(chunk) end)
         _->
           :ok
     end
@@ -253,10 +265,20 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
       |> Sync.Persistence.upsert_sync_generation_page()
   end
 
+  defp maybe_update_route_group(resource_name, nil) do
+    case RouteGroups.get(resource_name) do
+      "global" ->
+        :ok
+      :ok ->
+        Logger.warning(
+          "Added #{resource_name} to global rate limit group"
+        )
+
+        RouteGroups.put(resource_name, "global")
+    end
+  end
   defp maybe_update_route_group(resource_name, rate_limit_group) do
     case RouteGroups.get(resource_name) do
-      nil ->
-        RouteGroups.put(resource_name, rate_limit_group)
       ^rate_limit_group ->
         :ok
       old ->
@@ -266,6 +288,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
 
         RouteGroups.put(resource_name, rate_limit_group)
     end
+  end
+  defp maybe_insert_pages_total(headers) do
+    if( not is_nil(headers.pages), do: String.to_integer(headers.pages), else: nil)
   end
 
 end
