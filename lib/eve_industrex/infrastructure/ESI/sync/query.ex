@@ -6,7 +6,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Query do
   alias EveIndustrex.Infrastructure.ESI.Sync.ResourceType
   alias EveIndustrex.Repo
   import Ecto.Query
-  @resources ["market_orders"]
+  @resources ["market_orders", "average_prices"]
 
   def get_initial_resources(), do: @resources
   def get_resource_types_count() do
@@ -39,6 +39,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Query do
   end
   def get_resource_types() do
     Repo.all(ResourceType)
+  end
+  def get_resource_type(resource_name) do
+    from(r in ResourceType, where: r.name == ^resource_name) |> Repo.one()
   end
   def get_strategies() do
     Repo.all(EsiSyncStrategy)
