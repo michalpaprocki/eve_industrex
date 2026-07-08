@@ -5,7 +5,8 @@ defmodule EveIndustrex.Infrastructure.Schedulers.StrategyScheduler do
   alias EveIndustrex.Infrastructure.ESI.Sync.Query
 
   @workers %{
-    "market_orders" => EveIndustrex.Market.MarketOrder.Jobs.SyncMarketOrdersRootWorker
+    "market_orders" => EveIndustrex.Market.MarketOrder.Jobs.SyncMarketOrdersRootWorker,
+    "average_prices" => EveIndustrex.Market.AveragePrice.Jobs.SyncAveragePricesWorker
   }
 
   @impl Oban.Worker
