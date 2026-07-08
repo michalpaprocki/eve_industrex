@@ -2,8 +2,8 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
 
   alias EveIndustrex.LoyaltyPoints
   alias EveIndustrex.Universe.Station
-  alias EveIndustrex.LoyaltyPoints.CorpOffer
   alias EveIndustrex.Market
+  alias EveIndustrex.LiveParser
   alias EveIndustrex.LoyaltyPoints.NpcCorp
   alias EveIndustrexWeb.Layouts
   alias Phoenix.LiveView.AsyncResult
@@ -87,6 +87,9 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
                 - search by item name.
               </li>
               <li class="px-1">
+                - search by item group.
+              </li>
+              <li class="px-1">
                 - using the "&gt"(higher than) and "&lt"(lower than) symbols, this will return items that are higher or lower than the value specified, e.g.: >2000 will render items with ISK/LP ratio higher than 2000.
               </li>
               <li class="px-1">
@@ -96,7 +99,7 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
                 - inputing "++" will render only profitable offers.
               </li>
               <li class="px-1">
-                - after filtering, you can filter additionally by item name using ":" e.g. >2000:blueprint will return all the blueprints with LP/ISK higher than 2000.
+                - after filtering, you can filter additionally by item name or group using ":" e.g. >2000:blueprint will return all the blueprints with LP/ISK higher than 2000.
               </li>
             </ul>
         </details>
@@ -105,13 +108,13 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
         </div>
       </div>
 
-      <div class={"flex w-full bg-black/70 backdrop-blur-sm top-20 left-0 sticky justify-between transition-all xl:justify-center shadow-sm shadow-black py-2 delay-0 duration-500 rounded-b-md z-10  #{if @show_form, do: "h-[12rem] lg:h-[8rem]", else: "h-0"}"} id={"lp_form_container"}>
+      <div class={"flex w-full bg-black/70 backdrop-blur-sm top-20 left-0 sticky justify-between transition-all xl:justify-center shadow-sm shadow-black delay-0 duration-500 rounded-b-md z-10  #{if @show_form, do: "h-[12rem] lg:h-[8rem]", else: "h-0"}"} id={"lp_form_container"}>
           <div class="flex order-last gap-1 p-2 h-fit">
           <.button title="minimize or maximize" phx-click="toggle_form" type="button" aria-description="minimize or maximaze the form" class="z-10 top-24 h-10 w-10"> <%= if @show_form, do: "＿", else: "⬜" %> </.button>
           <.button title="scroll to top" phx-click={JS.dispatch("phx-scroll-to-top")} type="button" aria-description="scroll to top" class="z-10 top-24 h-10 w-10">▲</.button>
           </div>
         <.form for={@form} id={"lp_shop_form"} phx-change={"validate_form"} class={"overflow-hidden flex lg:flex-row flex-col gap-4 font-semibold"}>
-          <div class="px-4 flex items-center gap-2">
+          <div class="px-4 py-2 flex items-center gap-2">
             <.input field={@form[:selected_corp]} label="Corporation Select" prompt={"Select Corporation..."} type={"select"} options={Enum.map(@corps, fn c -> [key: c.name, value: c.corp_id] end)} id={"corp_select"} class="mt-0 text-base"/>
 
             <.input class="" value={@form[:selected_trade_hub].value} field={@form[:selected_trade_hub]} options={Enum.map(@hubs, fn h -> [key: h.name, value: h.station_id] end)} label="Trade Hub:" type={"select"} id={"trade_hub_selection"}/>
@@ -210,20 +213,20 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
 
         cond do
           corp_id != form[:selected_corp].value ->
-            path = "/tools/lp_shop/#{form[:selected_trade_hub].value}/#{corp_id}/#{form[:order_type].value}"<>maybe_compose_query(filter, sorter)
+            path = "/tools/lp_shop/#{form[:selected_trade_hub].value}/#{corp_id}/#{form[:order_type].value}"<>LiveParser.maybe_compose_query(filter, sorter)
 
 
             {:noreply, socket |> assign(:form, to_form(changeset, as: :lp_shop_form)) |> assign(:offers, AsyncResult.loading()) |> start_async(:get_lp_offers, fn -> LoyaltyPoints.Service.get_lp_shop_view(corp_id) end) |> push_patch(to: path, replace: true)}
 
 
           trade_hub != form[:selected_trade_hub].value ->
-             path = "/tools/lp_shop/#{trade_hub}/#{form[:selected_corp].value}/#{form[:order_type].value}"<>maybe_compose_query(filter, sorter)
+             path = "/tools/lp_shop/#{trade_hub}/#{form[:selected_corp].value}/#{form[:order_type].value}"<>LiveParser.maybe_compose_query(filter, sorter)
 
               type_ids = LoyaltyPoints.Service.extract_offers_type_ids(offers.result)
             {:noreply, socket |> assign(:form, to_form(changeset, as: :lp_shop_form)) |> start_async(:get_orders, fn -> Market.Service.get_initial_prices_for_view(trade_hub, type_ids) end) |> push_patch(to: path, replace: true)}
 
           order_type != form[:order_type].value ->
-             path = "/tools/lp_shop/#{form[:selected_trade_hub].value}/#{form[:selected_corp].value}/#{order_type}"<>maybe_compose_query(filter, sorter)
+             path = "/tools/lp_shop/#{form[:selected_trade_hub].value}/#{form[:selected_corp].value}/#{order_type}"<>LiveParser.maybe_compose_query(filter, sorter)
 
               type_ids = LoyaltyPoints.Service.extract_offers_type_ids(offers.result)
             {:noreply, socket |> assign(:form, to_form(changeset, as: :lp_shop_form)) |> start_async(:get_orders, fn -> Market.Service.get_initial_prices_for_view(trade_hub, type_ids) end) |> push_patch(to: path, replace: true)}
@@ -231,7 +234,7 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
           true ->
 
 
-             path = "/tools/lp_shop/#{form[:selected_trade_hub].value}/#{form[:selected_corp].value}/#{form[:order_type].value}"<>maybe_compose_query(filter, sorter)
+             path = "/tools/lp_shop/#{form[:selected_trade_hub].value}/#{form[:selected_corp].value}/#{form[:order_type].value}"<>LiveParser.maybe_compose_query(filter, sorter)
              filtered_offers = filter_offers(offers.result, filter)
 
             {:noreply, socket |> assign(:form, to_form(changeset, as: :lp_shop_form))  |> assign(:filtered_offers, filtered_offers) |> push_patch(to: path, replace: true)}
@@ -272,11 +275,11 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
   end
   defp filter_offers(offers, string) do
     %{expression: expression, text_filter: text_filter} =
-      CorpOffer.Parser.parse_filter(string)
+      LiveParser.parse_filter(string)
 
     offers
-    |> CorpOffer.Parser.apply_expression(expression)
-    |> CorpOffer.Parser.apply_text_filter(text_filter)
+    |> LiveParser.apply_expression(:isk_on_lp, expression)
+    |> LiveParser.apply_text_filter(text_filter)
   end
   defp sort(offers, sorter) do
     offers =
@@ -352,16 +355,5 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
   end
   defp maybe_start_async(socket, nil), do: socket
   defp maybe_start_async(socket, selected_corp), do: assign(socket, :offers, AsyncResult.loading()) |> start_async(:get_lp_offers, fn -> LoyaltyPoints.Service.get_lp_shop_view(selected_corp) end)
-  defp maybe_compose_query(filter, sorter) do
 
-   cond do
-    sorter != "" and filter == "++" ->
-      "?sort=#{sorter}&query=profit"
-    sorter != "" and filter != nil and filter != "" ->
-      "?sort=#{sorter}&query=#{URI.encode_www_form(String.trim(filter))}"
-
-    true ->
-      "?sort=#{sorter}"
-   end
-  end
 end
