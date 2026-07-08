@@ -8,14 +8,14 @@ defmodule EveIndustrex.Market.MarketOrder.Jobs.MarketStoreProjectionWorker do
   @impl Oban.Worker
   def perform(%Oban.Job{args: _args, attempt: _attempt}) do
 
-    Logger.info("current_gen: #{Cache.get_current_generation(:market_orders)}")
+    Logger.info("current_gen for MO: #{Cache.get_current_generation(:market_orders)}")
     generation = Cache.get_current_generation(:market_orders)
 
         expected_strategies_count = Sync.Query.get_resource_strategies_count("market_orders")
         current_with_status = Sync.Query.get_current_resource_generation_and_status(expected_strategies_count.id)
 
         if expected_strategies_count.count == length(current_with_status) and all_generations_completed?(current_with_status) and fresh_gen?(generation, current_with_status) do
-         Logger.info("Projecting fresh...")
+         Logger.info("Projecting fresh MOP...")
           new_tid = Cache.create_market_orders_table()
           new_bid_ask_tid = Cache.create_trade_hub_bid_ask_spread_table()
           EveIndustrex.Market.MarketOrder.Service.project_orders_to_cache(new_tid)
@@ -27,7 +27,7 @@ defmodule EveIndustrex.Market.MarketOrder.Jobs.MarketStoreProjectionWorker do
             current_with_status
             |> Enum.map(&elem(&1, 0))
             |> Enum.max()
-          Logger.info("Publishing generation #{latest_gen}")
+          Logger.info("Publishing generation #{latest_gen} for Market Orders")
           Cache.update_generation(:market_orders, latest_gen)
           Logger.info("Cache generation after: #{Cache.get_current_generation(:market_orders)}")
         else
