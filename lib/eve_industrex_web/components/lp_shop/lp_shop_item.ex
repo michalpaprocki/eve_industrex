@@ -21,7 +21,10 @@ defmodule EveIndustrexWeb.LpShop.LpShopItem do
                   <% _ -> %>
                   <img class="h-10 w-10 block" src={"https://images.evetech.net/types/#{@offer.type.type_id}/icon?size=128"} />
                 <% end %>
-                <span class="font-semibold break-all md:break-normal"><%= @offer.type.name %></span>
+                <div class="flex flex-col">
+                  <span class="font-semibold break-all md:break-normal"><%= @offer.type.name %></span>
+                  <span class=""><%= @offer.type.group %></span>
+                </div>
               </div>
               <span> <%= if String.contains?(@offer.type.name, "Blueprint"), do: "Runs: #{@offer.quantity}", else: "Amount: #{@offer.quantity}"  %></span>
             </div>
