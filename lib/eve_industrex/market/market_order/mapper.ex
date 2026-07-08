@@ -1,7 +1,5 @@
 defmodule EveIndustrex.Market.MarketOrder.Mapper do
-alias EveIndustrex.Universe.Region
-alias EveIndustrex.Universe.Constellation
-alias EveIndustrex.Universe.System
+
   def from_esi(data, generation, region_id) do
     %{
       duration: Map.get(data,"duration"),
