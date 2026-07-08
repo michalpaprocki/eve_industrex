@@ -52,14 +52,24 @@ defmodule EveIndustrexWeb.Dashboard.DashboardLive do
         <div class="p-1 flex flex-col bg-black/70 text-white rounded-md gap-2">
           <h2 class="text-center font-semibold text-xl">Rate Limits</h2>
           <%= for {route_group, bucket} <- @rate_limit do %>
-            <div class="flex flex-col p-1">
-              <span class="">Route: <%= route_group %> </span>
-              <span class="">Capacity: <%= bucket.limit.capacity %> </span>
-              <span class="">Remaining: <%= bucket.remaining %> </span>
-              <span class="">Updated at: <%= DateTime.to_date(bucket.updated_at) %> <%= DateTime.to_time(bucket.updated_at) %> </span>
+            <%= if route_group == "global" do %>
+              <div class="flex flex-col p-1">
+                <span class="">Route: <%= route_group %> </span>
+                <span class="">Resets in: <%= bucket.error_limit_reset %> </span>
+                <span class="">Errors Remaining: <%= bucket.error_limit_remain %> </span>
+                <span class="">Updated at: <%= DateTime.to_date(bucket.updated_at) %> <%= DateTime.to_time(bucket.updated_at) %> </span>
 
-            </div>
+              </div>
+            <% else %>
+              <div class="flex flex-col p-1">
+                <span class="">Route: <%= route_group %> </span>
+                <span class="">Capacity: <%= bucket.limit.capacity %> </span>
+                <span class="">Remaining: <%= bucket.remaining %> </span>
+                <span class="">Updated at: <%= DateTime.to_date(bucket.updated_at) %> <%= DateTime.to_time(bucket.updated_at) %> </span>
+
+              </div>
             <% end %>
+          <% end %>
           </div>
 
 
@@ -181,7 +191,8 @@ defmodule EveIndustrexWeb.Dashboard.DashboardLive do
   def handle_info({:metrics}, socket) do
     Process.send_after(self(), {:metrics}, socket.assigns.form[:step].value * 1000)
     sync_metrics = :ets.tab2list(:sync_metrics) |> Enum.sort(&(elem(&1, 0) < elem(&2, 0)))
-     rate_limit = RateLimiter.check()
-    {:noreply, socket |> assign(:metrics, sync_metrics) |> assign(:rate_limit, rate_limit)}
+    rate_limit = RateLimiter.check()
+    sync_events = :ets.tab2list(:sync_events) |> Enum.sort(&(elem(&1, 1).timestamp > elem(&2, 1).timestamp))
+    {:noreply, socket |> assign(:metrics, sync_metrics) |> assign(:rate_limit, rate_limit) |> assign(:events, sync_events)}
   end
 end
