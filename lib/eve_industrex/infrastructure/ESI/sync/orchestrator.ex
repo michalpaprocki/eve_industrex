@@ -9,6 +9,38 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
   alias EveIndustrex.Infrastructure.ESI.Sync
   require Logger
 
+  def initiate_resource_sync(strategy_id, attempt, max_attempts, fetch_fn) do
+
+    strategy = Sync.Query.get_strategy(strategy_id)
+
+    rate_limit_group = RouteGroups.get(strategy.resource_type.name)
+
+    case RateLimiter.available?(rate_limit_group) do
+      true ->
+        metadata = %{etag: strategy.last_etag, expires_at: strategy.last_expires_at}
+
+        generation = OrchestratorService.prepare_generation(strategy.id, strategy.target_id, strategy.next_generation)
+
+        case OrchestratorService.orchestrate(fetch_fn, generation.id, strategy.next_generation, attempt, max_attempts, strategy, metadata) do
+          {:snooze, delay} ->
+            Logger.warning("job snoozed")
+            {:snooze, delay}
+
+          :ok ->
+            :ok
+        end
+
+
+      false ->
+
+            Logger.error("postpone from ratelimiter")
+      # make it dynamic based on budget / refill pace
+      {:snooze, OrchestratorService.calc_delay(attempt)}
+
+    end
+  end
+
+
   def initiate_paginated_resource_sync(strategy_id, attempt, max_attempts, fetch_fn) do
 
     strategy = Sync.Query.get_strategy(strategy_id)
@@ -93,7 +125,26 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
               next_run_at: OrchestratorService.calc_next_run(strategy.sync_interval_seconds, generation.started_at)
               })
               :ok
+            is_nil(generation.pages_total) and is_nil(generation.target_id) ->
+                      Logger.info("Completed non-paginated in #{inspect(attempt)} attempts / #{inspect(max_attempts)}")
+              {:ok, gen} = OrchestratorService.update_generation(generation.id, %{
+                status: :completed,
+                finished_at: OrchestratorService.now()
+                })
+                Logger.info("Finalizer complete - strategy done")
+                SyncEvents.generation_completed(gen, strategy)
+            OrchestratorService.finalize_strategy(strategy, %{
+              last_modified: generation.snapshot_last_modified,
+              status: :idle,
+              next_generation: strategy.next_generation + 1,
+              last_etag: generation.snapshot_etag,
+              last_expires_at: generation.snapshot_expires_at,
+              last_successful_sync: OrchestratorService.now(),
+              next_run_at: OrchestratorService.calc_next_run(strategy.sync_interval_seconds, generation.started_at)
+              })
+              :ok
             true ->
+
               Logger.info("Finalizer snoozing")
             {:snooze, OrchestratorService.calc_delay(attempt)}
           end
