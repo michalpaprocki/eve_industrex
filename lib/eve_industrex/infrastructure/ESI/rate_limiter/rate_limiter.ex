@@ -1,5 +1,5 @@
 defmodule EveIndustrex.Infrastructure.ESI.RateLimiter do
-  alias EveIndustrex.Infrastructure.ESI.RateLimiter.Bucket
+  alias EveIndustrex.Infrastructure.ESI.RateLimiter.{Bucket, Global}
   alias EveIndustrex.Infrastructure.ESI.{Headers}
   use GenServer
   require Logger
@@ -42,23 +42,51 @@ defmodule EveIndustrex.Infrastructure.ESI.RateLimiter do
           true ->
             {:reply, false, state}
         end
+      [{^group, %Global{} = bucket}] ->
+        cond do
+          global_cooldown_active?(bucket) ->
+            {:reply, false, state}
+          bucket.error_limit_remain > threshold ->
+            {:reply, true, state}
+          true ->
+            {:reply, false, state}
+        end
       [] ->
         {:reply, true, state}
     end
   end
   def handle_cast({:observe, %Headers{} = headers}, state) do
-    :ets.insert(:rate_limiter, {headers.rate_limit_group, Bucket.new(headers)})
+    if not is_nil(headers.rate_limit_group) do
+
+      :ets.insert(:rate_limiter, {headers.rate_limit_group, Bucket.new(headers)})
+    else
+
+      :ets.insert(:rate_limiter, {"global", Global.new(headers)})
+
+    end
     {:noreply, state}
   end
   def handle_cast({:cooldown, %Headers{} = headers}, state) do
-    cooldown =
-    DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.add(headers.retry_after, :second)
-    :ets.insert(:rate_limiter, {headers.rate_limit_group, Bucket.new(headers, cooldown)})
+    if not is_nil(headers.rate_limit_group) do
+
+      cooldown =
+        DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.add(headers.retry_after, :second)
+        :ets.insert(:rate_limiter, {headers.rate_limit_group, Bucket.new(headers, cooldown)})
+    else
+        cooldown =
+        DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.add(headers.global_error_limit_reset, :second)
+        :ets.insert(:rate_limiter, {"global", Global.new(headers, cooldown)})
+    end
     {:noreply, state}
   end
   defp cooldown_active?(%Bucket{cooldown_until: nil} = _bucket), do: false
 
   defp cooldown_active?(%Bucket{} = bucket) do
+     DateTime.before?(DateTime.utc_now(), bucket.cooldown_until)
+  end
+  defp global_cooldown_active?(%Global{cooldown_until: nil} = _bucket), do: false
+
+  defp global_cooldown_active?(%Global{} = bucket) do
      DateTime.before?(DateTime.utc_now(), bucket.cooldown_until)
   end
 end
