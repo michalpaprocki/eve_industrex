@@ -12,7 +12,7 @@ defmodule EveIndustrex.Universe.System do
     field :constellation_id, :integer
     belongs_to :constellation, Constellation, references: :constellation_id, define_field: false, foreign_key: :constellation_id
     has_many :stations, Station, foreign_key: :system_id
-    has_many :market_orders, MarketOrder
+    has_many :market_orders, MarketOrder, references: :system_id, foreign_key: :system_id
 
 
     timestamps(type: :utc_datetime)
