@@ -69,6 +69,7 @@ config :eve_industrex, Oban,
   queues: [
     schedulers: 1,
     market_orders: 5,
+    average_prices: 1,
     esi_metadata: 1,
     esi_general: 5
     ],
