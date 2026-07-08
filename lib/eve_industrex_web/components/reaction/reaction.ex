@@ -2,7 +2,7 @@ defmodule EveIndustrexWeb.Reaction do
   use EveIndustrexWeb, :live_component
   alias EveIndustrex.Utils
   def update(assigns, socket) do
-# to do components, unrefined reactions - alchemy - maybe split views, maybe separate here
+# to do components, unrefined reactions - alchemy - maybe split views, maybe separate here | get average prices and system index pipelines online for calculating job costs
     {:ok, socket |> assign(assigns)}
   end
 
@@ -12,7 +12,10 @@ defmodule EveIndustrexWeb.Reaction do
       <div class="p-2 ring-2 ring-black rounded-md flex flex-col">
       <div class="flex gap-1 items-center">
         <img class="h-10 w-10 block" src={"https://images.evetech.net/types/#{@reaction.type.type_id}/bp?size=128"} />
-        <span class="font-semibold"> <%= @reaction.type.name %> </span>
+        <div class="flex flex-col">
+          <span class="font-semibold"> <%= @reaction.type.name %> </span>
+          <span><%= @reaction.type.group %></span>
+        </div>
       </div>
         <div class="p-1 flex flex-col">
           <span class="font-semibold">Products: </span>
