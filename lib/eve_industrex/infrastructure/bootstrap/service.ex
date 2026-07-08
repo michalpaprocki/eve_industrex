@@ -79,12 +79,17 @@ require Logger
     Enum.map(resource_types, fn r ->
       targets = get_targets(r.name)
 
-      Sync.Persistence.update_resource_type_strategies_count(r.id, %{strategies_count: targets.count})
+      Sync.Persistence.update_resource_type_strategies_count(r.id, targets)
 
-      Enum.map(targets.ids, fn id ->
-        SyncProvider.default_market_order_strategy(id, r.id)
-      end)
+      if is_nil(targets.ids) do
+        SyncProvider.default_strategy(nil, r)
+      else
+        Enum.map(targets.ids, fn id ->
+          SyncProvider.default_strategy(id, r)
+        end)
+      end
     end)
+
     |> List.flatten()
     |> Enum.chunk_every(1000)
     |> Enum.each(fn chunk ->
@@ -104,12 +109,18 @@ require Logger
         targets = Region.Store.get_ids()
        %{
           ids: targets,
-          count: length(targets)
+          strategies_count: length(targets)
         }
-
+      "average_prices" ->
+        %{
+          ids: nil,
+          strategies_count: 1
+        }
       _ ->
         []
     end
   end
+
+
 
 end
