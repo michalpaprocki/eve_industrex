@@ -20,9 +20,11 @@ defmodule EveIndustrex.Infrastructure.Cache do
     :ets.new(:types, [:set, :named_table, :public, read_concurrency: true, write_concurrency: :auto])
     tid_trade_hub_bid_ask_spread =:ets.new(:undefined, [:bag, :public, read_concurrency: true, write_concurrency: true])
     tid_market_orders =:ets.new(:undefined, [:bag, :public, read_concurrency: true, write_concurrency: true])
+    tid_average_prics = :ets.new(:undefined, [:set, :public, read_concurrency: true, write_concurrency: :auto])
     :persistent_term.put(:market_orders_tid, tid_market_orders)
     :persistent_term.put(:trade_hub_bid_ask_spread_tid, tid_trade_hub_bid_ask_spread)
-    {:ok, %{generations: %{:market_orders => 0}}}
+    :persistent_term.put(:average_prices_tid, tid_average_prics)
+    {:ok, %{generations: %{:market_orders => 0, :average_prices => 0}}}
   end
   def start_link(_) do
     Logger.info("Starting #{__MODULE__}...")
@@ -33,6 +35,12 @@ defmodule EveIndustrex.Infrastructure.Cache do
   end
   def create_market_orders_table() do
     GenServer.call(__MODULE__, :create_market_orders_table)
+  end
+  def create_average_prices_table() do
+    GenServer.call(__MODULE__, :create_average_prices_table)
+  end
+  def create_gen(store) do
+    GenServer.call(__MODULE__, {:create_gen, store})
   end
   def get_current_generation(store) do
     GenServer.call(__MODULE__, {:get_current_gen, store})
@@ -47,6 +55,14 @@ defmodule EveIndustrex.Infrastructure.Cache do
   def handle_call(:create_market_orders_table, _from,state) do
       new_tid = :ets.new(:undefined, [:bag, :public, read_concurrency: true, write_concurrency: true])
     {:reply, new_tid, state}
+  end
+  def handle_call(:create_average_prices_table, _from,state) do
+      new_tid = :ets.new(:undefined, [:bag, :public, read_concurrency: true, write_concurrency: true])
+    {:reply, new_tid, state}
+  end
+  def handle_call({:create_gen, store}, _from, state) do
+      state = put_in(state["generations"][store], 0)
+    {:reply, 0, state}
   end
   def handle_call({:get_current_gen, store}, _from, state) do
 
