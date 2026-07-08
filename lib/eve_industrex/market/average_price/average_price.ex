@@ -1,5 +1,5 @@
 defmodule EveIndustrex.Market.AveragePrice do
-  alias EveIndustrex.Universe.Type.Type
+  alias EveIndustrex.Universe.Type
   use Ecto.Schema
   import Ecto.Changeset
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -9,7 +9,7 @@ defmodule EveIndustrex.Market.AveragePrice do
     field :type_id, :integer
     belongs_to :type, Type, references: :type_id, foreign_key: :type_id, define_field: false
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
   def changeset(average_price, attrs) do
     average_price
