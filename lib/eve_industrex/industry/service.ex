@@ -78,6 +78,16 @@ defmodule EveIndustrex.Industry.Service do
           formulas
     end
   end
+  def update_blueprint(bp, type, price, type_id) do
+    case type do
+      :product ->
+        bp = put_in(bp[:prices][:products][type_id], price)
+        put_in(bp,[:profit], calc_profit(bp, bp.prices))
+      :bp_materials ->
+        bp = put_in(bp[:prices][:materials][type_id], price)
+        put_in(bp,[:profit], calc_profit(bp, bp.prices))
+    end
+  end
   def assign_bp_materials_price(bp, orders, key) do
     if Map.has_key?(bp.activities, :manufacturing) do
       Map.new(bp.activities.manufacturing.materials, fn %{name: _, category_id: _, type_id: type_id, quantity: _} ->
