@@ -21,8 +21,12 @@ defmodule EveIndustrex.Infrastructure.ESI.Client do
   def fetch_market_group(market_group_id) do
     fetch(MarketGroup.compose(market_group_id))
   end
-  def fetch_average_prices() do
-    fetch(AveragePrices.compose())
+  def fetch_average_prices(_target_id, _page, metadata) do
+    if is_nil(metadata.etag) do
+      fetch(AveragePrices.compose())
+    else
+      fetch(AveragePrices.compose(), metadata.etag)
+    end
   end
   defp fetch(url) do
 
