@@ -16,6 +16,8 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
       {:generations_not_modified, 0},
       {:generations_failed, 0},
       {:generations_critical, 0},
+      {:generations_started, 0},
+      {:generations_running, 0},
       {:duration_count, 0},
       {:duration_total_ms, 0},
       {:pages_completed, 0},
@@ -45,7 +47,8 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
   end
 
   def handle_info({:telemetry, [:eve_industrex, :sync, :generation, :running], _measurements, metadata}, state) do
-
+    :ets.update_counter(:sync_metrics, :generations_started, 1, {:generations_started, 0})
+    :ets.update_counter(:sync_metrics, :generations_running, 1, {:generations_running, 0})
     :ets.insert(:sync_events, {System.unique_integer(), %{
       timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
       event: :generation_started,
@@ -63,7 +66,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
       :ets.update_counter(:sync_metrics, :duration_count, 1, {:duration_count, 0})
     end
     :ets.update_counter(:sync_metrics, :generations_completed, 1, {:generations_completed, 0})
-
+    :ets.update_counter(:sync_metrics, :generations_running, -1, {:generations_running, 0})
     :ets.insert(:sync_events, {System.unique_integer(), %{
       timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
       event: :generation_completed,
@@ -80,6 +83,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
       :ets.update_counter(:sync_metrics, :duration_count, 1, {:duration_count, 0})
     end
     :ets.update_counter(:sync_metrics, :generations_superseded, 1, {:generations_superseded, 0})
+    :ets.update_counter(:sync_metrics, :generations_running, -1, {:generations_running, 0})
 
     :ets.insert(:sync_events, {System.unique_integer(), %{
       timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
@@ -98,6 +102,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
       :ets.update_counter(:sync_metrics, :duration_count, 1, {:duration_count, 0})
     end
     :ets.update_counter(:sync_metrics, :generations_not_modified, 1, {:generations_not_modified, 0})
+    :ets.update_counter(:sync_metrics, :generations_running, -1, {:generations_running, 0})
 
     :ets.insert(:sync_events, {System.unique_integer(), %{
       timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
@@ -113,7 +118,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
   def handle_info({:telemetry, [:eve_industrex, :sync, :generation, :critical], _measurements, metadata}, state) do
 
     :ets.update_counter(:sync_metrics, :generations_critical, 1, {:generations_critical, 0})
-
+    :ets.update_counter(:sync_metrics, :generations_running, -1, {:generations_running, 0})
     :ets.insert(:sync_events, {System.unique_integer(), %{
       timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
       event: :generation_critical,
@@ -128,7 +133,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
   def handle_info({:telemetry, [:eve_industrex, :sync, :generation, :failed], _measurements, metadata}, state) do
 
     :ets.update_counter(:sync_metrics, :generations_failed, 1, {:generations_failed, 0})
-
+    :ets.update_counter(:sync_metrics, :generations_running, -1, {:generations_running, 0})
     :ets.insert(:sync_events, {System.unique_integer(), %{
       timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
       event: :generation_failed,
