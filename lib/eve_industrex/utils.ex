@@ -210,10 +210,10 @@ defmodule EveIndustrex.Utils do
           |> Enum.map(fn x -> File.write(Path.join(File.cwd!(), "/data_dump/"<>List.to_string(elem(x, 0))), elem(x, 1)) end)
           :ok
         else
-          {:error, {:err_responded_with, Integer.to_string(resp.status), @sde_url}}
+          {:error, {:err_responded_with, Integer.to_string(resp.status), @sde_json_url}}
         end
       {:error, exception} ->
-        {:error, {:req_exception, exception.reason, @sde_url}}
+        {:error, {:req_exception, exception.reason, @sde_json_url}}
     end
   end
   def remove_SDE_files() do
