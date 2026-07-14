@@ -1,5 +1,6 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
   require Logger
+  alias EveIndustrex.Industry.SystemCostIndex
   alias EveIndustrex.Infrastructure.ESI.Sync.SyncEvents
   alias EveIndustrex.Infrastructure.ESI.ClientHandler
   alias EveIndustrex.Infrastructure.ESI.Headers
@@ -247,12 +248,25 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
   defp upsert(body, resource_type, generation, target_id) do
     case resource_type do
       "market_orders" ->
+
           orders = Enum.map(body, fn order -> MarketOrder.Mapper.from_esi(order, generation, target_id) end)
           MarketOrder.Persistence.upsert_all(orders)
+
       "average_prices" ->
         average_prices = Enum.map(body, fn ap -> AveragePrice.Mapper.from_esi(ap) end) |> Enum.chunk_every(5000)
 
         Enum.map(average_prices, fn chunk -> AveragePrice.Persistence.upsert_all(chunk) end)
+
+      "system_cost_indices" ->
+
+        system_cost_indices = Enum.map(body, fn sci ->
+          SystemCostIndex.Mapper.from_esi(sci)
+        end) |> List.flatten() |> Enum.chunk_every(5000)
+
+        Enum.map(system_cost_indices, fn chunk ->
+          SystemCostIndex.Persistence.upsert_all(chunk)
+        end)
+
         _->
           :ok
     end
