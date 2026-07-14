@@ -37,7 +37,7 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
           {id, Map.put(o, :prices, %{
             products: assign_product_price(o, orders, :min_sell),
             req_items: Map.new(o.req_items, fn %{name: _, category_id: _, type_id: type_id, quantity: _} ->
-              {type_id, orders[type_id].min_sell}
+              {type_id, orders.prices[type_id].min_sell}
             end),
             materials: maybe_assign_materials_price(o, orders, :min_sell),
           })}
@@ -192,11 +192,12 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
      end
   end
   defp assign_product_price(offer, orders, key) do
+
     if String.contains?(String.downcase(offer.type.name), "blueprint") and !String.contains?(String.downcase(offer.type.name), "crate") do
       Industry.Service.assign_bp_product_price(offer.blueprint, orders, key)
     else
       Map.new([offer.type.type_id], fn type_id ->
-        {type_id,  Map.get(orders[type_id], key)}
+        {type_id,  Map.get(orders.prices[type_id], key)}
       end)
 
     end
