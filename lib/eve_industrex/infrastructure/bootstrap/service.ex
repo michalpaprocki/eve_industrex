@@ -116,6 +116,11 @@ require Logger
           ids: nil,
           strategies_count: 1
         }
+      "system_cost_indices" ->
+        %{
+          ids: nil,
+          strategies_count: 1
+        }
       _ ->
         []
     end
