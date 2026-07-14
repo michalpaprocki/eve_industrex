@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Infrastructure.ESI.Client do
   alias EveIndustrex.Infrastructure.ESI.{Headers, Response}
   require Logger
-  alias EveIndustrex.Infrastructure.ESI.Endpoints.{AveragePrices, MarketOrders, Station, MarketGroup}
+  alias EveIndustrex.Infrastructure.ESI.Endpoints.{AveragePrices, MarketOrders, Station, MarketGroup, SystemCostIndices}
   def get_market_orders_route(region_id, page), do: MarketOrders.compose(region_id, page)
   def get_stations_route(station_id), do: Station.compose(station_id)
 
@@ -26,6 +26,13 @@ defmodule EveIndustrex.Infrastructure.ESI.Client do
       fetch(AveragePrices.compose())
     else
       fetch(AveragePrices.compose(), metadata.etag)
+    end
+  end
+  def fetch_system_cost_indices(_target_id, _page, metadata) do
+    if is_nil(metadata.etag) do
+      fetch(SystemCostIndices.compose())
+    else
+      fetch(SystemCostIndices.compose(), metadata.etag)
     end
   end
   defp fetch(url) do
