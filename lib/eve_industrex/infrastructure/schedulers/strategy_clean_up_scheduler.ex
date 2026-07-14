@@ -6,7 +6,7 @@ defmodule EveIndustrex.Infrastructure.Schedulers.StrategyCleanUpScheduler do
     @impl Oban.Worker
     def perform(_) do
       Logger.info("Running clean up for strategies...")
-      strategies = EveIndustrex.Infrastructure.ESI.Sync.Query.get_strategies()
+      strategies = EveIndustrex.Infrastructure.ESI.Sync.Query.get_strategies_by_resource("market_orders")
         Enum.map(strategies, fn strategy ->
           EveIndustrex.Market.MarketOrder.Jobs.CleanUpOldGenOrders.new(%{strategy_id: strategy.id})
         end)
