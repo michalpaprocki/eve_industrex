@@ -6,7 +6,9 @@ defmodule EveIndustrex.Infrastructure.Schedulers.StrategyScheduler do
 
   @workers %{
     "market_orders" => EveIndustrex.Market.MarketOrder.Jobs.SyncMarketOrdersRootWorker,
-    "average_prices" => EveIndustrex.Market.AveragePrice.Jobs.SyncAveragePricesWorker
+    "average_prices" => EveIndustrex.Market.AveragePrice.Jobs.SyncAveragePricesWorker,
+    "system_cost_indices" => EveIndustrex.Industry.SystemCostIndex.Jobs.SyncSystemCostIndicesWorker
+
   }
 
   @impl Oban.Worker
