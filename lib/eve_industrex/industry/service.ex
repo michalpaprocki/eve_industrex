@@ -1,5 +1,5 @@
 defmodule EveIndustrex.Industry.Service do
-  alias EveIndustrex.Universe.Type
+  alias EveIndustrex.Universe.{System, Type}
   alias EveIndustrex.Industry
 
   def get_reactions_view() do
@@ -76,8 +76,15 @@ defmodule EveIndustrex.Industry.Service do
         end)
         _->
           formulas
-    end
+     end
+     |> Map.new(fn {id, f} ->
+      {id, Map.put(f, :adjusted_prices,
+        assign_average_prices(f, orders)
+      )}
+     end)
   end
+  # to do project AP
+
   def update_blueprint(bp, type, price, type_id) do
     case type do
       :product ->
@@ -88,25 +95,30 @@ defmodule EveIndustrex.Industry.Service do
         put_in(bp,[:profit], calc_profit(bp, bp.prices))
     end
   end
+  def assign_average_prices(bp, orders) do
+    Map.new(bp.bp.activities.reaction.materials, fn %{name: _, category_id: _, type_id: type_id, quantity: _} ->
+      {type_id, Map.get(orders.adjusted_prices, type_id)}
+    end)
+  end
   def assign_bp_materials_price(bp, orders, key) do
     if Map.has_key?(bp.activities, :manufacturing) do
       Map.new(bp.activities.manufacturing.materials, fn %{name: _, category_id: _, type_id: type_id, quantity: _} ->
-        {type_id, Map.get(orders[type_id], key)}
+        {type_id, Map.get(orders.prices[type_id], key)}
       end)
     else
       Map.new(bp.activities.reaction.materials, fn %{name: _, category_id: _, type_id: type_id, quantity: _} ->
-        {type_id, Map.get(orders[type_id], key)}
+        {type_id, Map.get(orders.prices[type_id], key)}
       end)
     end
   end
   def assign_bp_product_price(bp, orders, key) do
     if Map.has_key?(bp.activities, :manufacturing) do
       Map.new(bp.activities.manufacturing.products, fn %{name: _, category_id: _, type_id: type_id, quantity: _, probability: _} ->
-        {type_id, Map.get(orders[type_id], key)}
+        {type_id, Map.get(orders.prices[type_id], key)}
       end)
     else
       Map.new(bp.activities.reaction.products, fn %{name: _, category_id: _, type_id: type_id, quantity: _, probability: _} ->
-        {type_id, Map.get(orders[type_id], key)}
+        {type_id, Map.get(orders.prices[type_id], key)}
       end)
     end
   end
@@ -119,6 +131,11 @@ defmodule EveIndustrex.Industry.Service do
     products_total - materials_total
     end
   end
+  def get_systems_with_indices(query) do
+    System.Query.get_systems_for_reactions()
+    |> Enum.filter(fn x -> String.contains?(String.downcase(x.name), String.downcase(query)) end)
+  end
+
   defp calc_materials_price(formula, prices) do
         materials = formula.bp.activities.reaction.materials
     if !Enum.all?(materials, fn m ->
