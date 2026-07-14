@@ -1,16 +1,5 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@import "tailwindcss";
+@import "./theme.css";
 
-/* This file is for your main application CSS */
-
-@font-face {
-    font-family: "Abel";
-    font-weight: 400;
-    src: url(/fonts/Abel/Abel-Regular.ttf);
-}
-
-:root {
-    font-family: 'Abel', 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-    --header-h: 5rem;
-}
+@source "../js";
+@source "../../lib";

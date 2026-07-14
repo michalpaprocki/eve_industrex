@@ -43,7 +43,7 @@ config :esbuild,
 
 # Configure tailwind (the version is required)
 config :tailwind,
-  version: "3.4.3",
+  version: "4.3.0",
   eve_industrex: [
     args: ~w(
       --config=tailwind.config.js
@@ -71,7 +71,8 @@ config :eve_industrex, Oban,
     market_orders: 5,
     average_prices: 1,
     esi_metadata: 1,
-    esi_general: 5
+    esi_general: 5,
+    industry: 5
     ],
   repo: EveIndustrex.Repo
 config :logger, level: :debug
