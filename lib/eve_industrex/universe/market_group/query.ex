@@ -28,6 +28,6 @@ defmodule EveIndustrex.Universe.MarketGroup.Query do
 
   def get_market_groups_with_parents(), do: from(mg in MarketGroup, where: not is_nil(mg.parent_group_id)) |> Repo.all
   def get_market_types_by_query(query) do
-    Store.get_types() |> Enum.filter(fn {_market_group, type} -> String.contains?(String.downcase(type.name), query) end) |> Enum.map(fn {market_group, type} -> type end)
+    Store.get_types() |> Enum.filter(fn {_market_group, type} -> String.contains?(String.downcase(type.name), query) end) |> Enum.map(fn {_market_group, type} -> type end)
   end
 end
