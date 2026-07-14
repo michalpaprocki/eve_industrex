@@ -6,11 +6,14 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Query do
   alias EveIndustrex.Infrastructure.ESI.Sync.ResourceType
   alias EveIndustrex.Repo
   import Ecto.Query
-  @resources ["market_orders", "average_prices"]
+  @resources ["market_orders", "average_prices", "system_cost_indices"]
 
   def get_initial_resources(), do: @resources
   def get_resource_types_count() do
     Repo.aggregate(ResourceType, :count, :id)
+  end
+  def get_resource_types() do
+    from(r in ResourceType, preload: :sync_strategies) |> Repo.all()
   end
   def get_strategies_count(list_of_resource_type_ids) do
       query = from(r in EsiSyncStrategy, where: r.resource_type_id in ^list_of_resource_type_ids, select: {r.resource_type_id, count(r.id)}, group_by: r.resource_type_id)
@@ -37,14 +40,14 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Query do
   def get_generations_with_pages() do
     Repo.all(EsiSyncGeneration) |> Repo.preload(:generation_pages)
   end
-  def get_resource_types() do
-    Repo.all(ResourceType)
-  end
   def get_resource_type(resource_name) do
     from(r in ResourceType, where: r.name == ^resource_name) |> Repo.one()
   end
   def get_strategies() do
     Repo.all(EsiSyncStrategy)
+  end
+  def get_strategies_by_resource(resource_name) do
+    from(s in EsiSyncStrategy, join: r in ResourceType, on: s.resource_type_id == r.id, where: r.name == ^resource_name) |> Repo.all()
   end
   def get_strategy(id) do
     Repo.get(EsiSyncStrategy, id) |> Repo.preload(:resource_type)
@@ -87,9 +90,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Query do
       strat.resource_type.name
     end) |> Enum.uniq()
   end
-    def get_current_resource_generation_and_status(resource_id) do
-    max_gen = from(g in EsiSyncGeneration, select: max(g.generation))
-    from(s in EsiSyncStrategy, where: s.resource_type_id == ^resource_id, join: g in EsiSyncGeneration, on: s.id == g.esi_sync_strategy_id, where: g.generation == subquery(max_gen), select: {g.generation, g.status}) |> Repo.all
+  def get_current_resource_generation_and_status(resource_id) do
+    # max_gen = from(g in EsiSyncGeneration, select: max(g.generation))
+    from(s in EsiSyncStrategy, where: s.resource_type_id == ^resource_id, join: g in EsiSyncGeneration, on: s.id == g.esi_sync_strategy_id and g.generation == s.next_generation - 1, select: {g.generation, g.status}) |> Repo.all
   end
     def get_current_gen(resource_name) do
     gen_query = from(g in EsiSyncGeneration, order_by: [desc: g.generation], limit: 1)
