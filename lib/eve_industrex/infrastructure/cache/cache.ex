@@ -21,10 +21,12 @@ defmodule EveIndustrex.Infrastructure.Cache do
     tid_trade_hub_bid_ask_spread =:ets.new(:undefined, [:bag, :public, read_concurrency: true, write_concurrency: true])
     tid_market_orders =:ets.new(:undefined, [:bag, :public, read_concurrency: true, write_concurrency: true])
     tid_average_prics = :ets.new(:undefined, [:set, :public, read_concurrency: true, write_concurrency: :auto])
+    tid_system_cost_indices =:ets.new(:undefined, [:bag, :public, read_concurrency: true, write_concurrency: true])
     :persistent_term.put(:market_orders_tid, tid_market_orders)
     :persistent_term.put(:trade_hub_bid_ask_spread_tid, tid_trade_hub_bid_ask_spread)
     :persistent_term.put(:average_prices_tid, tid_average_prics)
-    {:ok, %{generations: %{:market_orders => 0, :average_prices => 0}}}
+    :persistent_term.put(:system_cost_indices_tid, tid_system_cost_indices)
+    {:ok, %{generations: %{:market_orders => 0, :average_prices => 0, :system_cost_indices => 0}}}
   end
   def start_link(_) do
     Logger.info("Starting #{__MODULE__}...")
@@ -38,6 +40,9 @@ defmodule EveIndustrex.Infrastructure.Cache do
   end
   def create_average_prices_table() do
     GenServer.call(__MODULE__, :create_average_prices_table)
+  end
+  def create_system_cost_indices_table() do
+    GenServer.call(__MODULE__, :create_system_cost_indices_table)
   end
   def create_gen(store) do
     GenServer.call(__MODULE__, {:create_gen, store})
@@ -57,6 +62,10 @@ defmodule EveIndustrex.Infrastructure.Cache do
     {:reply, new_tid, state}
   end
   def handle_call(:create_average_prices_table, _from,state) do
+      new_tid = :ets.new(:undefined, [:set, :public, read_concurrency: true, write_concurrency: true])
+    {:reply, new_tid, state}
+  end
+  def handle_call(:create_system_cost_indices_table, _from,state) do
       new_tid = :ets.new(:undefined, [:bag, :public, read_concurrency: true, write_concurrency: true])
     {:reply, new_tid, state}
   end
