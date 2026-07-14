@@ -1,5 +1,5 @@
 defmodule EveIndustrex.Market.Service do
-  alias EveIndustrex.Market.MarketOrder
+  alias EveIndustrex.Market.{AveragePrice, MarketOrder}
   alias EveIndustrex.Universe
   def get_market_view(type_id) do
     buy_orders =
@@ -41,9 +41,16 @@ defmodule EveIndustrex.Market.Service do
   end
 
   def get_initial_prices_for_view(location_id, type_ids) do
-    Map.new(type_ids, fn type_id ->
-      {type_id, MarketOrder.Store.get_ask_bid_from_hub(location_id, type_id)}
-    end)
+    %{
+      prices:
+      Map.new(type_ids, fn type_id ->
+        {type_id, MarketOrder.Store.get_ask_bid_from_hub(location_id, type_id)}
+      end),
+      adjusted_prices: Map.new(type_ids, fn type_id ->
+
+        {type_id, AveragePrice.Store.get_average_price(type_id)}
+      end)
+    }
   end
   def get_mini_market_view(location_id, type_id) do
     buy_orders =
@@ -84,6 +91,27 @@ defmodule EveIndustrex.Market.Service do
     end)
 
     %{:buy_orders => buy_orders, :sell_orders => sell_orders}
+  end
+  def get_average_prices(list_of_type_ids) do
+    Map.new(list_of_type_ids, fn type_id ->
+      {type_id, AveragePrice.Store.get_average_price(type_id)}
+    end)
+  end
+  def apply_fw_discount(job_cost, fw_upgrade_level) do
+    case fw_upgrade_level do
+      0 ->
+        job_cost
+      1 ->
+        job_cost * 0.9
+      2 ->
+        job_cost * 0.8
+      3 ->
+        job_cost * 0.7
+      4 ->
+        job_cost * 0.6
+      5 ->
+        job_cost * 0.5
+    end
   end
   defp build_location(location_id) do
 
