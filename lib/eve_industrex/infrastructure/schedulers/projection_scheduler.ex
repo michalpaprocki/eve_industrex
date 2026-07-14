@@ -4,7 +4,8 @@ defmodule EveIndustrex.Infrastructure.Schedulers.ProjectionScheduler do
   require Logger
   @workers %{
     "market_orders" => EveIndustrex.Market.MarketOrder.Jobs.MarketStoreProjectionWorker,
-    "average_prices" => EveIndustrex.Market.AveragePrice.Jobs.AveragePricesStoreProjectionWorker
+    "average_prices" => EveIndustrex.Market.AveragePrice.Jobs.AveragePricesStoreProjectionWorker,
+    "system_cost_indices" => EveIndustrex.Industry.SystemCostIndex.Jobs.SystemCostIndicesProjectionWorker
   }
   @impl Oban.Worker
   def perform(_) do
