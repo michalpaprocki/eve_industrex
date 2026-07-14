@@ -1,9 +1,13 @@
 defmodule EveIndustrexWeb.Reaction do
   use EveIndustrexWeb, :live_component
   alias EveIndustrex.Utils
+  alias EveIndustrex.Market
   def update(assigns, socket) do
-# to do components, unrefined reactions - alchemy - maybe split views, maybe separate here | get average prices and system index pipelines online for calculating job costs
-    {:ok, socket |> assign(assigns)}
+    eiv =
+      Enum.reduce(assigns.reaction.bp.activities.reaction.materials, 0, fn x , acc ->
+        x.quantity * assigns.reaction.adjusted_prices[x.type_id].adjusted_price + acc
+      end)
+    {:ok, socket |> assign(assigns) |> assign(:eiv, eiv)}
   end
 
   def render(assigns) do
@@ -49,17 +53,49 @@ defmodule EveIndustrexWeb.Reaction do
         </div>
 
         <div class="p-1 flex flex-col">
-          <span class="font-semibold">Total: </span>
+          <span title="Total Materials Cost" class="font-semibold">Total: </span>
           <div class="flex p-1 gap-1 items-center">
             <%= if Enum.any?(@reaction.bp.activities.reaction.materials, fn m -> @reaction.prices.materials[m.type_id] == nil end) do %>
               <span class="font-semibold">Missing prices</span>
             <% else %>
-            <span class="font-semibold"><%= Utils.format_with_coma(Enum.reduce(@reaction.bp.activities.reaction.materials, 0, fn m, acc -> @reaction.prices.materials[m.type_id] * m.quantity + acc end)) %></span>
+            <span class="font-semibold"><%= Utils.format_with_coma(Enum.reduce(@reaction.bp.activities.reaction.materials, 0, fn m, acc -> @reaction.prices.materials[m.type_id] * m.quantity + acc end)) %> ISK</span>
             <% end %>
 
           </div>
         </div>
+        <div class="flex flex-col">
+        <div class="p-1 flex justify-between">
+          <span title="Estimated Items Value" class="font-semibold">EIV: </span>
+          <span class="font-semibold"><%= Utils.format_with_coma(@eiv) %> ISK
+          </span>
+        </div>
+        <div class="p-1 flex justify-between">
+          <span title="Job installation Fee" class="font-semibold">Job Fee: </span>
+          <span class="font-semibold"><%= Utils.format_with_coma(@eiv * @system_cost_index |> Market.Service.apply_fw_discount(@fw_upgrade)) %> ISK
+          </span>
+        </div>
+          <span class="font-semibold">Taxes: </span>
+          <div class="p-1">
 
+            <div class="p-1 flex justify-between">
+              <span title="SSC Tax" class="font-semibold">SSC Tax: </span>
+              <span class="font-semibold"><%= Utils.format_with_coma(@eiv * @ssc_tax) %> ISK
+              </span>
+            </div>
+            <div class="p-1 flex justify-between">
+              <span title="Structure Tax" class="font-semibold">Structure Tax: </span>
+              <span class="font-semibold"><%= Utils.format_with_coma(@eiv * @structure_tax) %> ISK
+              </span>
+            </div>
+            <div class="p-1 flex justify-between">
+              <span title="Total Taxes" class="font-semibold">Total: </span>
+              <span class="font-semibold"><%= Utils.format_with_coma((@eiv * @structure_tax) +(@eiv * @ssc_tax) + (@eiv * @system_cost_index |> Market.Service.apply_fw_discount(@fw_upgrade))) %> ISK
+              </span>
+            </div>
+
+          </div>
+
+        </div>
         <div class="p-1 flex flex-col">
           <span class="font-semibold">Profit: </span>
           <div class="flex p-1 gap-1 items-center">
@@ -70,7 +106,18 @@ defmodule EveIndustrexWeb.Reaction do
             <% end %>
           </div>
         </div>
+        <div class="p-1 flex flex-col">
+          <span class="font-semibold">Profit after taxes: </span>
+          <div class="flex p-1 gap-1 items-center">
+            <%= if not is_nil(@reaction.profit) do %>
+              <span class="font-semibold"><%= Utils.format_with_coma(@reaction.profit - ((@eiv * @structure_tax) +(@eiv * @ssc_tax) + (@eiv * @system_cost_index |> Market.Service.apply_fw_discount(@fw_upgrade)))) %> ISK</span>
+            <% else %>
+              <span class="font-semibold">N/A </span>
+            <% end %>
+          </div>
+        </div>
       </div>
     """
   end
+
 end
