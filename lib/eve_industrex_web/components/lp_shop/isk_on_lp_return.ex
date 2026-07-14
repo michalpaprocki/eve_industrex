@@ -15,7 +15,7 @@ alias EveIndustrex.Utils
   end
 
   def render(assigns) do
-    # IO.inspect(assigns)
+
     ~H"""
       <div class="flex flex-col">
       <%= cond do %>
