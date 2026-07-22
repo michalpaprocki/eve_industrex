@@ -30,4 +30,24 @@ defmodule EveIndustrex.Universe.MarketGroup.Query do
   def get_market_types_by_query(query) do
     Store.get_types() |> Enum.filter(fn {_market_group, type} -> String.contains?(String.downcase(type.name), query) end) |> Enum.map(fn {_market_group, type} -> type end)
   end
+
+  def return_missing_market_groups(list_of_mgroup_ids) do
+        query =
+        from(
+          v in fragment("SELECT * FROM unnest(?::integer[]) AS market_group_id", ^list_of_mgroup_ids),
+          left_join: mg in MarketGroup, on: mg.market_group_id == v.market_group_id,
+          where: is_nil(mg.market_group_id),
+          select: v.market_group_id
+        )
+       Repo.all(query)
+
+      #        query =
+      #   from(
+      #     v in fragment("SELECT * FROM unnest(?::integer[]) AS type_id", ^list_of_types_ids),
+      #     left_join: t in Type, on: t.type_id == v.type_id,
+      #     where: is_nil(t.type_id),
+      #     select: v.type_id
+      #   )
+      #  Repo.all(query)
+  end
 end
