@@ -14,7 +14,7 @@ defmodule EveIndustrex.Industry.Blueprint.Query do
   def get_blueprints_from_bp_ids(bp_ids) do
     Enum.map(bp_ids, fn id ->
       case Blueprint.Store.get_blueprint(id) do
-        [{_id, bp}] ->
+        {_id, bp}->
           bp
         [] ->
           []
@@ -23,7 +23,7 @@ defmodule EveIndustrex.Industry.Blueprint.Query do
   end
 
   def get_reaction_formulas() do
-    Type.Store.get_all() |> Enum.filter(fn {_id, t} -> String.contains?(t.group, "Formula") end)
+    Type.Store.get_all() |> Enum.filter(fn {_id, t} -> String.contains?(t.group, "Formula") and t.published == true end)
 
 
   end

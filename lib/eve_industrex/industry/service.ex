@@ -160,7 +160,7 @@ defmodule EveIndustrex.Industry.Service do
       end)
     end
   end
-  defp handle_prepare([{_id, bp}]) do
+  defp handle_prepare({_id, bp}) do
     prepare_blueprint(bp)
   end
   defp prepare_blueprint(bp) do
