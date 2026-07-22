@@ -10,7 +10,12 @@ defmodule EveIndustrex.Universe.Type.Import do
     Enum.map(types, fn t -> Persistence.upsert_all(t) end)
   end
   def type_from_ESI(type_id) do
-    type = Sync.fetch_type_from_ESI!(type_id)
-    Persistence.upsert(type)
+    case Sync.fetch_type_from_ESI(type_id) do
+      {:ok, response} ->
+        type = Mapper.from_esi(response.body)
+        Persistence.upsert(type)
+      {:error, exception} ->
+        raise exception
+    end
   end
 end

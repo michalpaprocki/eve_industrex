@@ -29,4 +29,13 @@ defmodule EveIndustrex.Universe.MarketGroup.Import do
         raise exception
     end
   end
+  def from_ESI(market_group_id) do
+    case Sync.fetch_from_ESI(market_group_id) do
+      {:ok, response} ->
+        Mapper.from_esi(response.body)
+        |> Persistence.upsert()
+      {:error, exception} ->
+        {:error, exception}
+    end
+  end
 end
