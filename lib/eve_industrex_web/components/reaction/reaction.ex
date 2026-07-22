@@ -140,5 +140,4 @@ defmodule EveIndustrexWeb.Reaction do
         ""
    end
   end
-   defp apply_profitability_tag(_profit), do: ""
 end
