@@ -28,13 +28,13 @@ alias EveIndustrex.Utils
  def render(assigns) do
 
     ~H"""
-    <div class="">
+    <div class="flex">
       <%= if !@all_present do %>
-      <div phx-click={"toggle_modal"} phx-target={@myself} class={"cursor-pointer hover:text-white hover:bg-black transition p-1 flex flex-col justify-center bg-red-500 animate-pulse text-white"}>
+      <div phx-click={"toggle_modal"} phx-target={@myself} class={"cursor-pointer hover:text-ei-accent hover:bg-black transition p-1 flex flex-col justify-center bg-ei-warninig animate-pulse text-white"}>
         <span class="text-center">N/A - missing prices</span>
       </div>
     <% else %>
-        <div phx-click={"toggle_modal"} phx-target={@myself} class={"cursor-pointer hover:text-white hover:bg-black transition p-1 flex flex-col justify-center"}>
+        <div phx-click={"toggle_modal"} phx-target={@myself} class={"cursor-pointer hover:text-ei-accent hover:bg-black transition p-1 flex flex-col justify-center"}>
           <%= if @runs == 1 do %>
             <span class="text-center font-bold">  <%= Utils.format_with_coma(calc_total(@bp_materials , @bp_material_prices))<>" ISK" %> </span>
           <% else %>
@@ -48,7 +48,7 @@ alias EveIndustrex.Utils
 
         <.modal show={@show_modal} id={~s"modal_#{@id}"} on_cancel={JS.push("close_modal", target: @myself)}>
         <%= if Map.has_key?(assigns, :production_product) do %>
-          <span class="pb-4 text-lg font-semibold text-white"> <%= @production_product %> </span>
+          <span class="pb-4 text-lg font-semibold "> <%= @production_product %> </span>
         <% end %>
           <%= for m <- @bp_materials do %>
           <div class="p-1 flex gap-2 items-center justify-between text-white">
