@@ -17,7 +17,7 @@ defmodule EveIndustrexWeb do
   those modules here.
   """
 
-  def static_paths, do: ~w(assets fonts images favicon.ico robots.txt)
+  def static_paths, do: ~w(assets icons fonts images favicon.ico robots.txt)
 
   def router do
     quote do
