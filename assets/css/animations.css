@@ -1,0 +1,131 @@
+.reactor-arm1 {
+  transform: translateX(-60%);
+  transform: translateY(-20%);
+  top: 20%;
+  left: 40%;
+  animation: arm1 1s ease infinite;
+  border-radius: 100%;
+}
+.reactor-arm2 {
+  transform: translateX(-25%);
+  transform: translateY(-70%);
+  top: 70%;
+  left: 15%;
+  animation: arm2 1.3s ease-in-out infinite;
+  border-radius: 100%;
+}
+.reactor-arm3 {
+  transform: translateX(-75%);
+  transform: translateY(-70%);
+  top: 70%;
+  left: 65%;
+  animation: arm3 1.5s ease-in infinite;
+  border-radius: 100%;
+}
+.market-column1 {
+  animation: mcol1 26s ease-in-out infinite;
+}
+.market-column2 {
+  animation: mcol2 10s ease-in-out infinite;
+}
+.market-column3 {
+  animation: mcol3 18s ease-in-out infinite;
+}
+.reactor-spin {
+  animation: spinner 3s cubic-bezier(0.16, 0.88, 0.78, 0.12) infinite;
+}
+@keyframes mcol1 {
+  from {
+    height: 3rem;
+    /* background-color: var(--color-ei-warn); */
+  }
+  50% {
+    height: 5rem;
+    /* background-color: var(--color-ei-success); */
+  }
+  to {
+    height: 3rem;
+    /* background-color: var(--color-ei-warn); */
+  }
+}
+@keyframes mcol2 {
+  from {
+    height: 4.65rem;
+    /* background-color: var(--color-ei-success); */
+  }
+  50% {
+    height: 1.65rem;
+    /* background-color: white; */
+  }
+  75% {
+    height: 4.65rem;
+    /* background-color: var(--color-ei-success); */
+  }
+  100% {
+    height: 4.65rem;
+    /* background-color: var(--color-ei-success); */
+  }
+}
+@keyframes mcol3 {
+  from {
+    height: 4.75rem;
+    /* background-color: var(--color-ei-success); */
+  }
+  25% {
+    height: 2rem;
+    /* background-color: white; */
+  }
+  to {
+    height: 4.75rem;
+    /* background-color: var(--color-ei-success); */
+  }
+}
+@keyframes reactor-orbit {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes arm1 {
+  25% {
+    top: 28%;
+  }
+  75% {
+    border-end-end-radius: 60%;
+    border-bottom-left-radius: 60%;
+    scale: 105%;
+  }
+}
+@keyframes arm2 {
+  11% {
+    border-end-end-radius: 60%;
+    border-top-right-radius: 60%;
+    scale: 105%;
+  }
+  50% {
+    top: 76%;
+  }
+}
+@keyframes arm3 {
+  28% {
+    border-start-start-radius: 60%;
+    border-bottom-left-radius: 60%;
+    scale: 105%;
+  }
+  75% {
+    top: 74%;
+  }
+}
+
+@keyframes spinner {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

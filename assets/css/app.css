@@ -1,5 +1,9 @@
 @import "tailwindcss";
 @import "./theme.css";
+@import "./utility.css";
+@import "./animations.css";
+@import "./background.css";
+@import "./components.css";
 
 @source "../js";
 @source "../../lib";
