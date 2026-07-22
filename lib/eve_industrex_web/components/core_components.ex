@@ -1,4 +1,5 @@
 defmodule EveIndustrexWeb.CoreComponents do
+  import EveIndustrexWeb.Glyph
   @moduledoc """
   Provides core UI components.
 
@@ -19,6 +20,32 @@ defmodule EveIndustrexWeb.CoreComponents do
 
   alias Phoenix.LiveView.JS
 
+
+  @doc """
+  A styled link component that wraps the default Phoenix <.link>.
+  """
+  attr :navigate, :string, default: nil
+  attr :patch, :string, default: nil
+  attr :href, :string, default: nil
+  attr :class, :string, default: nil
+  attr :rest, :global
+
+  slot :inner_block, required: true
+
+  def custom_link(assigns) do
+    ~H"""
+    <.link
+      navigate={@navigate}
+      patch={@patch}
+      href={@href}
+      class={@class}
+      {@rest}
+    >
+      <%= render_slot(@inner_block) %>
+    </.link>
+    """
+  end
+
   @doc """
   Renders a header link.
 
@@ -29,11 +56,12 @@ defmodule EveIndustrexWeb.CoreComponents do
   """
   attr :destination, :string, required: true
   attr :inner_text, :string, required: true
+  attr :trailing_text, :string, default: ""
   attr :class, :string, default: nil
 
   def header_link(assigns) do
     ~H"""
-      <.link class={["font-bold text-lg hover:bg-black hover:text-white transition px-4 py-2 rounded-md", @class]} navigate={@destination} ><%= @inner_text %></.link>
+      <.link class={["font-bold font-headers text-lg focus:text-ei-text-muted focus:bg-ei-bg hover:text-ei-text-muted hover:bg-ei-bg hover:shard transition px-4 py-2 rounded-md", @class]} navigate={@destination} ><%= @inner_text %><span class="trailing-text pl-[0.1rem] spacing-6 hover:text-ei-hover transition"><%= @trailing_text %></span></.link>
     """
   end
 
@@ -93,7 +121,7 @@ defmodule EveIndustrexWeb.CoreComponents do
                   class="-m-3 flex-none p-3 opacity-80 hover:opacity-100"
                   aria-label={gettext("close")}
                 >
-                  <.icon name="hero-x-mark-solid" class="h-5 w-5 text-white" />
+                  <.glyph name="x" class="h-5 w-5 text-ei-text cursor-pointer" />
                 </button>
               </div>
               <div id={"#{@id}-content"}>
@@ -249,7 +277,7 @@ defmodule EveIndustrexWeb.CoreComponents do
     <button
       type={@type}
       class={[
-        "phx-submit-loading:opacity-75 rounded-lg bg-zinc-900 hover:bg-zinc-700 py-2 px-3",
+        "phx-submit-loading:opacity-75 rounded-lg bg-surface hover:bg-surface-border py-2 px-3 font-headers capitalize",
         "text-sm font-semibold leading-6 text-white active:text-white/80",
         @class
       ]}
@@ -328,7 +356,7 @@ defmodule EveIndustrexWeb.CoreComponents do
 
     ~H"""
     <div>
-      <label class="flex items-center gap-4 text-sm leading-6 text-white">
+      <label class="flex items-center gap-4 text-sm leading-6 text-ei-text font-headers">
         <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
         <input
           type="checkbox"
@@ -336,7 +364,7 @@ defmodule EveIndustrexWeb.CoreComponents do
           name={@name}
           value="true"
           checked={@checked}
-          class="rounded border-zinc-300 text-zinc-900 focus:ring-0"
+          class="rounded border-surface-border text-ei-text bg-surface focus:ring-0"
           {@rest}
         />
         {@label}
@@ -353,7 +381,7 @@ defmodule EveIndustrexWeb.CoreComponents do
       <select
         id={@id}
         name={@name}
-        class={["mt-2 block w-full rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0", @class]}
+        class={["mt-2 block w-full rounded-md border border-surface-border bg-surface shadow-sm focus:border-surface-border p-1 font-headers focus:ring-0", @class]}
         multiple={@multiple}
         {@rest}
       >
@@ -395,9 +423,9 @@ defmodule EveIndustrexWeb.CoreComponents do
         id={@id}
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
-          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
-          @errors == [] && "border-zinc-300 focus:border-zinc-400",
-          @errors != [] && "border-rose-400 focus:border-rose-400"
+          "mt-2 block w-full rounded-lg text-ei-text focus:ring-0 sm:text-sm sm:leading-6 bg-surface p-1",
+          @errors == [] && "border-surface-border focus:border-surface-border",
+          @errors != [] && "border-ei-critical focus:border-ei-warning"
         ]}
         {@rest}
       />
@@ -415,7 +443,7 @@ defmodule EveIndustrexWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class={["block text-sm text-nowrap font-semibold leading-6 text-white", @class]}>
+    <label for={@for} class={["block text-sm text-nowrap font-semibold leading-6 text-ei-text font-headers", @class]}>
       {render_slot(@inner_block)}
     </label>
     """
