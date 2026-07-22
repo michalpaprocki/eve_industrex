@@ -10,6 +10,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
     :ets.new(:sync_runtime, [:named_table, :public, read_concurrency: true, write_concurrency: :auto])
     :ets.new(:sync_events, [:named_table, :public, read_concurrency: true, write_concurrency: :auto])
 
+
     :ets.insert(:sync_metrics, [
       {:generations_completed, 0},
       {:generations_superseded, 0},
@@ -23,6 +24,11 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
       {:pages_completed, 0},
       {:pages_retried, 0},
       {:pages_rate_limited, 0},
+      {:types_imported, 0},
+      {:groups_imported, 0},
+      {:market_groups_imported, 0},
+      {:categories_imported, 0},
+
     ])
 
     :telemetry.attach_many("sync-monitor",
@@ -34,6 +40,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
         [:eve_industrex, :sync, :generation, :critical],
         [:eve_industrex, :sync, :generation, :failed],
         [:eve_industrex, :sync, :page, :runtime],
+        [:eve_industrex, :universe, :dependencies]
       ],
       &__MODULE__.handle_telemetry/4,
       self()
@@ -169,5 +176,29 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
 
   {:noreply, state}
   end
-
+  def handle_info({:telemetry,  [:eve_industrex, :universe, :dependencies], %{count: count} =
+      _measurements, %{entity: type} = _metadata}, state) do
+      :ets.insert(:sync_events, {System.unique_integer(), %{
+      timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
+      event: :dependecies_imported,
+      metadata: %{
+        resource: type,
+        strategy_id: :independent,
+        generation_id: :independent,
+        count: count
+      }
+    }})
+      case type do
+        :type ->
+          :ets.update_counter(:sync_metric, :types_imported, 1, {:types_imported, 0})
+        :group ->
+          :ets.update_counter(:sync_metric, :groups_imported, 1, {:groups_imported, 0})
+        :category ->
+          :ets.update_counter(:sync_metric, :categories_imported, 1, {:categories_imported, 0})
+        :market_group ->
+          :ets.update_counter(:sync_metric, :market_groups_imported, 1, {:market_groups_imported, 0})
+        _-> :noop
+      end
+    {:noreply, state}
+  end
 end

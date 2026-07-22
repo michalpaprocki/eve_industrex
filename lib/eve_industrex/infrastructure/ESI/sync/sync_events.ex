@@ -120,4 +120,14 @@ require Logger
       }
     )
   end
+  def dependencies_imported(0, _type) do
+    :noop
+  end
+  def dependencies_imported(amount, type) do
+    :telemetry.execute(
+      [:eve_industrex, :universe, :dependencies],
+      %{count: amount},
+      %{entity: type}
+    )
+  end
 end
