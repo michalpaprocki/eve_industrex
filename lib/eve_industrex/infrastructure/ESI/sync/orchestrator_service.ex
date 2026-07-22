@@ -1,5 +1,6 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
   require Logger
+  alias EveIndustrex.Infrastructure.ESI.Sync.Universe
   alias EveIndustrex.Industry.SystemCostIndex
   alias EveIndustrex.Infrastructure.ESI.Sync.SyncEvents
   alias EveIndustrex.Infrastructure.ESI.ClientHandler
@@ -48,25 +49,38 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
                   advance_page_completed(generation_id, String.to_integer(headers.pages))
                 end
 
-                upsert(body, strategy.resource_type.name, generation, strategy.target_id)
-                SyncEvents.runtime(:completed, gen, page)
+                case upsert(body, strategy.resource_type.name, generation, strategy.target_id) do
+                  :ok ->
+                    SyncEvents.runtime(:completed, gen, page)
+                  cond do
+                    not is_nil(headers.pages) and String.to_integer(headers.pages) > 1 && page == 1 ->
+                      {:fanout, String.to_integer(headers.pages)}
+
+                    is_nil(headers.pages) and page == 1 ->
+                      :ok
+
+                    page == 1 ->
+                      {:ok, String.to_integer(headers.pages), generation_id}
 
 
-                cond do
-                  not is_nil(headers.pages) and String.to_integer(headers.pages) > 1 && page == 1 ->
-                    {:fanout, String.to_integer(headers.pages)}
+                    true ->
 
-                  is_nil(headers.pages) and page == 1 ->
-                    :ok
-
-                  page == 1 ->
-                    {:ok, String.to_integer(headers.pages), generation_id}
-
-
-                  true ->
-
-                    :ok
+                      :ok
                 end
+                  {:error, _error} ->
+
+                    # deps not updated - fail gen
+                 {:ok, _gen} = update_generation(generation_id, %{
+                  status: :failed,
+                  last_error: "deps not updated",
+                  finished_at: now(),
+                  pages_total: maybe_insert_pages_total(headers),
+                  pages_completed: 0
+                  }
+                )
+                  :ok
+                end
+
               else
                 # mark as superseded and restart
                 {:ok, gen} = update_generation(generation_id, %{
@@ -131,7 +145,8 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
             {:server_error, %Headers{} = _headers, status} ->
               upsert_sync_gen_page(page, generation_id, :retryable, attempt, Integer.to_string(status))
               #  RateLimiter.observe(headers)
-
+              Logger.info("Server error, snoozing job")
+               SyncEvents.runtime(:server_error, gen, page)
               {:snooze, calc_delay(attempt)}
 
             {:not_found, _body, %Headers{} = headers, status} ->
@@ -196,12 +211,15 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
   def compare_diff(:not_found, _), do: false
   def compare_diff(%{:etag => nil, :expires_at => nil}, _), do: false
   def compare_diff(metadata, now), do: DateTime.compare(metadata.expires_at, now) == :gt
-  def prepare_generation(strategy_id, target_id, next_generation) do
+  def prepare_generation(strategy) do
+
       now = DateTime.utc_now() |> DateTime.truncate(:second)
       {:ok, gen} =
           %Sync.EsiSyncGeneration{}
-          |> Sync.EsiSyncGeneration.changeset(%{generation: next_generation, esi_sync_strategy_id: strategy_id, started_at: now, target_id: target_id, status: :running, pages_completed: 0})
+          |> Sync.EsiSyncGeneration.changeset(%{generation: strategy.next_generation, esi_sync_strategy_id: strategy.id, started_at: now, target_id: strategy.target_id, status: :running, pages_completed: 0})
           |> Sync.Persistence.insert_generation()
+
+        SyncEvents.generation_running(gen, strategy)
           gen
 
   end
@@ -250,12 +268,39 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
       "market_orders" ->
 
           orders = Enum.map(body, fn order -> MarketOrder.Mapper.from_esi(order, generation, target_id) end)
-          MarketOrder.Persistence.upsert_all(orders)
+          type_ids = Enum.map(orders, fn mo ->
+          mo.type_id
+        end) |> Enum.uniq()
+
+         case Universe.ensure_type_dependencies(type_ids) do
+          {categories, groups, market_groups, types} ->
+            Universe.update_caches({categories, groups, market_groups, types})
+           MarketOrder.Persistence.upsert_all(orders)
+              :ok
+            {:error, error}->
+              {:error, error}
+
+          end
+
 
       "average_prices" ->
-        average_prices = Enum.map(body, fn ap -> AveragePrice.Mapper.from_esi(ap) end) |> Enum.chunk_every(5000)
+        average_prices = Enum.map(body, fn ap -> AveragePrice.Mapper.from_esi(ap) end)
+        type_ids = Enum.map(average_prices, fn ap ->
+          ap.type_id
+        end)
+        |> Enum.uniq()
+        case Universe.ensure_type_dependencies(type_ids) do
+          {categories, groups, market_groups, types} ->
+            Universe.update_caches({categories, groups, market_groups, types})
+              chunks = Enum.chunk_every(average_prices, 5000)
+              Enum.map(chunks, fn chunk -> AveragePrice.Persistence.upsert_all(chunk) end)
+              :ok
+            err ->
+              err
+        end
 
-        Enum.map(average_prices, fn chunk -> AveragePrice.Persistence.upsert_all(chunk) end)
+
+
 
       "system_cost_indices" ->
 
@@ -266,7 +311,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
         Enum.map(system_cost_indices, fn chunk ->
           SystemCostIndex.Persistence.upsert_all(chunk)
         end)
-
+        :ok
         _->
           :ok
     end

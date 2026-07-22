@@ -19,7 +19,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
       true ->
         metadata = %{etag: strategy.last_etag, expires_at: strategy.last_expires_at}
 
-        generation = OrchestratorService.prepare_generation(strategy.id, strategy.target_id, strategy.next_generation)
+        generation = OrchestratorService.prepare_generation(strategy)
 
         case OrchestratorService.orchestrate(fetch_fn, generation.id, strategy.next_generation, attempt, max_attempts, strategy, metadata) do
           {:snooze, delay} ->
@@ -52,7 +52,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
         metadata = %{etag: strategy.last_etag, expires_at: strategy.last_expires_at}
 
 
-          generation = OrchestratorService.prepare_generation(strategy.id, strategy.target_id, strategy.next_generation)
+          generation = OrchestratorService.prepare_generation(strategy)
 
           case OrchestratorService.orchestrate(fetch_fn, generation.id, strategy.next_generation, attempt, max_attempts, strategy, metadata, 1) do
             {:snooze, delay} ->
@@ -144,9 +144,19 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
               })
               :ok
             true ->
-
-              Logger.info("Finalizer snoozing")
-            {:snooze, OrchestratorService.calc_delay(attempt)}
+              # most likely after server error >= 500
+              if Enum.any?(generation.generation_pages, fn gp -> gp.status == :retryable end) do
+                SyncEvents.generation_failed(generation, strategy)
+                OrchestratorService.finalize_strategy(strategy, %{
+                  status: :failed,
+                  next_generation: strategy.next_generation + 1,
+                  next_run_at: OrchestratorService.calc_next_run(strategy.sync_interval_seconds, generation.started_at),
+                  enabled: true
+                  })
+                :ok
+              else
+                {:snooze, OrchestratorService.calc_delay(attempt)}
+              end
           end
 
         :completed ->
@@ -199,13 +209,13 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
             })
           :ok
         :failed ->
-          Logger.error("Finalizer failure")
+          Logger.error("Finalizer failure - rate limited")
            SyncEvents.generation_failed(generation, strategy)
            OrchestratorService.finalize_strategy(strategy, %{
             status: :failed,
             next_generation: strategy.next_generation + 1,
             next_run_at: OrchestratorService.calc_next_run(strategy.sync_interval_seconds, generation.started_at),
-            enabled: false
+            enabled: true
             })
           :ok
 
