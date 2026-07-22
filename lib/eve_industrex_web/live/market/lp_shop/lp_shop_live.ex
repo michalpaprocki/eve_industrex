@@ -1,4 +1,4 @@
-defmodule EveIndustrexWeb.Tools.LpShopLive do
+defmodule EveIndustrexWeb.Market.LpShopLive do
 
   alias EveIndustrex.LoyaltyPoints
   alias EveIndustrex.Universe.Station
@@ -67,11 +67,11 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
   def render(assigns) do
 
   ~H"""
-      <div class="text-xl font-semibold mb-10 h-30 flex flex-col gap-5 mt-10">
+      <div class="text-xl mb-10 h-30 flex flex-col gap-5 mt-10">
         <div class="flex gap-3 flex-col items-center top-20 left-0 w-full">
-          <h1 class=""><%= if @form[:selected_corp].value != nil, do:   Enum.find(@corps, fn c -> c.corp_id == @form[:selected_corp].value end).name %> Loyalty Points Shop Browser</h1>
+          <h1 class="font-headers"><%= if @form[:selected_corp].value != nil, do:   Enum.find(@corps, fn c -> c.corp_id == @form[:selected_corp].value end).name %> Loyalty Points Shop Browser</h1>
           <%= if @form[:selected_corp].value != nil do %>
-            <img class="w-80 h-80 blur-sm fixed -z-10" src={"https://images.evetech.net/corporations/#{@form[:selected_corp].value}/logo?size=256"} />
+            <img class="w-80 opacity-15 h-80 blur-sm fixed -z-10" src={"https://images.evetech.net/corporations/#{@form[:selected_corp].value}/logo?size=256"} />
           <% end %>
         </div>
         <%= if Map.has_key?(assigns, :number_of_offers) do %>
@@ -79,10 +79,10 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
         <% end %>
         </div>
        <div class="flex justify-evenly gap-4 items-center flex-col">
-        <details class="max-w-[95%] md:max-w-[75%] text-base font-semibold bg-black/70 text-white rounded-md transition">
-          <summary class="p-4 hover:bg-white hover:text-black transition rounded-md">Want to filter?</summary>
+        <details class="max-w-[95%] md:max-w-[75%] text-sm font-semibold bg-black/70 text-white rounded-md transition">
+          <summary class="p-4 hover:bg-white hover:text-black transition rounded-md">Filtering</summary>
             <ul class="p-2">
-              You can filter items in the Search Item box:
+
               <li class="px-1">
                 - search by item name.
               </li>
@@ -115,7 +115,7 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
           </div>
         <.form for={@form} id={"lp_shop_form"} phx-change={"validate_form"} class={"overflow-hidden flex lg:flex-row flex-col gap-4 font-semibold"}>
           <div class="px-4 py-2 flex items-center gap-2">
-            <.input field={@form[:selected_corp]} label="Corporation Select" prompt={"Select Corporation..."} type={"select"} options={Enum.map(@corps, fn c -> [key: c.name, value: c.corp_id] end)} id={"corp_select"} class="mt-0 text-base"/>
+            <.input field={@form[:selected_corp]} label="Corporation Select" prompt={"Select Corporation..."} type={"select"} options={Enum.map(@corps, fn c -> [key: c.name, value: c.corp_id] end)} id={"corp_select"} class="mt-0 text-base text-ei-text"/>
 
             <.input class="" value={@form[:selected_trade_hub].value} field={@form[:selected_trade_hub]} options={Enum.map(@hubs, fn h -> [key: h.name, value: h.station_id] end)} label="Trade Hub:" type={"select"} id={"trade_hub_selection"}/>
 
@@ -133,7 +133,7 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
         </.form>
 
       </div>
-      <div class="flex flex-col gap-2 min-w-[80%]">
+      <div class="flex flex-col gap-2">
         <%= cond do %>
         <%  @offers == nil -> %>
           <% nil %>
@@ -213,20 +213,20 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
 
         cond do
           corp_id != form[:selected_corp].value ->
-            path = "/tools/lp_shop/#{form[:selected_trade_hub].value}/#{corp_id}/#{form[:order_type].value}"<>LiveParser.maybe_compose_query(filter, sorter)
+            path = "/market/lp_shop/#{form[:selected_trade_hub].value}/#{corp_id}/#{form[:order_type].value}"<>LiveParser.maybe_compose_query(filter, sorter)
 
 
             {:noreply, socket |> assign(:form, to_form(changeset, as: :lp_shop_form)) |> assign(:offers, AsyncResult.loading()) |> start_async(:get_lp_offers, fn -> LoyaltyPoints.Service.get_lp_shop_view(corp_id) end) |> push_patch(to: path, replace: true)}
 
 
           trade_hub != form[:selected_trade_hub].value ->
-             path = "/tools/lp_shop/#{trade_hub}/#{form[:selected_corp].value}/#{form[:order_type].value}"<>LiveParser.maybe_compose_query(filter, sorter)
+             path = "/market/lp_shop/#{trade_hub}/#{form[:selected_corp].value}/#{form[:order_type].value}"<>LiveParser.maybe_compose_query(filter, sorter)
 
               type_ids = LoyaltyPoints.Service.extract_offers_type_ids(offers.result)
             {:noreply, socket |> assign(:form, to_form(changeset, as: :lp_shop_form)) |> start_async(:get_orders, fn -> Market.Service.get_initial_prices_for_view(trade_hub, type_ids) end) |> push_patch(to: path, replace: true)}
 
           order_type != form[:order_type].value ->
-             path = "/tools/lp_shop/#{form[:selected_trade_hub].value}/#{form[:selected_corp].value}/#{order_type}"<>LiveParser.maybe_compose_query(filter, sorter)
+             path = "/market/lp_shop/#{form[:selected_trade_hub].value}/#{form[:selected_corp].value}/#{order_type}"<>LiveParser.maybe_compose_query(filter, sorter)
 
               type_ids = LoyaltyPoints.Service.extract_offers_type_ids(offers.result)
             {:noreply, socket |> assign(:form, to_form(changeset, as: :lp_shop_form)) |> start_async(:get_orders, fn -> Market.Service.get_initial_prices_for_view(trade_hub, type_ids) end) |> push_patch(to: path, replace: true)}
@@ -234,7 +234,7 @@ defmodule EveIndustrexWeb.Tools.LpShopLive do
           true ->
 
 
-             path = "/tools/lp_shop/#{form[:selected_trade_hub].value}/#{form[:selected_corp].value}/#{form[:order_type].value}"<>LiveParser.maybe_compose_query(filter, sorter)
+             path = "/market/lp_shop/#{form[:selected_trade_hub].value}/#{form[:selected_corp].value}/#{form[:order_type].value}"<>LiveParser.maybe_compose_query(filter, sorter)
              filtered_offers = filter_offers(offers.result, filter)
 
             {:noreply, socket |> assign(:form, to_form(changeset, as: :lp_shop_form))  |> assign(:filtered_offers, filtered_offers) |> push_patch(to: path, replace: true)}
