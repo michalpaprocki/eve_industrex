@@ -99,4 +99,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Query do
     from(r in ResourceType, where: r.name == ^resource_name, join: s in EsiSyncStrategy, on: r.id == s.resource_type_id, join: g in subquery(gen_query), on: s.id == g.esi_sync_strategy_id,
       where: g.status == :completed, select: g.generation, limit: 1) |> Repo.one
   end
+  def strategies_not_running?(resource_type_id) do
+    query = from(s in EsiSyncStrategy, where: s.resource_type_id == ^resource_type_id, select: sum(fragment("CASE WHEN ? = ? THEN 1 ELSE 0 END", s.status, "running")) == 0)
+    Repo.one(query) || false
+
+  end
 end

@@ -18,11 +18,16 @@ defmodule EveIndustrex.Infrastructure.Schedulers.ProjectionScheduler do
       if is_nil(worker) do
         :noop
       else
+        if Query.strategies_not_running?(resource.id) do
         %{"resource_name" => resource.name}
         |> worker.new()
         |> Oban.insert()
+        else
+          Logger.info("Strategies running - #{inspect(resource.name)} projection postponed...")
+        end
       end
       end)
     {:snooze, 120}
   end
+
 end
