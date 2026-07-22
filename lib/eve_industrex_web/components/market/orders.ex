@@ -13,27 +13,27 @@ alias EveIndustrex.Utils
   def render(assigns) do
     ~H"""
     <div class="">
-      <table class={"w-full text-sm table-fixed border-collapse"}>
+      <table class={"w-full text-sm table-fixed border-collapse "}>
         <thead>
             <%= if @is_buy_list? do %>
           <tr class="">
-            <th class="w-[8%] sticky top-0 bg-stone-200"> region </th>
-            <th class=" w-[10%] sticky top-0 bg-stone-200"> volume </th>
-            <th class=" w-[12%] sticky top-0 bg-stone-200"> price </th>
-            <th class=" w-[20%] sticky top-0 bg-stone-200"> location </th>
-            <th class=" w-[4%] sticky top-0 bg-stone-200">range</th>
-            <th class=" w-[8%] sticky top-0 bg-stone-200 truncate">min volume</th>
-            <th class="border-1 border-solid border-black/20 w-[7%] sticky top-0 bg-stone-200"> expires </th>
-            <th class="border-1 border-solid border-black/20 w-[7%] sticky top-0 bg-stone-200"> issued </th>
+            <th class="w-[8%] sticky top-0 bg-ei-bg"> region </th>
+            <th class=" w-[10%] sticky top-0 bg-ei-bg"> volume </th>
+            <th class=" w-[12%] sticky top-0 bg-ei-bg"> price </th>
+            <th class=" w-[20%] sticky top-0 bg-ei-bg"> location </th>
+            <th class=" w-[4%] sticky top-0 bg-ei-bg">range</th>
+            <th class=" w-[8%] sticky top-0 bg-ei-bg truncate">min volume</th>
+            <th class="border-1 border-solid border-black/20 w-[7%] sticky top-0 bg-ei-bg"> expires </th>
+            <th class="border-1 border-solid border-black/20 w-[7%] sticky top-0 bg-ei-bg"> issued </th>
           </tr>
             <% else %>
             <tr class="">
-              <th class="w-[8%] sticky top-0 bg-stone-200"> region </th>
-              <th class=" w-[10%] sticky top-0 bg-stone-200"> volume </th>
-              <th class=" w-[12%] sticky top-0 bg-stone-200"> price </th>
-              <th class=" w-[30%] sticky top-0 bg-stone-200"> location </th>
-              <th class="border-1 border-solid border-black/20 w-[7%] sticky top-0 bg-stone-200"> expires </th>
-              <th class="border-1 border-solid border-black/20 w-[7%] sticky top-0 bg-stone-200"> issued </th>
+              <th class="w-[8%] sticky top-0 bg-ei-bg"> region </th>
+              <th class=" w-[10%] sticky top-0 bg-ei-bg"> volume </th>
+              <th class=" w-[12%] sticky top-0 bg-ei-bg"> price </th>
+              <th class=" w-[30%] sticky top-0 bg-ei-bg"> location </th>
+              <th class="border-1 border-solid border-black/20 w-[7%] sticky top-0 bg-ei-bg"> expires </th>
+              <th class="border-1 border-solid border-black/20 w-[7%] sticky top-0 bg-ei-bg"> issued </th>
           </tr>
             <% end %>
         </thead>

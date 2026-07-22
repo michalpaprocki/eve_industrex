@@ -12,7 +12,7 @@ defmodule EveIndustrexWeb.Market.Filter do
       <div class={"h-[25%] p-1 right-0 truncate"}>
         <div class="flex items-center gap-1">
             <.label class="hidden" for="location_filter">location</.label>
-            <input id="location_filter" value={@search_string} class="rounded-md" type="text" placeholder="🔎 Region / Location..." phx-target={@myself} phx-keyup={"filter_by_location"} phx-debounce={1000}/>
+            <input id="location_filter" value={@search_string} class="rounded-md p-1 panel" type="text" placeholder="🔎 Region / Location..." phx-target={@myself} phx-keyup={"filter_by_location"} phx-debounce={1000}/>
         </div>
         <div class="p-1">
             <.input type="checkbox" name="highsec" checked={true} label="Highsec" phx-click={"filter_by_sec_status"} phx-target={@myself} phx-value-sec_status={"highsec"} />

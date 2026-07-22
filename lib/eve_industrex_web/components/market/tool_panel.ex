@@ -9,12 +9,12 @@ defmodule EveIndustrexWeb.Market.ToolPanel do
 
   def render(assigns) do
     ~H"""
-    <aside class={"text-white bg-black/70 relative flex flex-col items-center rounded-md ring-black md:mb-0 mb-2 md:mr-2 mr-0 transition-all #{if !@tree && !@filters, do: "ring-0 h-0", else: "md:ring-2 ring-0 h-[80vh] min-h-[750px]"}"}>
+    <aside class={"glass relative flex text-sm flex-col items-center  md:mb-0 mb-2 md:mr-2 mr-0 transition-all #{if !@tree && !@filters, do: "ring-0 h-0", else: "h-[80vh] min-h-[750px]"}"}>
       <div class="absolute top-0 left-0 -translate-y-12 flex gap-1">
-          <.button class={"#{if @tree, do: "", else: "bg-zinc-500"}"} phx-click={"toggle_tree"} phx-target={@myself}>
+          <.button class={"#{if @tree, do: "", else: "bg-ei-accent"}"} phx-click={"toggle_tree"} phx-target={@myself}>
             browser
           </.button>
-          <.button class={"#{if @filters, do: "", else: "bg-zinc-500"}"} phx-click={"toggle_filters"} phx-target={@myself}>
+          <.button class={"#{if @filters, do: "", else: "bg-ei-accent"}"} phx-click={"toggle_filters"} phx-target={@myself}>
             filters
           </.button>
       </div>

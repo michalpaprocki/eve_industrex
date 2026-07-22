@@ -11,10 +11,10 @@ alias EveIndustrex.Universe.MarketGroup.Store
   def render(assigns) do
 
     ~H"""
-    <div class={"flex flex-col"}>
+    <div class={"flex flex-col font-headers font-semibold text-base"}>
       <%!-- add collapse all --%>
-      <span class={"hover:bg-black hover:text-white hover:cursor-pointer truncate"} phx-click={if length(@types) == 0, do: "toggle_open", else: "toggle_open_types"} phx-target={@myself}>
-        <.icon name="hero-chevron-right-solid" class="h-4 w-4" />
+      <span class={"panel p-1 flex gap-1 hover:bg-black hover:text--eihover hover:cursor-pointer truncate"} phx-click={if length(@types) == 0, do: "toggle_open", else: "toggle_open_types"} phx-target={@myself}>
+        <.glyph name="chevron-right" class={" #{if @open or @open_types,  do: "rotate-90", else: "rotate-0"} transition"} />
         <%= @market_group.name %>
       </span>
 
@@ -25,7 +25,7 @@ alias EveIndustrex.Universe.MarketGroup.Store
         </div>
       <% end %>
       <%= for t <- @types do %>
-        <div class={"#{if @open_types, do: "block", else: "hidden"} px-2 ml-3 hover:bg-black hover:text-white hover:cursor-pointer truncate"} phx-click={"fetch_market_orders"} phx-value-type_id={t.type_id}>
+        <div class={"#{if @open_types, do: "block", else: "hidden"} px-2 ml-3 panel hover:bg-black hover:text-white hover:cursor-pointer truncate"} phx-click={"fetch_market_orders"} phx-value-type_id={t.type_id}>
             <%= t.name %>
         </div>
       <% end %>
