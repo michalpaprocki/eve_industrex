@@ -1,4 +1,4 @@
-defmodule EveIndustrexWeb.Tools.ReactionsLive do
+defmodule EveIndustrexWeb.Industry.ReactionsLive do
   alias Phoenix.LiveView.AsyncResult
   alias EveIndustrex.Industry
   alias EveIndustrex.Market
@@ -36,15 +36,14 @@ defmodule EveIndustrexWeb.Tools.ReactionsLive do
     ~H"""
       <div class="text-xl font-semibold mb-10 h-30 flex flex-col gap-5 mt-10">
         <div class="flex gap-3 flex-col items-center top-20 left-0 w-full">
-          <h1 class="">Reaction Browser</h1>
+          <h1 class="font-headers">Reaction Calculator</h1>
         </div>
 
       </div>
        <div class="flex justify-evenly gap-4 items-center flex-col">
-        <details class="max-w-[95%] md:max-w-[75%] text-base font-semibold bg-black/70 text-white rounded-md transition">
-          <summary class="p-4 hover:bg-white hover:text-black transition rounded-md">Want to filter?</summary>
+        <details class="max-w-[95%] md:max-w-[75%] text-sm font-semibold  rounded-md transition panel">
+          <summary class="p-4 hover:bg-white hover:text-black transition rounded-md">Filtering</summary>
             <ul class="p-2">
-              You can filter items in the Search Item box:
               <li class="px-1">
                 - search by item name.
               </li>
@@ -69,7 +68,7 @@ defmodule EveIndustrexWeb.Tools.ReactionsLive do
         Hint: You can click on a product or material price to adjust it to your liking.
         </div>
       </div>
-      <div class={"flex w-full bg-black/70 backdrop-blur-sm top-20 left-0 sticky justify-between transition-all xl:justify-center shadow-sm shadow-black delay-0 duration-500 rounded-b-md z-10  #{if @show_form, do: "h-[18rem] lg:h-[8rem]", else: "h-0"}"} id={"lp_form_container"}>
+      <div class={"semi-panel flex w-full bg-black/70 top-20 left-0 sticky justify-between transition-all xl:justify-center shadow-sm shadow-black delay-0 duration-500 rounded-b-md z-10  #{if @show_form, do: "h-[18rem] lg:h-[8rem]", else: "h-0"}"} id={"lp_form_container"}>
         <div class="flex order-last gap-1 p-2 h-fit">
           <.button title="minimize or maximize" phx-click="toggle_form" type="button" aria-description="minimize or maximaze the form" class="z-10 top-24 h-10 w-10"> <%= if @show_form, do: "＿", else: "⬜" %> </.button>
           <.button title="scroll to top" phx-click={JS.dispatch("phx-scroll-to-top")} type="button" aria-description="scroll to top" class="z-10 top-24 h-10 w-10">▲</.button>
@@ -108,7 +107,7 @@ defmodule EveIndustrexWeb.Tools.ReactionsLive do
 
              <.input field={@form[:ssc_tax]} label="SSC Surcharge:" min={0} max={25} step={0.01} type={"number"} value={@form[:ssc_tax].value}/>
              <.input field={@form[:fw_upgrade]} label="FW Upgrade Level:" min={0} max={5} step={1} type={"number"} value={@form[:fw_upgrade].value}/>
-             <.input field={@form[:structure_tax]} label="Structure Tax:" min={0} max={100} step={0.01} type={"number"} value={@form[:structure_tax].value}/>
+             <.input field={@form[:structure_tax]} label="Structure Tax:" min={0} max={100} step={0.0001} type={"number"} value={@form[:structure_tax].value}/>
              </div>
             <.button phx-disable-with="Saving..." disabled={true} class={"hidden"}>
               submit
@@ -225,20 +224,20 @@ def handle_event("validate_form", %{"reactions_form" => params}, socket) do
 
 
           trade_hub != form[:selected_trade_hub].value ->
-             path = "/tools/reactions/#{trade_hub}/#{form[:order_type].value}"<>LiveParser.maybe_compose_query(filter, sorter)
+             path = "/industry/reactions/#{trade_hub}/#{form[:order_type].value}"<>LiveParser.maybe_compose_query(filter, sorter)
 
               type_ids = Industry.Service.extract_reactions_type_ids(formulas.result)
             {:noreply, socket |> assign(:form, to_form(changeset, as: :reactions_form)) |> start_async(:get_orders, fn -> Market.Service.get_initial_prices_for_view(trade_hub, type_ids) end) |> assign(:systems, systems) |> push_patch(to: path, replace: true)}
 
           order_type != form[:order_type].value ->
-             path = "/tools/reactions/#{form[:selected_trade_hub].value}/#{order_type}"<>LiveParser.maybe_compose_query(filter, sorter)
+             path = "/industry/reactions/#{form[:selected_trade_hub].value}/#{order_type}"<>LiveParser.maybe_compose_query(filter, sorter)
 
               type_ids = Industry.Service.extract_reactions_type_ids(formulas.result)
             {:noreply, socket |> assign(:form, to_form(changeset, as: :reactions_form)) |> start_async(:get_orders, fn -> Market.Service.get_initial_prices_for_view(trade_hub, type_ids) end) |> assign(:systems, systems) |> push_patch(to: path, replace: true)}
 
           true ->
 
-             path = "/tools/reactions/#{form[:selected_trade_hub].value}/#{form[:order_type].value}"<>LiveParser.maybe_compose_query(filter, sorter)
+             path = "/industry/reactions/#{form[:selected_trade_hub].value}/#{form[:order_type].value}"<>LiveParser.maybe_compose_query(filter, sorter)
               filtered_formulas = filter_formulas(formulas.result, filter)
 
             {:noreply, socket |> assign(:form, to_form(changeset, as: :reactions_form))  |> assign(:filtered_formulas, filtered_formulas) |> assign(:systems, systems) |> push_patch(to: path, replace: true)}
