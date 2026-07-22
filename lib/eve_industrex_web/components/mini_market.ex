@@ -29,11 +29,11 @@ defmodule EveIndustrexWeb.MiniMarket do
      <div class="p-1">
        <%= cond do %>
           <% @selected_order.price == nil -> %>
-            <span phx-target={@myself} phx-click="toggle_modal" class={"cursor-pointer hover:text-white hover:bg-black transition p-1 bg-red-500 animate-pulse text-white"}>
+            <span phx-target={@myself} phx-click="toggle_modal" class={"cursor-pointer hover:text-ei-hover hover:bg-black transition p-1 bg-ei-critical animate-pulse text-white rounded-sm"}>
               no <%= get_order_type(@order_type, @category) %> orders
             </span>
           <% true -> %>
-            <span phx-target={@myself} phx-click="toggle_modal" class={"cursor-pointer hover:text-white hover:bg-black transition p-1 font-semibold"}>
+            <span phx-target={@myself} phx-click="toggle_modal" class={"cursor-pointer hover:text-ei-hover hover:bg-black rounded-sm transition p-1 font-semibold"}>
               <%= Utils.format_with_coma(@selected_order.price)<>" ISK"%>
             </span>
         <% end %>
@@ -71,7 +71,7 @@ defmodule EveIndustrexWeb.MiniMarket do
                   Apply
                 </.button>
                 </div>
-                <.input class="text-black" field={@form[:order_type]} name="order type" type="select" label="Order Type" options={Enum.map(@types, fn t -> t end) }/>
+                <.input class="" field={@form[:order_type]} name="order type" type="select" label="Order Type" options={Enum.map(@types, fn t -> t end) }/>
 
                 <.button phx-disable-with="Saving..." disabled={true} class={"hidden"}>
                   submit
@@ -84,9 +84,9 @@ defmodule EveIndustrexWeb.MiniMarket do
             <table class={"w-full text-sm table-fixed border-collapse"}>
               <thead>
                 <tr class="text-black">
-                  <th class=" w-[10%] sticky top-0 bg-stone-200"> volume </th>
-                  <th class=" w-[12%] sticky top-0 bg-stone-200"> price </th>
-                  <th class=" w-[20%] sticky top-0 bg-stone-200"> location </th>
+                  <th class=" w-[10%] sticky top-0 bg-surface text-ei-text"> volume </th>
+                  <th class=" w-[12%] sticky top-0 bg-surface text-ei-text"> price </th>
+                  <th class=" w-[20%] sticky top-0 bg-surface text-ei-text"> location </th>
                 </tr>
               </thead>
               <tbody class="">
@@ -94,7 +94,7 @@ defmodule EveIndustrexWeb.MiniMarket do
 
               <%= Enum.map(get_order_on_type(@orders, @order_type, @category), fn o -> %>
 
-              <tr class={"px-2 text-white font-sm #{if @selected_order.id == o.order_id, do: "bg-black text-white", else: " hover:bg-black hover:text-white cursor-pointer"}"} phx-target={@myself} phx-click={"select_order"} phx-value-price={o.price} phx-value-order_id={o.order_id}>
+              <tr class={"px-2 font-sm #{if @selected_order.id == o.order_id, do: "bg-surface text-ei-accent", else: "hover:bg-black hover:text-ei-hover cursor-pointer"}"} phx-target={@myself} phx-click={"select_order"} phx-value-price={o.price} phx-value-order_id={o.order_id}>
                 <td class="pl-2 text-end"> <%= Utils.format_with_coma(o.volume_remain) %> / <%= Utils.format_with_coma(o.volume_total) %> </td>
                 <td class="pl-2 text-end truncate"> <%= Utils.format_with_coma(o.price) %> &nbsp;ISK </td>
                 <td class="pl-2 text-start truncate">  <span class={apply_color_on_status(:erlang.float_to_binary(o.location.security_status, [decimals: 1]))}><%= :erlang.float_to_binary(o.location.security_status, [decimals: 1]) %></span>&nbsp;<%= o.location.name %> </td>
