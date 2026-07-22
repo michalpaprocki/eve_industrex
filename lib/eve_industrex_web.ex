@@ -91,6 +91,8 @@ defmodule EveIndustrexWeb do
       import Phoenix.HTML
       # Core UI components
       import EveIndustrexWeb.CoreComponents
+      import EveIndustrexWeb.Glyph
+      import EveIndustrexWeb.NavPanel
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
