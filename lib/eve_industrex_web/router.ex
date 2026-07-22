@@ -1,5 +1,5 @@
 defmodule EveIndustrexWeb.Router do
-alias Tools
+
 
   use EveIndustrexWeb, :router
 
@@ -18,22 +18,28 @@ alias Tools
 
   scope "/", EveIndustrexWeb do
     pipe_through :browser
+    live "/boot", BootLive
+
+    live_session :default, on_mount: [EveIndustrexWeb.Readiness] do
 
     live "/", HomeLive
-    live "/market", Market.MarketLive
-    live "/market/*path", Market.MarketLive
-    live "/tools", ToolsLive
-    live "/tools/alchemy", AlchemyLive
-    live "/tools/appraise", Tools.AppraiseLive
-    live "/tools/lp_shop", Tools.LpShopLive
-    live "/tools/lp_shop/:hub_id", Tools.LpShopLive
-    live "/tools/lp_shop/:hub_id/:corp_id", Tools.LpShopLive
-    live "/tools/lp_shop/:hub_id/:corp_id/:order_type", Tools.LpShopLive
-    live "/tools/production", Tools.ProductionLive
-    live "/tools/reactions", Tools.ReactionsLive
-    live "/tools/reactions/:hub_id", Tools.ReactionsLive
-    live "/tools/reactions/:hub_id/:order_type", Tools.ReactionsLive
+    live "/operations", OperationsLive
+    live "/market", MarketLive
+    live "/market/browser", Market.BrowserLive
+    live "/market/browser/*path", Market.BrowserLive
+    live "/market/lp_shop", Market.LpShopLive
+    live "/market/lp_shop/:hub_id", Market.LpShopLive
+    live "/market/lp_shop/:hub_id/:corp_id", Market.LpShopLive
+    live "/market/lp_shop/:hub_id/:corp_id/:order_type", Market.LpShopLive
+    live "/industry", IndustryLive
+    live "/industry/reactions", Industry.ReactionsLive
+    live "/industry/reactions/:hub_id", Industry.ReactionsLive
+    live "/industry/reactions/:hub_id/:order_type", Industry.ReactionsLive
+    # live "/tools/alchemy", AlchemyLive
+    # live "/tools/appraise", Tools.AppraiseLive
+    # live "/industry/production", Tools.ProductionLive
     live "/nook/telemetry", Dashboard.DashboardLive
+     end
   end
 
   # Other scopes may use custom stacks.
