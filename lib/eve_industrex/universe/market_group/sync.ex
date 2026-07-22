@@ -9,7 +9,14 @@ defmodule EveIndustrex.Universe.MarketGroup.Sync do
         {:error, exception}
     end
   end
-
+  def fetch_from_ESI(market_group_id) do
+    case Client.fetch_market_group(market_group_id) do
+      {:ok, response} ->
+        {:ok, response}
+      {:error, exception} ->
+        {:error, exception}
+    end
+  end
   def update_from_esi(market_group_ids) do
         Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, market_group_ids, fn market_group_id ->
       Client.fetch_market_group(market_group_id)

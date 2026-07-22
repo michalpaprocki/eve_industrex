@@ -1,8 +1,15 @@
 defmodule EveIndustrex.Universe.Type.Sync do
+  alias EveIndustrex.Infrastructure.ESI.Client
   alias EveIndustrex.Utils
   @types_url "https://esi.evetech.net/latest/universe/types/"
-  def fetch_type_from_ESI!(type_id) do
-    Utils.fetch_from_url!(@types_url<>Integer.to_string(type_id))
+  def fetch_type_from_ESI(type_id) do
+    case Client.fetch_type(type_id) do
+      {:ok, response} ->
+        {:ok, response}
+      {:error, exception} ->
+        {:error, exception}
+    end
+
   end
   def fetch_types_from_ESI!(type_ids) do
 
