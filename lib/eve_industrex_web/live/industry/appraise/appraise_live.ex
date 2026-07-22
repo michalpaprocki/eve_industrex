@@ -1,8 +1,6 @@
 defmodule EveIndustrexWeb.Tools.AppraiseLive do
   use EveIndustrexWeb, :live_view
-  alias EveIndustrex.AppraisalParser
-  alias EveIndustrex.Market
-  alias EveIndustrex.Types
+
   def mount(_params, _session, socket) do
 
     {:ok, socket |> assign(:types, [])}
@@ -48,7 +46,7 @@ defmodule EveIndustrexWeb.Tools.AppraiseLive do
     """
   end
 
-  def handle_event("appraise", %{"appraisal" => list_of_items}, socket) do
+  def handle_event("appraise", %{"appraisal" => _list_of_items}, socket) do
     # items = AppraisalParser.parse(list_of_items)
     # types = Enum.map(items, fn {t, a} -> {t, a, Types.get_type_by_name(t)} end)
 
