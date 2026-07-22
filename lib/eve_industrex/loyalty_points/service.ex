@@ -53,7 +53,7 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
           {id, Map.put(o, :prices, %{
             products: assign_product_price(o, orders, :max_buy),
             req_items: Map.new(o.req_items, fn %{name: _, category_id: _, type_id: type_id, quantity: _} ->
-              {type_id, orders[type_id].max_buy}
+              {type_id, orders.prices[type_id].max_buy}
             end),
             materials: maybe_assign_materials_price(o, orders, :max_buy),
           })}
@@ -69,7 +69,7 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
           {id, Map.put(o, :prices, %{
             products: assign_product_price(o, orders, :max_buy),
             req_items: Map.new(o.req_items, fn %{name: _, category_id: _, type_id: type_id, quantity: _} ->
-              {type_id, orders[type_id].min_sell}
+              {type_id, orders.prices[type_id].min_sell}
             end),
             materials: maybe_assign_materials_price(o, orders, :min_sell),
           })}
@@ -85,7 +85,8 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
           {id, Map.put(o, :prices, %{
             products: assign_product_price(o, orders, :min_sell),
             req_items: Map.new(o.req_items, fn %{name: _, category_id: _, type_id: type_id, quantity: _} ->
-              {type_id, orders[type_id].max_buy}
+
+              {type_id, orders.prices[type_id].max_buy}
             end),
             materials: maybe_assign_materials_price(o, orders, :max_buy),
           })}
@@ -127,6 +128,8 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
       perform_calculation(offer)
 
   end
+
+  #  need a safer way to extract data from products
   defp perform_calculation(offer, lp? \\ false) do
     req_items_cost = calc_req_items_cost(offer.req_items, offer.prices.req_items)
 
@@ -141,9 +144,9 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
           nil
         else
             if lp? do
-              ((product_price * offer.quantity) - (offer.isk_cost + req_items_cost + materials_cost)) / offer.lp_cost
+              ((product_price * offer.quantity * hd(offer.blueprint.activities.manufacturing.products).quantity) - (offer.isk_cost + req_items_cost + materials_cost * offer.quantity)) / offer.lp_cost
             else
-               ((product_price * offer.quantity) - (offer.isk_cost + req_items_cost + materials_cost))
+               ((product_price * offer.quantity * hd(offer.blueprint.activities.manufacturing.products).quantity) - (offer.isk_cost + req_items_cost + materials_cost * offer.quantity))
             end
 
         end
