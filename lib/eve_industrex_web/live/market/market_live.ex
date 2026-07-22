@@ -1,243 +1,51 @@
-defmodule EveIndustrexWeb.Market.MarketLive do
+defmodule EveIndustrexWeb.MarketLive do
 
-alias EveIndustrexWeb.Layouts
-alias EveIndustrex.Market
-alias Phoenix.LiveView.AsyncResult
-alias EveIndustrex.Universe.MarketGroup.Store
+use EveIndustrexWeb, :live_view
 
-  use EveIndustrexWeb, :live_view
+def mount(_params, _session, socket) do
+  {:ok, socket}
+end
 
-def mount(%{"path" => id} = _params, _session, socket) do
-  case Store.get_type(hd(id)) do
-    {type_id, _name} ->
-      EveIndustrexWeb.Market.Showcase.update_component("item_showcase", type_id)
-      {:ok, socket
-      |> assign(:filtered_orders, [])
-      |> assign(:market_orders, AsyncResult.loading())
-      |> start_async(:get_market_orders, fn -> Market.Service.get_market_view(type_id) end)
-      |> assign(:search_result, []),
-       layout: {Layouts,:market}}
-    _->
-      {:ok, socket
-      |> assign(:filtered_orders, [])
-      |> assign(:market_orders, AsyncResult.loading())
-      |> assign(:search_result, []),
-       layout: {Layouts,:market}}
-  end
- end
-  def mount(_params, _session, socket) do
-    {:ok, socket
-      |> assign(:filtered_orders, [])
-      |> assign(:market_orders, [])
-      |> assign(:search_result, []),
-       layout: {Layouts,:market}}
-  end
-
-  def render(assigns) do
-    ~H"""
-      <div class="w-full ">
-
-        <%= cond do %>
-          <% @market_orders == []-> %>
-            <div class="w-full">
-              <h2 class="text-lg font-semibold text-white">Sellers</h2>
-              <div class="h-[38vh] min-h-[325px] overflow-auto rounded-md">
-                <.live_component id={"sell_orders"} module={EveIndustrexWeb.Market.Orders} data={[]} is_buy_list?={false}/>
-              </div>
-              <h2 class="text-lg font-semibold text-white">Buyers</h2>
-              <div class="h-[38vh] min-h-[325px] overflow-auto rounded-md">
-                <.live_component id={"buy_orders"} module={EveIndustrexWeb.Market.Orders} data={[]} is_buy_list?={true}/>
-              </div>
+def render(assigns) do
+  ~H"""
+  <section>
+    <h1 class="text-3xl font-bold mt-20">
+      Market
+    </h1>
+      <div class="flex gap-2 flex-col p-4 mt-20">
+        <.nav_panel  route={"/market/browser"} text="Market Browser" description={"Browse market orders across New Eden."}>
+          <:animation>
+             <div class="w-24 h-24 flex justify-evenly relative blur-sm opacity-20 items-center">
+              <span class={"w-6 block bg-ei-text market-column1 rounded-t-md rounded-b-md"} />
+              <span class={"w-6 block bg-ei-text market-column2 rounded-t-md rounded-b-md"}/>
+              <span class={"w-6 block bg-ei-text market-column3 rounded-t-md rounded-b-md"} />
             </div>
-            <% @market_orders.loading -> %>
-              <div class="text-center text-xl font-bold my-20">
-                Loading orders...
-                <div class={"mx-auto mt-20 h-14 w-14 rounded-full border-solid border-4 border-[black_transparent_black_transparent] animate-spin"}/>
-              </div>
-            <% @market_orders.failed -> %>
-              Can't fetch orders data, try again later
-            <% @market_orders.ok? -> %>
+          </:animation>
+        </.nav_panel>
 
-              <div class="flex flex-col gap-2 justify-between h-[80vh] ">
-                <h2 class="text-lg font-semibold text-white">Sellers</h2>
-                <div class="h-[38vh] min-h-[325px] overflow-auto rounded-md">
-                  <%= if length(@market_orders.result.sell_orders) > 0 do %>
-                      <.live_component id={"sell_orders"} module={EveIndustrexWeb.Market.Orders} data={if @filtered_orders !=[], do: @filtered_orders.sell_orders, else: @market_orders.result.sell_orders} is_buy_list?={false}/>
-                  <% else %>
-                    <span class="text-lg text-white font-semibold">
-                      no sell orders for specified item
-                    </span>
-                  <% end %>
-                </div>
-                <h2 class="text-lg font-semibold text-white">Buyers</h2>
-                <div class="h-[38vh] min-h-[325px] overflow-auto rounded-md">
-                  <%= if length(@market_orders.result.buy_orders) > 0 do %>
-                    <.live_component id={"buy_orders"} module={EveIndustrexWeb.Market.Orders} data={if @filtered_orders !=[], do: @filtered_orders.buy_orders, else: @market_orders.result.buy_orders} is_buy_list?={true}/>
-                  <% else %>
-                    <span class="text-lg text-white font-semibold">
-                      no buy orders for specified item
-                    </span>
-                  <% end %>
-                </div>
+        <.nav_panel  route={"/market/lp_shop"} text="Loyalty Points Browser" description={"Find profitable deals from NPC corporations' Loyalty Point Shops."}>
+          <:animation>
+             <div class="w-28 flex flex-col gap-2 items-start blur-xs opacity-20">
+              <div class="flex flex-row items-center gap-2">
+                <span class={"w-4 h-2 rounded-full block bg-ei-accent "} />
+                <span class="text-nowrap text-xs">1000ISK/LP</span>
               </div>
-        <% end %>
+              <div class="flex flex-row gap-2">
+                <span class={"w-4 h-2 rounded-full block bg-ei-critical "} />
+                <span class="text-nowrap text-xs">-1000ISK/LP</span>
+              </div>
+              <div class="flex flex-row gap-2">
+                <span class={"w-4 h-2 rounded-full block bg-ei-warn "} />
+                <span class="text-nowrap text-xs">500/LP</span>
+              </div>
 
+
+            </div>
+          </:animation>
+        </.nav_panel>
 
       </div>
-    """
-  end
-  def handle_params(_unsigned_params, _uri, socket) do
-
-    {:noreply, socket}
-  end
-  def handle_async(:get_regions, {:ok, fetched_regions}, socket) do
-    %{:regions => regions} = socket.assigns
-    sorted_regions = Enum.sort(fetched_regions, &(&1.name < &2.name))
-    {:noreply, socket |> assign(:regions, AsyncResult.ok(regions, [%{:name => "All", :type_id => nil}|sorted_regions]))}
-  end
-  def handle_async(:get_regions, {:exit, reason}, socket) do
-    %{:regions => regions} = socket.assigns
-
-    {:noreply, socket |> assign(:regions, AsyncResult.failed(regions, {:exit, reason}))}
-  end
-  def handle_async(:get_market_orders, {:ok, fetched_market_orders}, socket) do
-
-    %{:market_orders => market_orders} = socket.assigns
-
-      buy_orders = fetched_market_orders.buy_orders
-      sell_orders = fetched_market_orders.sell_orders
-
-    {:noreply, socket |> assign(:market_orders, AsyncResult.ok(market_orders, %{:buy_orders => buy_orders, :sell_orders => sell_orders}))}
-  end
-  def handle_async(:get_market_orders, {:exit, reason}, socket) do
-    %{:market_orders => market_orders} = socket.assigns
-
-    {:noreply, socket |> assign(:market_orders, AsyncResult.failed(market_orders, {:exit, reason}))}
-  end
-  def handle_async(:get_market_groups, {:ok, fetched_market_groups}, socket) do
-    %{:market_groups => market_groups} = socket.assigns
-
-
-    {:noreply, socket |> assign(:market_groups, AsyncResult.ok(market_groups, fetched_market_groups))}
-  end
-  def handle_async(:get_market_groups, {:exit, reason}, socket) do
-    %{:market_groups => market_groups} = socket.assigns
-    {:noreply, socket |> assign(:market_groups, AsyncResult.failed(market_groups, {:exit, reason}))}
-  end
-
-  def handle_event("fetch_market_orders", %{"type_id" => type_id}, socket) do
-    send(self(), {:fetch_market_orders, type_id})
-    {:noreply, socket}
-  end
-
-  def handle_info({:fetch_market_orders, type_id}, socket) do
-    EveIndustrexWeb.Market.Showcase.update_component("item_showcase", type_id)
-    {:noreply, socket |> assign(:market_orders, AsyncResult.loading()) |> start_async(:get_market_orders, fn -> Market.Service.get_market_view(String.to_integer(type_id)) end) |> assign(:search_result, []) |> push_patch(to: "/market/#{type_id}", replace: true)}
-  end
-
-  def handle_info({:filter, %{:sec_status_filter => sec_status_filter, :search_string => search_string}}, socket) do
-    filtered_orders = filter(socket.assigns.market_orders, sec_status_filter, search_string)
-    {:noreply, socket |> assign(:filtered_orders, filtered_orders)}
-  end
-  def handle_info(msg, socket) do
-
-    {:noreply, socket}
-  end
-  defp filter(orders, sec_status_filter, search_string) do
-    if String.length(search_string) == 0 do
-      filtered_orders = filter_by_sec_status(orders, sec_status_filter)
-     filtered_orders
-    else
-      filtered_by_location = filter_orders_by_location(orders, search_string)
-      filtered_orders = filter_by_sec_status(%{:result => filtered_by_location}, sec_status_filter)
-      filtered_orders
-    end
-  end
-  defp filter_orders_by_location([], _string), do: []
-  defp filter_orders_by_location(%{:result => %{:buy_orders => buy_orders, :sell_orders => sell_orders}} = _orders, string) do
-    filtered_buy_orders = Enum.filter(buy_orders, fn b ->
-      if not is_nil(b.location) do
-        String.contains?(String.downcase(b.location.name), String.downcase(string))
-      || String.contains?(String.downcase(b.location.system), String.downcase(string))
-      || String.contains?(String.downcase(b.location.region), String.downcase(string))
-
-      end
-
-  end)
-    filtered_sell_orders = Enum.filter(sell_orders, fn s ->
-      if not is_nil(s.location) do
-      String.contains?(String.downcase(s.location.name), String.downcase(string))
-    || String.contains?(String.downcase(s.location.system), String.downcase(string))
-    || String.contains?(String.downcase(s.location.region), String.downcase(string))
-
-      end
-
-  end)
-    %{:buy_orders => filtered_buy_orders, :sell_orders => filtered_sell_orders}
-  end
-  defp filter_by_sec_status([], _sec_status), do: []
-  defp filter_by_sec_status(%{:result => []}, _sec_status), do: []
-  defp filter_by_sec_status(%{:result => %{:buy_orders => buy_orders, :sell_orders => sell_orders}}, %{"highsec" => "true", "lowsec" => "true", "nullsec" => "true"}), do: %{:buy_orders => buy_orders, :sell_orders => sell_orders}
-  defp filter_by_sec_status(%{:result => %{:buy_orders => _buy_orders, :sell_orders => _sell_orders}}, %{"highsec" => "false", "lowsec" => "false", "nullsec" => "false"}), do: %{:buy_orders => [], :sell_orders => []}
-  defp filter_by_sec_status(%{:result => %{:buy_orders => buy_orders, :sell_orders => sell_orders}}, sec_status_filter) do
-    filter =
-    case sec_status_filter do
-      %{"highsec" => "true", "lowsec" => "true", "nullsec" => "false"} -> #high and low
-        0.0
-      %{"highsec" => "true", "lowsec" => "false", "nullsec" => "false"} -> #high
-        0.5
-      %{"highsec" => "false", "lowsec" => "false", "nullsec" => "true"} -> # null
-        {0.0, -1}
-      %{"highsec" => "false", "lowsec" => "true", "nullsec" => "false"} -> #low
-        {0.5, 0.0}
-      %{"highsec" => "true", "lowsec" => "false", "nullsec" => "true"} -> #high and null
-        [0.5, 0.0]
-      %{"highsec" => "false", "lowsec" => "true", "nullsec" => "true"} -> #low and null
-        {0.4,-1}
-    end
-
-    cond do
-      is_float(filter) ->
-        filtered_buy_orders = Enum.filter(buy_orders, fn b ->
-          if not is_nil(b.location) do
-            b.location.security_status > filter
-          end
-         end)
-        filtered_sell_orders = Enum.filter(sell_orders, fn s ->
-          if not is_nil(s.location) do
-            s.location.security_status > filter
-
-          end
-        end)
-        %{:buy_orders => filtered_buy_orders, :sell_orders => filtered_sell_orders}
-      is_tuple(filter) ->
-        filtered_buy_orders = Enum.filter(buy_orders, fn b ->
-          if not is_nil(b.location) do
-            b.location.security_status <= elem(filter, 0) && b.location.security_status >= elem(filter, 1)
-
-          end
-        end)
-        filtered_sell_orders = Enum.filter(sell_orders, fn s ->
-          if not is_nil(s.location) do
-            s.location.security_status <= elem(filter, 0) && s.location.security_status >= elem(filter, 1)
-
-          end
-        end)
-        %{:buy_orders => filtered_buy_orders, :sell_orders => filtered_sell_orders}
-      true ->
-        filtered_buy_orders = Enum.filter(buy_orders, fn b ->
-          if not is_nil(b.location) do
-            b.location.security_status >= hd(filter) ||  b.location.security_status <= hd(tl(filter))
-
-          end
-        end)
-        filtered_sell_orders = Enum.filter(sell_orders, fn s ->
-          if not is_nil(s.location) do
-            s.location.security_status >= hd(filter) ||  s.location.security_status <= hd(tl(filter))
-
-          end
-        end)
-        %{:buy_orders => filtered_buy_orders, :sell_orders => filtered_sell_orders}
-      end
-  end
+  </section>
+  """
+end
 end
