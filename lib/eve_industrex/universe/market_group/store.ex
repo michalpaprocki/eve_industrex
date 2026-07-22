@@ -24,4 +24,19 @@ defmodule EveIndustrex.Universe.MarketGroup.Store do
         nil
     end
   end
+  def exists?(market_group_id) do
+    :ets.member(:market_groups, market_group_id) or :ets.member(:market_group_children, market_group_id)
+  end
+
+  def filter_unknown(ids) do
+    Enum.filter(ids, fn id ->
+      !exists?(id)
+    end)
+  end
+  def add_parent(mg) do
+    :ets.insert(:market_groups, mg)
+  end
+  def add_children(mg) do
+    :ets.insert(:market_group_children, mg)
+  end
 end

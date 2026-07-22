@@ -19,4 +19,15 @@ defmodule EveIndustrex.Universe.Type.Store do
   def get_all() do
     :ets.tab2list(:types)
   end
+  def exists?(type_id) do
+    :ets.member(:types, type_id)
+  end
+  def add(type) when is_tuple(type) do
+    :ets.insert(:types, type)
+  end
+  def filter_unknown(ids) do
+    Enum.filter(ids, fn id ->
+      !exists?(id)
+    end)
+  end
 end
