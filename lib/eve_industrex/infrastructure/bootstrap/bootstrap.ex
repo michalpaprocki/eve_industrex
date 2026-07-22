@@ -4,6 +4,7 @@ defmodule EveIndustrex.Infrastructure.Bootstrap do
   alias EveIndustrex.Utils
   alias EveIndustrex.TqVersionService
   alias EveIndustrex.Infrastructure.Bootstrap.Service
+  alias EveIndustrex.Infrastructure.Readiness
   require Logger
 
   def run do
@@ -23,13 +24,20 @@ defmodule EveIndustrex.Infrastructure.Bootstrap do
 
           tq_version = Scraper.get_latest_tq_version()
           TqVersionService.upsert_tq_version(tq_version)
-
+          Readiness.mark_ready(:bootstrap)
         {true} ->
           Logger.info("DB records present...")
+          Readiness.mark_ready(:bootstrap)
           :ok
     end
       Logger.info("Populating the Cache...")
-      Service.populate_cache()
+      with :ok <-Service.populate_cache()  do
+        Logger.info("Caches warmed...")
+        Readiness.mark_ready(:sde_cache)
+        :ok
+
+      end
+
   end
   defp sync_tq_version do
     {:ok, tq_version} = Scraper.get_latest_tq_version()
@@ -48,11 +56,11 @@ defmodule EveIndustrex.Infrastructure.Bootstrap do
     Service.maybe_allocate_strategies()
 
 
-    Schedulers.ProjectionScheduler.new(%{}) |> Oban.insert()
-    Schedulers.StrategyCleanUpScheduler.new(%{}) |> Oban.insert()
-    Schedulers.TelemetryScheduler.new(%{}) |> Oban.insert()
     Schedulers.StrategyScheduler.new(%{}) |> Oban.insert()
-
+    Schedulers.ProjectionScheduler.new(%{}) |> Oban.insert()
+    Schedulers.TelemetryScheduler.new(%{}) |> Oban.insert()
+    Schedulers.StrategyCleanUpScheduler.new(%{}) |> Oban.insert()
+    # Schedulers.JanitorScheduler.new(%{}) |> Oban.insert()
 
   end
 
