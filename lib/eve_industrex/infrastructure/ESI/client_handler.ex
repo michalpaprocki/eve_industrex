@@ -4,7 +4,8 @@ defmodule EveIndustrex.Infrastructure.ESI.ClientHandler do
   alias EveIndustrex.Infrastructure.ESI.Response
 
 
-
+# add clause for exception
+# maybe introduce EsiError for better handling
   def handle_response({:ok, %Response{status: status, body: body, headers: %Headers{} = headers} = _response}) do
 
     cond do
