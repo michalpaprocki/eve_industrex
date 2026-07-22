@@ -9,7 +9,7 @@ defmodule EveIndustrex.Application do
   def start(_type, _args) do
     children = [
       {Task.Supervisor, name: EveIndustrex.TaskSupervisor, strategy: :one_for_one},
-      EveIndustrex.SystemState,
+      EveIndustrex.Infrastructure.Readiness,
       EveIndustrex.Infrastructure.ESI.RouteGroups,
       EveIndustrex.Infrastructure.ESI.RateLimiter,
       EveIndustrex.Infrastructure.ESI.EtagStore,
