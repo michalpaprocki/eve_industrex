@@ -1,4 +1,6 @@
 defmodule EveIndustrex.Universe.Type.Mapper do
+  alias EveIndustrex.Universe.Category
+  alias EveIndustrex.Universe.Group
   def from_dump(data) do
     %{
       type_id: Map.get(data, "_key"),
@@ -33,6 +35,24 @@ defmodule EveIndustrex.Universe.Type.Mapper do
       group_id: Map.get(data, "group_id"),
       market_group_id: Map.get(data, "market_group_id"),
     }
+  end
+  def to_projection(t) do
+
+    group = Group.Store.get_group(t.group_id)
+
+    category = Category.Store.get_category(group.category_id)
+ {t.type_id, %{
+      type_id: t.type_id,
+      description: t.description,
+      mass: t.mass,
+      name: t.name,
+      packaged_volume: t.packaged_volume,
+      volume: t.volume,
+      category_id: group.category_id,
+      category: category.name,
+      group: group.name,
+      published: t.published
+      }}
   end
   defp get_desc(map) do
     if Map.has_key?(map, "description"), do: Map.get(Map.get(map, "description"), "en"), else: nil

@@ -16,4 +16,7 @@ defmodule EveIndustrex.Universe.Group.Mapper do
       published: Map.get(data, "published")
     }
   end
+  def to_projection(g) do
+    {g.category_id, g.group_id, g.name}
+  end
 end
