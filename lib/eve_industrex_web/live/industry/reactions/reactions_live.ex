@@ -10,10 +10,36 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
   @form_types %{structure_tax: :float, fw_upgrade: :integer, ssc_tax: :float, system_cost_index: :float, system_query: :string, tax_rate: :float, selected_trade_hub: :integer, order_type: :string, filter: :string, sorter: :string}
   @order_types [%{name: "Sell", type: "sell"}, %{name: "Buy", type: "buy"}, %{name: "Buy -> Sell", type: "buy_sell"},  %{name: "Sell -> Buy", type: "sell_buy"}]
   @sorting_options [%{name: "Name ▲", type: "name_asc"}, %{name: "Name ▼", type: "name_desc"}, %{name: "Profit ▲", type: "profit_asc"}, %{name: "Profit ▼", type: "profit_desc"}]
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     hubs =  Station.Query.get_trade_hubs()
+    # read params
+    path =
+      cond do
+        Map.has_key?(params, "hub_id") and  Map.has_key?(params, "order_type") ->
+          %{"hub_id" => params["hub_id"], "order_type" => params["order_type"]}
+        Map.has_key?(params, "hub_id") ->
+          %{"hub_id" => params["hub_id"]}
+          true ->
+            %{}
+      end
+    query =
+      cond do
+        Map.has_key?(params, "sort") and Map.has_key?(params, "query")->
+          %{"sort" => params["sort"], "query" => params["query"]}
+        Map.has_key?(params, "sort") ->
+          %{"sort" => params["sort"]}
+        Map.has_key?(params, "query") ->
+          %{"query" => params["query"]}
+          true ->
+            %{}
+      end
 
-    params = %{"system_query" => nil,"system_cost_index" => 0.0 ,"selected_trade_hub" => hd(hubs).station_id, "order_type" => hd(@order_types).type, "filter" => "", "sorter" => hd(@sorting_options).type, "ssc_tax" => 0.04, "fw_upgrade" => 0, "structure_tax" => 0.0075}
+
+    # params = %{"selected_corp" => select_corp(corps, path), "selected_trade_hub" => select_hub(hubs, path), "order_type" => select_order_type(@order_types, path), "filter" => maybe_apply_query(query["query"]), "sorter" => maybe_apply_sorting(query["sort"])}
+    # changeset =
+    # {%{}, @form_types}
+    # |> Ecto.Changeset.cast(params, Map.keys(@form_types))
+    params = %{"system_query" => nil,"system_cost_index" => 0.0 ,"selected_trade_hub" => select_hub(hubs, path), "order_type" => select_order_type(@order_types, path), "filter" => maybe_apply_query(query["query"]), "sorter" => maybe_apply_sorting(query["sort"]), "ssc_tax" => 0.04, "fw_upgrade" => 0, "structure_tax" => 0.0075}
     changeset =
     {%{}, @form_types}
     |> Ecto.Changeset.cast(params, Map.keys(@form_types))
@@ -298,5 +324,41 @@ def handle_event("validate_form", %{"reactions_form" => params}, socket) do
       true ->
         formulas
     end
+  end
+  defp select_hub(hubs, path) do
+
+    if Map.has_key?(path, "hub_id") and Enum.any?(hubs, fn hub -> hub.station_id ==  String.to_integer(path["hub_id"]) end) do
+      Enum.find(hubs, fn hub ->
+        hub.station_id == String.to_integer(path["hub_id"])
+      end).station_id
+    else
+      Enum.at(hubs,0).station_id
+    end
+  end
+  defp select_order_type(order_types, path) do
+     if Map.has_key?(path, "order_type") and Enum.any?(order_types, fn type -> type.type ==  path["order_type"] end) do
+       Enum.find(order_types, fn type ->
+        type.type == path["order_type"]
+      end).type
+    else
+      Enum.at(@order_types, 0).type
+    end
+  end
+  defp maybe_apply_sorting(nil), do: hd(@sorting_options).type
+  defp maybe_apply_sorting(sorting) do
+   if Enum.any?(@sorting_options, fn so -> so.type == sorting end) do
+     sorting
+   else
+    hd(@sorting_options).type
+   end
+  end
+  defp maybe_apply_query(nil), do: ""
+  defp maybe_apply_query(query) do
+    if query == "profit" do
+      "++"
+    else
+      query
+    end
+
   end
 end
