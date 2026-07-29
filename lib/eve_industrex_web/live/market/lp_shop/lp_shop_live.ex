@@ -69,7 +69,7 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
   ~H"""
       <div class="text-xl mb-10 h-30 flex flex-col gap-5 mt-10">
         <div class="flex gap-3 flex-col items-center top-20 left-0 w-full">
-          <h1 class="font-headers"><%= if @form[:selected_corp].value != nil, do:   Enum.find(@corps, fn c -> c.corp_id == @form[:selected_corp].value end).name %> Loyalty Points Shop Browser</h1>
+          <h1 class="font-headers text-3xl"><%= if @form[:selected_corp].value != nil, do:   Enum.find(@corps, fn c -> c.corp_id == @form[:selected_corp].value end).name %> Loyalty Points Shop Browser</h1>
           <%= if @form[:selected_corp].value != nil do %>
             <img class="w-80 opacity-15 h-80 blur-sm fixed -z-10" src={"https://images.evetech.net/corporations/#{@form[:selected_corp].value}/logo?size=256"} />
           <% end %>
@@ -90,7 +90,7 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
                 - search by item group.
               </li>
               <li class="px-1">
-                - using the "&gt"(higher than) and "&lt"(lower than) symbols, this will return items that are higher or lower than the value specified, e.g.: >2000 will render items with ISK/LP ratio higher than 2000.
+                - using the "&gt"(higher than) and "&lt"(lower than) symbols will return items that are higher or lower than the value specified, e.g.: >2000 will render items with ISK/LP ratio higher than 2000.
               </li>
               <li class="px-1">
                 - providing a range will filter items with ISK/LP ratio within it, e.g.: [1000..2000] shows items with ISK/LP higher than 1000 and lower than 2000.
@@ -133,7 +133,7 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
         </.form>
 
       </div>
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-2 min-h-[30vh]">
         <%= cond do %>
         <%  @offers == nil -> %>
           <% nil %>
@@ -144,12 +144,12 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
           </div>
         <% @filtered_offers != nil -> %>
 
-          <%= for {o, i} <- Enum.with_index(sort(@filtered_offers, @form[:sorter].value)) do %>
-          <.live_component id={~s"#{i}_#{o.type.type_id}"} module={EveIndustrexWeb.LpShop.LpShopItem} selected_trade_hub={@form[:selected_trade_hub].value} offer={o} tax_rate={@initial_tax_rate} order_type={@form[:order_type].value} />
+          <%= for o <- sort(@filtered_offers, @form[:sorter].value) do %>
+          <.live_component id={~s"#{o.offer_id}"} module={EveIndustrexWeb.LpShop.LpShopItem} selected_trade_hub={@form[:selected_trade_hub].value} offer={o} tax_rate={@initial_tax_rate} order_type={@form[:order_type].value} />
         <% end %>
         <% @offers.ok? -> %>
-          <%= for {o, i} <- Enum.with_index(sort(@offers.result, @form[:sorter].value)) do %>
-            <.live_component id={~s"#{i}_#{o.type.type_id}"} module={EveIndustrexWeb.LpShop.LpShopItem} selected_trade_hub={@form[:selected_trade_hub].value} offer={o} tax_rate={@initial_tax_rate} order_type={@form[:order_type].value} />
+          <%= for o <- sort(@offers.result, @form[:sorter].value) do %>
+            <.live_component id={~s"#{o.offer_id}"} module={EveIndustrexWeb.LpShop.LpShopItem} selected_trade_hub={@form[:selected_trade_hub].value} offer={o} tax_rate={@initial_tax_rate} order_type={@form[:order_type].value} />
           <% end %>
 
         <% true -> %>
@@ -160,7 +160,6 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
   end
 
   def handle_async(:get_lp_offers, {:ok, result}, socket) do
-
     %{:form => form, :offers => _offers, :tax_rate => _tax_rate, :initial_tax_rate => _initial_tax_rate} = socket.assigns
      params = %{selected_corp: form[:selected_corp].value, selected_trade_hub: form[:selected_trade_hub].value}
     type_ids = LoyaltyPoints.Service.extract_offers_type_ids(result)
@@ -186,7 +185,6 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
     {:noreply, socket |> assign(:show_form, !boolean)}
   end
   def handle_event("validate_form", %{"lp_shop_form" => params}, socket) do
-
       %{:tax_rate => tax_rate, :initial_tax_rate => initial_tax_rate, :form => form, :offers => offers} = socket.assigns
 
       if params["selected_corp"] == "" do
@@ -235,8 +233,7 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
 
 
              path = "/market/lp_shop/#{form[:selected_trade_hub].value}/#{form[:selected_corp].value}/#{form[:order_type].value}"<>LiveParser.maybe_compose_query(filter, sorter)
-             filtered_offers = filter_offers(offers.result, filter)
-
+            filtered_offers= filter_offers(offers.result, filter)
             {:noreply, socket |> assign(:form, to_form(changeset, as: :lp_shop_form))  |> assign(:filtered_offers, filtered_offers) |> push_patch(to: path, replace: true)}
           end
         end
@@ -276,7 +273,6 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
   defp filter_offers(offers, string) do
     %{expression: expression, text_filter: text_filter} =
       LiveParser.parse_filter(string)
-
     offers
     |> LiveParser.apply_expression(:isk_on_lp, expression)
     |> LiveParser.apply_text_filter(text_filter)

@@ -13,7 +13,7 @@ defmodule EveIndustrexWeb.Reaction do
   def render(assigns) do
 
     ~H"""
-      <div class="p-2 text-sm rounded-md flex flex-col bg-surface border-1 border-surface-border">
+      <div class="p-2 text-sm rounded-md flex flex-col bg-surface border-1 border-surface-border shard">
         <div class="flex gap-1 items-center justify-between">
           <div class="flex gap-1">
             <img class="h-10 w-10 block" src={"https://images.evetech.net/types/#{@reaction.type.type_id}/bp?size=128"} />
@@ -27,7 +27,7 @@ defmodule EveIndustrexWeb.Reaction do
             </span>
           <% end %>
         </div>
-        <div class="p-1 flex justify-between">
+        <div class="p-1 flex justify-between ">
 
             <span class="text-ei-text">Profit: </span>
 
@@ -49,7 +49,7 @@ defmodule EveIndustrexWeb.Reaction do
 
 
         </div>
-        <div class="p-1 flex flex-col">
+        <div class="p-1 flex flex-col border-t-2 border-dotted border-ei-text-muted mt-4 py-2">
           <span class="text-ei-text-muted">Products: </span>
 
           <%= for p <- @reaction.bp.activities.reaction.products do %>

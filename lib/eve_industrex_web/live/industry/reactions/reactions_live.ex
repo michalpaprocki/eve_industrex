@@ -62,7 +62,7 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
     ~H"""
       <div class="text-xl font-semibold mb-10 h-30 flex flex-col gap-5 mt-10">
         <div class="flex gap-3 flex-col items-center top-20 left-0 w-full">
-          <h1 class="font-headers">Reaction Calculator</h1>
+          <h1 class="font-headers text-3xl">Reaction Calculator</h1>
         </div>
 
       </div>
@@ -77,7 +77,7 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
                 - search by group name.
               </li>
               <li class="px-1">
-                - using the "&gt"(higher than) and "&lt"(lower than) symbols, this will return items that are higher or lower than the value specified, e.g.: >2000 will render items with Profit ratio higher than 2000.
+                - using the "&gt"(higher than) and "&lt"(lower than) symbols will return items that are higher or lower than the value specified, e.g.: >2000 will render items with Profit ratio higher than 2000.
               </li>
               <li class="px-1">
                 - providing a range will filter items with Profit ratio within it, e.g.: [1000..2000] shows items with Profit higher than 1000 and lower than 2000.

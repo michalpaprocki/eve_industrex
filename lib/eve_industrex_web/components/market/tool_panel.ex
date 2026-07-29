@@ -11,18 +11,18 @@ defmodule EveIndustrexWeb.Market.ToolPanel do
     ~H"""
     <aside class={"glass relative flex text-sm flex-col items-center  md:mb-0 mb-2 md:mr-2 mr-0 transition-all #{if !@tree && !@filters, do: "ring-0 h-0", else: "h-[80vh] min-h-[750px]"}"}>
       <div class="absolute top-0 left-0 -translate-y-12 flex gap-1">
-          <.button class={"#{if @tree, do: "", else: "bg-ei-accent"}"} phx-click={"toggle_tree"} phx-target={@myself}>
+          <.button class={} phx-click={"toggle_tree"} phx-target={@myself}>
             browser
           </.button>
-          <.button class={"#{if @filters, do: "", else: "bg-ei-accent"}"} phx-click={"toggle_filters"} phx-target={@myself}>
+          <.button class={} phx-click={"toggle_filters"} phx-target={@myself}>
             filters
           </.button>
       </div>
       <div class={"flex h-full"}>
-        <div class={"#{if @tree, do: "w-64", else: "w-0"} overflow-auto transition-all duration-700"}>
+        <div class={"#{if @tree, do: "w-64", else: "w-0"} overflow-auto transition-all duration-500"}>
         <.live_component id={"market_category_browser"} module={EveIndustrexWeb.Market.CategoryBrowser} />
         </div>
-        <div class={"#{if @filters, do: "w-64", else: "w-0"} items-center flex flex-col overflow-hidden transition-all duration-700"}>
+        <div class={"#{if @filters, do: "w-64", else: "w-0"} items-center flex flex-col overflow-hidden transition-all duration-500"}>
         <.live_component id={"item_showcase"} module={EveIndustrexWeb.Market.Showcase} />
         <.live_component id={"market_filter"} module={EveIndustrexWeb.Market.Filter} />
         <.live_component id={"item_search"} module={EveIndustrexWeb.Market.Search} />

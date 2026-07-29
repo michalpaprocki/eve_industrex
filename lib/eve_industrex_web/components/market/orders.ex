@@ -13,23 +13,23 @@ alias EveIndustrex.Utils
   def render(assigns) do
     ~H"""
     <div class="">
-      <table class={"w-full text-sm table-fixed border-collapse "}>
+      <table class={"w-full table-fixed border-collapse text-xs text-ei-text text-nowrap text-ellipsis"}>
         <thead>
             <%= if @is_buy_list? do %>
           <tr class="">
             <th class="w-[8%] sticky top-0 bg-ei-bg"> region </th>
-            <th class=" w-[10%] sticky top-0 bg-ei-bg"> volume </th>
+            <th class=" w-[10%] sticky top-0 bg-ei-bg"> quantity </th>
             <th class=" w-[12%] sticky top-0 bg-ei-bg"> price </th>
             <th class=" w-[20%] sticky top-0 bg-ei-bg"> location </th>
-            <th class=" w-[4%] sticky top-0 bg-ei-bg">range</th>
-            <th class=" w-[8%] sticky top-0 bg-ei-bg truncate">min volume</th>
+            <th class=" w-[6%] sticky top-0 bg-ei-bg">range</th>
+            <th class=" w-[6%] sticky top-0 bg-ei-bg truncate">min volume</th>
             <th class="border-1 border-solid border-black/20 w-[7%] sticky top-0 bg-ei-bg"> expires </th>
             <th class="border-1 border-solid border-black/20 w-[7%] sticky top-0 bg-ei-bg"> issued </th>
           </tr>
             <% else %>
             <tr class="">
               <th class="w-[8%] sticky top-0 bg-ei-bg"> region </th>
-              <th class=" w-[10%] sticky top-0 bg-ei-bg"> volume </th>
+              <th class=" w-[10%] sticky top-0 bg-ei-bg"> quantity </th>
               <th class=" w-[12%] sticky top-0 bg-ei-bg"> price </th>
               <th class=" w-[30%] sticky top-0 bg-ei-bg"> location </th>
               <th class="border-1 border-solid border-black/20 w-[7%] sticky top-0 bg-ei-bg"> expires </th>
@@ -37,26 +37,26 @@ alias EveIndustrex.Utils
           </tr>
             <% end %>
         </thead>
-        <tbody class="overflow-auto text-white bg-black/70">
+        <tbody class="overflow-auto bg-black/70">
           <%= Enum.map(@data, fn o -> %>
             <%= if o.location != nil do %>
-            <tr class="px-2 font-sm hover:bg-black hover:text-white">
-              <td class="pl-2 truncate"> <%= o.location.region %> </td>
-              <td class="pl-2 text-end"> <%= Utils.format_with_coma(o.volume_remain) %> / <%= Utils.format_with_coma(o.volume_total) %> </td>
-              <td class="pl-2 text-end truncate"> <%= Utils.format_with_coma(o.price) %> &nbsp;ISK </td>
-              <td class="pl-2 text-start truncate">  <span class={apply_color_on_status(:erlang.float_to_binary(o.location.security_status, [decimals: 1]))}><%= :erlang.float_to_binary(o.location.security_status, [decimals: 1]) %></span>&nbsp;<%= o.location.name %> </td>
+            <tr class="px-2 font-sm hover:bg-ei-hover hover:text-white">
+              <td class="px-[0.5rem] truncate border-r-[1px] border-stone-800"> <%= o.location.region %> </td>
+              <td class="px-[0.5rem] text-end" border-r-[1px] border-stone-800> <%= Utils.format_with_coma(o.volume_remain) %></td>
+              <td class="px-[0.5rem] text-end truncate border-r-[1px] border-stone-800"> <%= Utils.format_with_coma(o.price) %> &nbsp;ISK </td>
+              <td class="px-[0.5rem] text-start truncate border-r-[1px] border-stone-800">  <span class={apply_color_on_status(:erlang.float_to_binary(o.location.security_status, [decimals: 1]))}><%= :erlang.float_to_binary(o.location.security_status, [decimals: 1]) %></span>&nbsp;<%= o.location.name %> </td>
               <%= if @is_buy_list? do %>
-              <td class="text-end">
+              <td class="text-end border-r-[1px] border-stone-800 truncate">
                 <%= if Regex.run(~r/[0-9]/, o.range), do: o.range<>" jumps", else: o.range %>
               </td>
               <% end %>
               <%= if @is_buy_list? do %>
-              <td class="pl-2 text-end">
+              <td class="px-[0.5rem] text-end border-r-[1px] border-stone-800 truncate">
                 <%=  o.min_volume %>
               </td>
               <% end %>
-              <td class="pl-2 text-start"> <%= Utils.get_time_left(o.issued, o.duration) %> </td>
-              <td class="pl-2 "> <%= Utils.calculate_time_difference(o.issued) %> </td>
+              <td class="px-[0.5rem] text-start border-r-[1px] border-stone-800"> <%= Utils.get_time_left(o.issued, o.duration) %> </td>
+              <td class="px-[0.5rem]"> <%= Utils.calculate_time_difference(o.issued) %> </td>
             </tr>
             <% end %>
           <% end) %>
