@@ -1,6 +1,6 @@
 defmodule EveIndustrex.Market.MarketOrder.Persistence do
 
-  alias EveIndustrex.Universe
+  # alias EveIndustrex.Universe
   alias EveIndustrex.Repo
   alias EveIndustrex.Market.MarketOrder
   import Ecto.Query
@@ -27,14 +27,18 @@ defmodule EveIndustrex.Market.MarketOrder.Persistence do
   def delete_all() do
     Repo.delete_all(MarketOrder)
   end
-  def put_location_assoc(location_id) do
-    case Universe.Station.Store.get_station(location_id) do
-      {station_id, _system_id, _name, :station} ->
-        %{station_id: station_id}
-      [] ->
-        # structure in future
-        %{}
-    end
+  # def put_location_assoc(location_id) do
+  #   case Universe.Station.Store.get_station(location_id) do
+  #     {station_id, _system_id, _name, :station} ->
+  #       %{station_id: station_id}
+  #     [] ->
+  #       # structure in future
+  #       %{}
+  #   end
+  # end
+  def update_orders_generation(region_id, gen) do
+    query = from(mo in MarketOrder, where: mo.region_id == ^region_id and mo.generation == ^gen - 1)
+    Repo.update_all(query, set: [generation: gen])
   end
   def delete_all_from_prev_gen(region_id, generation) do
     from(mo in MarketOrder,
