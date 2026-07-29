@@ -47,6 +47,7 @@ require Logger
     Loader.LpOffers.init()
     Loader.CorpOffers.init()
     Loader.Blueprint.init()
+    :ok
   end
   def resources_missing?(), do: if(Sync.Query.get_resource_types_count() > 0, do: false, else: true)
   def get_resources_with_missing_strategies() do
