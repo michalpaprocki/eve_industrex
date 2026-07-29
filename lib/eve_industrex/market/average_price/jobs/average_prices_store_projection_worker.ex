@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Market.AveragePrice.Jobs.AveragePricesStoreProjectionWorker do
+alias EveIndustrex.Infrastructure.ESI.Sync.SyncEvents
   use Oban.Worker, queue: :average_prices, max_attempts: 10
   alias EveIndustrex.Infrastructure.ESI.Sync
   alias EveIndustrex.Infrastructure.Cache
@@ -36,6 +37,7 @@ defmodule EveIndustrex.Market.AveragePrice.Jobs.AveragePricesStoreProjectionWork
           Logger.info("Publishing generation #{latest_gen} for Average Prices")
           Cache.update_generation(:average_prices, latest_gen)
           Logger.info("Cache generation after: #{Cache.get_current_generation(:average_prices)}")
+          SyncEvents.projection_rebuilt("average_prices")
            if !Readiness.enabled?(:average_prices) do
             Readiness.mark_ready(:average_prices)
           end

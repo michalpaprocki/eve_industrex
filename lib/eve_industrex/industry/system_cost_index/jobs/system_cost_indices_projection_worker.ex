@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Industry.SystemCostIndex.Jobs.SystemCostIndicesProjectionWorker do
+alias EveIndustrex.Infrastructure.ESI.Sync.SyncEvents
     use Oban.Worker, queue: :industry, max_attempts: 10
   alias EveIndustrex.Infrastructure.ESI.Sync
   alias EveIndustrex.Infrastructure.Cache
@@ -36,6 +37,7 @@ defmodule EveIndustrex.Industry.SystemCostIndex.Jobs.SystemCostIndicesProjection
           Logger.info("Publishing generation #{latest_gen} for System Cost Indices")
           Cache.update_generation(:system_cost_indices, latest_gen)
           Logger.info("Cache generation after: #{Cache.get_current_generation(:system_cost_indices)}")
+          SyncEvents.projection_rebuilt("system_cost_indices")
            if !Readiness.enabled?(:system_cost_index) do
             Readiness.mark_ready(:system_cost_index)
           end

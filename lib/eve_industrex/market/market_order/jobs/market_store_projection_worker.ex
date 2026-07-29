@@ -1,5 +1,6 @@
 defmodule EveIndustrex.Market.MarketOrder.Jobs.MarketStoreProjectionWorker do
 
+alias EveIndustrex.Infrastructure.ESI.Sync.SyncEvents
   use Oban.Worker, queue: :market_orders, max_attempts: 10
   alias EveIndustrex.Infrastructure.ESI.Sync
   alias EveIndustrex.Infrastructure.Cache
@@ -31,6 +32,8 @@ defmodule EveIndustrex.Market.MarketOrder.Jobs.MarketStoreProjectionWorker do
           Logger.info("Publishing generation #{latest_gen} for Market Orders")
           Cache.update_generation(:market_orders, latest_gen)
           Logger.info("Cache generation after: #{Cache.get_current_generation(:market_orders)}")
+          SyncEvents.projection_rebuilt("market_orders")
+
           if !Readiness.enabled?(:market_orders) do
             Readiness.mark_ready(:market_orders)
           end
