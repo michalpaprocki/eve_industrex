@@ -130,4 +130,37 @@ require Logger
       %{entity: type}
     )
   end
+  def sync_started(resource) do
+    :telemetry.execute(
+      [:eve_industrex, :activity, :sync_started],
+      %{},
+      %{resource: resource}
+    )
+  end
+  def sync_finished(resource) do
+    :telemetry.execute(
+      [:eve_industrex, :activity, :sync_finished],
+      %{},
+      %{resource: resource}
+    )
+  end
+  def rate_limit_discovered(group, route) do
+    :telemetry.execute(
+      [:eve_industrex, :activity, :rate_limit_group_discovered],
+      %{},
+      %{
+        group: group,
+        route: route
+      }
+    )
+  end
+  def projection_rebuilt(resource) do
+    :telemetry.execute(
+      [:eve_industrex, :activity, :projection_rebuilt],
+      %{},
+      %{
+        resource: resource
+      }
+    )
+  end
 end
