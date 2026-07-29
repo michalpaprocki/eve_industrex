@@ -39,7 +39,8 @@ defmodule EveIndustrexWeb.Router do
     # live "/tools/appraise", Tools.AppraiseLive
     # live "/industry/production", Tools.ProductionLive
     live "/nook/telemetry", Dashboard.DashboardLive
-     end
+  end
+    live "/*slug", NotFoundLive
   end
 
   # Other scopes may use custom stacks.
