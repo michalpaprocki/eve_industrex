@@ -14,11 +14,11 @@ use Oban.Worker, queue: :market_orders, max_attempts: 5
 
       case Orchestrator.initiate_paginated_resource_sync(strategy_id, attempt, max_attempts, &Client.fetch_market_orders/3) do
         {:snooze, delay} ->
-          Logger.info("Snoozing root worker")
+
           {:snooze, delay}
 
         {:fanout, pages, generation_id} ->
-          Logger.info("Root worker fanning out")
+
         jobs =
           Enum.map(2..pages, fn p ->
             EveIndustrex.Market.MarketOrder.Jobs.SyncMarketOrdersPagesWorker.new(%{
@@ -31,7 +31,7 @@ use Oban.Worker, queue: :market_orders, max_attempts: 5
           :ok
 
         {:ok, pages, generation_id} ->
-          Logger.info("Root worker done without fanout")
+
           OrchestratorService.update_generation(generation_id, %{
           status: :completed,
           finished_at: OrchestratorService.now(),

@@ -1,5 +1,6 @@
 defmodule EveIndustrex.Infrastructure.Schedulers.StrategyScheduler do
 
+alias EveIndustrex.Infrastructure.ESI.Sync.SyncEvents
   use Oban.Worker, queue: :schedulers, unique: [period: :infinity]
   require Logger
   alias EveIndustrex.Infrastructure.ESI.Sync.Query
@@ -13,8 +14,11 @@ defmodule EveIndustrex.Infrastructure.Schedulers.StrategyScheduler do
 
   @impl Oban.Worker
   def perform(_job) do
-    Logger.info("Strategy scheduler running...")
+
     {:ok, strats} = Query.claim_due_strategies()
+    Enum.map(strats, fn s -> s.resource_type.name end)
+    |> Enum.uniq()
+    |> Enum.map(fn s -> SyncEvents.sync_started(s) end)
     Logger.info("Got #{inspect(length(strats))} due strats...")
     strats
     |> Enum.map(fn strategy ->
