@@ -1,0 +1,10 @@
+@utility carbon {
+  background-color: #e5e5f7;
+  opacity: 0.8;
+  background:
+    radial-gradient(#15151b 1%, transparent 11%) 0 0,
+    radial-gradient(#15151b 1%, transparent 11%) 5px 5px,
+    radial-gradient(#15151b 1%, transparent 11%) 0 1px,
+    radial-gradient(#15151b 1%, transparent 11%) 5px 6px;
+  background-size: 10px 10px;
+}
