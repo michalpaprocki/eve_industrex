@@ -123,7 +123,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
             {:not_modified, %Headers{} = headers} ->
               snapshot_last_modified = DateTimeParser.parse_datetime!(headers.last_modified, to_utc: true)|> DateTime.from_naive!("Etc/UTC")|>DateTime.truncate(:second)
               snapshot_expires_at = DateTimeParser.parse_datetime!(headers.expires_at, to_utc: true)|> DateTime.from_naive!("Etc/UTC")|>DateTime.truncate(:second)
-              Logger.info("NOT MODDED")
+
               upsert_sync_gen_page(page, generation_id, :matched, attempt)
               {:ok, gen} = update_generation(generation_id, %{
                   status: :not_modified,
@@ -145,7 +145,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
             {:server_error, %Headers{} = _headers, status} ->
               upsert_sync_gen_page(page, generation_id, :retryable, attempt, Integer.to_string(status))
               #  RateLimiter.observe(headers)
-              Logger.info("Server error, snoozing job")
+              Logger.warning("Server error, snoozing job.")
                SyncEvents.runtime(:server_error, gen, page)
               {:snooze, calc_delay(attempt)}
 
@@ -262,6 +262,10 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
     |> EsiSyncGeneration.changeset(map)
     |> Sync.Persistence.update_generation()
   end
+
+  def mark_orders_as_new_gen(target_id, generation) do
+    MarketOrder.Persistence.update_orders_generation(target_id, generation)
+  end
   # possibly pass a ready function into the orchestrate fn instead of matching here
   defp upsert(body, resource_type, generation, target_id) do
     case resource_type do
@@ -332,7 +336,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
         Logger.warning(
           "Added #{resource_name} to global rate limit group"
         )
-
+        SyncEvents.rate_limit_discovered(resource_name, "global")
         RouteGroups.put(resource_name, "global")
     end
   end
@@ -344,7 +348,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
         Logger.warning(
           "Route group changed for #{resource_name}: #{old} -> #{rate_limit_group}"
         )
-
+        SyncEvents.rate_limit_discovered(resource_name, rate_limit_group)
         RouteGroups.put(resource_name, rate_limit_group)
     end
   end

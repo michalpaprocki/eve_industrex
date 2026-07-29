@@ -56,7 +56,6 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
 
           case OrchestratorService.orchestrate(fetch_fn, generation.id, strategy.next_generation, attempt, max_attempts, strategy, metadata, 1) do
             {:snooze, delay} ->
-              Logger.warning("job snoozed")
               {:snooze, delay}
 
             {:fanout, pages} ->
@@ -70,7 +69,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
 
 
           false ->
-            Logger.error("postpone from ratelimiter")
+            Logger.warning("Strategy #{strategy_id} postponed - ratelimited")
             # make it dynamic based on budget / refill pace
             {:snooze, OrchestratorService.calc_delay(attempt)}
           end
@@ -93,13 +92,13 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
               :ok
           end
       false ->
-        Logger.error("postpone from ratelimiter")
+        Logger.warning("Strategy #{strategy_id} postponed - ratelimited")
         # make it dynamic based on budget / refill pace
         {:snooze, OrchestratorService.calc_delay(attempt)}
 
       end
   end
-  def finalize(strategy_id, attempt, max_attempts) do
+  def finalize(strategy_id, attempt, _max_attempts) do
        strategy = Sync.Query.get_strategy_with_generation(strategy_id)
 
        generation = Enum.at(strategy.generations, 0)
@@ -108,12 +107,12 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
         :running  ->
           cond do
             generation.pages_completed == generation.pages_total ->
-              Logger.info("Completed in #{inspect(attempt)} attempts / #{inspect(max_attempts)}")
+
               {:ok, gen} = OrchestratorService.update_generation(generation.id, %{
                 status: :completed,
                 finished_at: OrchestratorService.now()
                 })
-                Logger.info("Finalizer complete - strategy done")
+
                 SyncEvents.generation_completed(gen, strategy)
             OrchestratorService.finalize_strategy(strategy, %{
               last_modified: generation.snapshot_last_modified,
@@ -126,12 +125,12 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
               })
               :ok
             is_nil(generation.pages_total) and is_nil(generation.target_id) ->
-                      Logger.info("Completed non-paginated in #{inspect(attempt)} attempts / #{inspect(max_attempts)}")
+
               {:ok, gen} = OrchestratorService.update_generation(generation.id, %{
                 status: :completed,
                 finished_at: OrchestratorService.now()
                 })
-                Logger.info("Finalizer complete - strategy done")
+
                 SyncEvents.generation_completed(gen, strategy)
             OrchestratorService.finalize_strategy(strategy, %{
               last_modified: generation.snapshot_last_modified,
@@ -161,7 +160,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
 
         :completed ->
           SyncEvents.generation_completed(generation, strategy)
-           Logger.info("Finalizer complete - strategy done")
+
           OrchestratorService.finalize_strategy(strategy, %{
             last_modified: generation.snapshot_last_modified,
             status: :idle,
@@ -174,8 +173,12 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
 
             :ok
         :not_modified ->
-           Logger.info("Finalizer complete - not modified")
+
            SyncEvents.generation_not_modified(generation, strategy)
+           if strategy.resource_type.name == "market_orders" do
+
+             OrchestratorService.mark_orders_as_new_gen(generation.target_id, generation.generation)
+           end
           OrchestratorService.finalize_strategy(strategy, %{
             status: :idle,
             next_generation: strategy.next_generation + 1,
@@ -188,7 +191,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
 
             :ok
         :superseded ->
-          Logger.error("Finalizer done - dataset invalid")
+
           SyncEvents.generation_superseded(generation, strategy)
           OrchestratorService.finalize_strategy(strategy, %{
             status: :failed,
@@ -199,7 +202,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
             OrchestratorService.delete_superseded_gen(generation.id)
           :ok
         :critical ->
-           Logger.error("Finalizer critical")
+           Logger.error("Finalizer critical #{inspect(strategy_id)}")
            SyncEvents.generation_critical(generation, strategy)
            OrchestratorService.finalize_strategy(strategy, %{
             status: :critical,
@@ -209,7 +212,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
             })
           :ok
         :failed ->
-          Logger.error("Finalizer failure - rate limited")
+          Logger.warning("Finalizer failure - rate limited")
            SyncEvents.generation_failed(generation, strategy)
            OrchestratorService.finalize_strategy(strategy, %{
             status: :failed,
