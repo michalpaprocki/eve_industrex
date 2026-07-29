@@ -1,5 +1,4 @@
 defmodule EveIndustrex.Universe.System.Query do
-  import Ecto.Query
   alias EveIndustrex.Universe.System
   alias EveIndustrex.Repo
 

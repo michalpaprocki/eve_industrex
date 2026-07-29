@@ -69,7 +69,7 @@ alias EveIndustrex.Repo
 
   defp fetch_all(ids, fetch_fn) do
     Enum.reduce_while(ids, {:ok, []}, fn id, {:ok, acc} ->
-      Logger.info("calling fetch fn with #{inspect(id)}")
+
       case ClientHandler.handle_response(fetch_fn.(id)) do
         {:success, body, _headers} ->
 

@@ -1,5 +1,5 @@
 defmodule EveIndustrex.Universe.MarketGroup.Sync do
-  alias EveIndustrex.Infrastructure.ESI.ClientContext
+
   alias EveIndustrex.Infrastructure.ESI.Client
   def get_market_groups() do
     case Client.fetch_market_groups() do
