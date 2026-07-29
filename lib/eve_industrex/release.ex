@@ -1,12 +1,29 @@
 defmodule EveIndustrex.Release do
-  defstruct [:name, :version, :otp_release, :elixir_version]
+  @moduledoc """
+  Used for executing DB release tasks when run in production without Mix
+  installed.
+  """
+  @app :eve_industrex
 
-  def get() do
-    struct(__MODULE__,
-    name: Application.spec(:eve_industrex, :description) |> List.to_string(),
-    version: Application.spec(:eve_industrex, :vsn) |> List.to_string(),
-    otp_release: System.otp_release(),
-    elixir_version: System.version()
-    )
+  def migrate do
+    load_app()
+
+    for repo <- repos() do
+      {:ok, _, _} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :up, all: true))
+    end
   end
+
+  def rollback(repo, version) do
+    load_app()
+    {:ok, _, _} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :down, to: version))
+  end
+
+  defp repos do
+    Application.fetch_env!(@app, :ecto_repos)
+  end
+
+  defp load_app do
+    Application.load(@app)
+  end
+
 end

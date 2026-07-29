@@ -1,6 +1,6 @@
 defmodule EveIndustrexWeb.OperationsLive do
 alias EveIndustrex.Infrastructure.Operations.Snapshot
-alias EveIndustrex.Release
+alias EveIndustrex.ReleaseInfo
   use EveIndustrexWeb, :live_view
   alias EveIndustrex.Infrastructure.Operations
   def mount(_params, _session, socket) do
@@ -24,7 +24,7 @@ alias EveIndustrex.Release
           <div class="flex flex-col gap-2 p-8 border-b-2 border-ie-text border-dotted">
             <div>
               <span> Application: </span>
-              <span><%= Release.get().name %> </span>
+              <span><%= ReleaseInfo.get().name %> </span>
             </div>
             <div>
               <span>Uptime: </span>
@@ -32,15 +32,15 @@ alias EveIndustrex.Release
             </div>
             <div>
               <span>Build: </span>
-              <span><%= Release.get().version %></span>
+              <span><%= ReleaseInfo.get().version %></span>
             </div>
             <div>
               <span>OTP: </span>
-              <span><%= Release.get().otp_release %></span>
+              <span><%= ReleaseInfo.get().otp_release %></span>
             </div>
             <div>
               <span>Elixir: </span>
-              <span><%= Release.get().elixir_version %></span>
+              <span><%= ReleaseInfo.get().elixir_version %></span>
             </div>
           </div>
           <div class="flex flex-col gap-2 p-8 border-b-2 border-ie-text border-dotted">
