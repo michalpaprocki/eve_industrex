@@ -45,14 +45,13 @@ defmodule EveIndustrex.Application do
     :ok
   end
 
-
   defp extra_children do
-    if Mix.env() == :test do
-      []
-    else
+    if Application.get_env(:eve_industrex, :enable_bootstrap, true) do
       [
         {EveIndustrex.Infrastructure.Bootstrap.InitTask, :run}
       ]
+    else
+      []
     end
   end
 end

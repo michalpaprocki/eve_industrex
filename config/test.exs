@@ -38,3 +38,4 @@ config :phoenix_live_view,
   enable_expensive_runtime_checks: true
 
 config :eve_industrex, Oban, testing: :manual
+config :eve_industrex, enable_bootstrap: false
