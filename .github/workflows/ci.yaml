@@ -13,7 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Print repository contents
-        run: |
-          pwd
-          ls -la
+      - name: Install erlang and elixir
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "28.3.1"
+          elixir-version: "1.19.5-otp-28"
+
+      - run: mix --version
