@@ -22,7 +22,6 @@ defmodule Infrastructure.ESI.Sync.OrchestratorTest do
 
     test "creates a new generation for a 1 pagesync op, stores snapshot etag and expires_at, returns :ok, amount of pages completed and generation id",
          %{resource_type: _resource_type, strategy: strategy} do
-
       result =
         Orchestrator.initiate_paginated_resource_sync(
           strategy.id,
@@ -30,6 +29,7 @@ defmodule Infrastructure.ESI.Sync.OrchestratorTest do
           5,
           fetch_fn(esi_response(200, [], "1", "test_etag"))
         )
+
       gen_id = elem(result, 2)
       strategy_updated = get_strategy_with_gens(strategy.id)
       {gen, gen_page} = get_generation(gen_id, 1)
