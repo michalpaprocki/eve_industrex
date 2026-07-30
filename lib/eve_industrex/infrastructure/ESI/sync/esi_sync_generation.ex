@@ -1,6 +1,6 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.EsiSyncGeneration do
-   alias EveIndustrex.Infrastructure.ESI.Sync.EsiSyncGenerationPage
-   alias EveIndustrex.Infrastructure.ESI.Sync.{EsiSyncStrategy}
+  alias EveIndustrex.Infrastructure.ESI.Sync.EsiSyncGenerationPage
+  alias EveIndustrex.Infrastructure.ESI.Sync.{EsiSyncStrategy}
   use Ecto.Schema
   import Ecto.Changeset
   @primary_key {:id, :id, autogenerate: true}
@@ -18,12 +18,34 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.EsiSyncGeneration do
     field :snapshot_expires_at, :utc_datetime
     field :snapshot_last_modified, :utc_datetime
     field :pages_completed, :integer, default: 0
-    field :status, Ecto.Enum, values: [:running, :completed, :failed, :critical, :not_modified, :superseded]
-    has_many :generation_pages, EsiSyncGenerationPage, foreign_key: :esi_sync_generation_id, on_delete: :delete_all
+
+    field :status, Ecto.Enum,
+      values: [:running, :completed, :failed, :critical, :not_modified, :superseded]
+
+    has_many :generation_pages, EsiSyncGenerationPage,
+      foreign_key: :esi_sync_generation_id,
+      on_delete: :delete_all
+
     timestamps(type: :utc_datetime)
   end
+
   def changeset(generation, attrs) do
     generation
-    |> cast(attrs, [:priority, :generation, :pages_completed, :snapshot_last_modified ,:pages_total, :started_at, :finished_at, :duration_ms, :target_id, :last_error, :status, :esi_sync_strategy_id, :snapshot_etag, :snapshot_expires_at])
+    |> cast(attrs, [
+      :priority,
+      :generation,
+      :pages_completed,
+      :snapshot_last_modified,
+      :pages_total,
+      :started_at,
+      :finished_at,
+      :duration_ms,
+      :target_id,
+      :last_error,
+      :status,
+      :esi_sync_strategy_id,
+      :snapshot_etag,
+      :snapshot_expires_at
+    ])
   end
 end

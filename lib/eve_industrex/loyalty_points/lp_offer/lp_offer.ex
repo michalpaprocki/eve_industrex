@@ -1,5 +1,4 @@
 defmodule EveIndustrex.LoyaltyPoints.LpOffer do
-
   use Ecto.Schema
   import Ecto.Changeset
   alias EveIndustrex.LoyaltyPoints.LpReqItem
@@ -12,7 +11,11 @@ defmodule EveIndustrex.LoyaltyPoints.LpOffer do
     field :quantity, :integer
     field :type_id, :integer
     belongs_to :type, Type, references: :type_id, define_field: false
-    many_to_many :corps, NpcCorp, join_through: "corps_offers", join_keys: [offer_id: :offer_id, corp_id: :corp_id]
+
+    many_to_many :corps, NpcCorp,
+      join_through: "corps_offers",
+      join_keys: [offer_id: :offer_id, corp_id: :corp_id]
+
     has_many :req_items, LpReqItem, foreign_key: :offer_id, references: :offer_id
     timestamps(type: :utc_datetime)
   end
@@ -21,7 +24,5 @@ defmodule EveIndustrex.LoyaltyPoints.LpOffer do
     lp_offer
     |> cast(attrs, [:isk_cost, :lp_cost, :quantity, :type_id, :offer_id])
     |> unique_constraint(:offer_id)
-
   end
-
 end

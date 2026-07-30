@@ -6,6 +6,7 @@ defmodule EveIndustrex.Repo.Migrations.AlterGenStratAddEtagField do
       add :snapshot_etag, :string
       add :snapshot_expires_at, :utc_datetime
     end
+
     alter table(:esi_sync_strategies) do
       add :last_expires_at, :utc_datetime
       add :last_etag, :string

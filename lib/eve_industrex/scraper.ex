@@ -9,8 +9,8 @@ defmodule EveIndustrex.Scraper do
   @spec get_latest_tq_version() :: {:ok, String.t()} | {:error, map()}
   def get_latest_tq_version do
     with {:ok, body} <- fetch_patch_notes_html(),
-      {:ok, path} <- Html.parse_html_to_latest_patch_notes_path(body),
-      {:ok, version} <- Html.parse_path_to_tq_version(path) do
+         {:ok, path} <- Html.parse_html_to_latest_patch_notes_path(body),
+         {:ok, version} <- Html.parse_path_to_tq_version(path) do
       {:ok, version}
     else
       {:error, reason} ->

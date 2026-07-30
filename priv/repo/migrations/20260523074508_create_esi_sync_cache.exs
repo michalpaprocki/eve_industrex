@@ -9,6 +9,5 @@ defmodule EveIndustrex.Repo.Migrations.CreateEsiSyncCache do
       add :last_checked_at, :utc_datetime
       timestamps(type: :utc_datetime)
     end
-
   end
 end

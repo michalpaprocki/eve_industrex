@@ -3,7 +3,7 @@ defmodule Domain.Universe.Station.PersistenceTest do
   alias EveIndustrex.Universe.Station.Persistence
   use EveIndustrex.DataCase
 
-   @region %{
+  @region %{
     :region_id => 0,
     :name => "test region",
     :description => "test desc"
@@ -12,13 +12,12 @@ defmodule Domain.Universe.Station.PersistenceTest do
     :region_id => 0,
     :name => "test constellation",
     :constellation_id => 1
-
   }
   @system %{
-      :system_id => 0,
-      :name => "Test name 1",
-      :constellation_id => 1,
-      :security_status => 0.5
+    :system_id => 0,
+    :name => "Test name 1",
+    :constellation_id => 1,
+    :security_status => 0.5
   }
   @station %{
     :station_id => 1,
@@ -39,12 +38,13 @@ defmodule Domain.Universe.Station.PersistenceTest do
       :services => ["bounty_missions"]
     }
   ]
-  setup  do
+  setup do
     {:ok, _} = EveIndustrex.Universe.Region.Persistence.upsert(@region)
     {:ok, _} = EveIndustrex.Universe.Constellation.Persistence.upsert(@constellation)
     {:ok, _} = EveIndustrex.Universe.System.Persistence.upsert(@system)
     {:ok, %{}}
   end
+
   test "inserts a single station" do
     assert {:ok, %Station{} = station} = Persistence.upsert(@station)
     assert station.system_id == 0
@@ -55,9 +55,10 @@ defmodule Domain.Universe.Station.PersistenceTest do
     assert station.reprocessing_efficiency == 0.1
   end
 
-
   test "updates a single station" do
-    assert {:ok, %Station{} = system} = Persistence.upsert(Map.replace(@station, :name, "updated_name"))
+    assert {:ok, %Station{} = system} =
+             Persistence.upsert(Map.replace(@station, :name, "updated_name"))
+
     assert system.station_id == 1
     assert system.name == "updated_name"
   end
@@ -69,7 +70,19 @@ defmodule Domain.Universe.Station.PersistenceTest do
 
   test "updates multiple stations" do
     {_num_of_inserted, nil} = Persistence.upsert_all(@stations)
-    updated = Enum.map(@stations, fn c -> %{c | :system_id => c.system_id, :services => c.services, :name => "updated_name", :reprocessing_stations_take => c.reprocessing_stations_take, :reprocessing_efficiency => c.reprocessing_efficiency } end)
+
+    updated =
+      Enum.map(@stations, fn c ->
+        %{
+          c
+          | :system_id => c.system_id,
+            :services => c.services,
+            :name => "updated_name",
+            :reprocessing_stations_take => c.reprocessing_stations_take,
+            :reprocessing_efficiency => c.reprocessing_efficiency
+        }
+      end)
+
     assert {num_of_updated, data} = Persistence.upsert_all(updated, true)
     assert num_of_updated == 2
     assert Enum.map(data, fn d -> d.name == "updated_name" end)

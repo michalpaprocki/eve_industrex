@@ -2,9 +2,20 @@ defmodule EveIndustrex.Industry.SystemCostIndex do
   use Ecto.Schema
   alias EveIndustrex.Universe.System
   import Ecto.Changeset
+
   schema "system_cost_indices" do
     field :cost_index, :float
-    field :activity, Ecto.Enum, values: [:copying, :invention, :manufacturing, :reaction, :researching_time_efficiency, :researching_material_efficiency]
+
+    field :activity, Ecto.Enum,
+      values: [
+        :copying,
+        :invention,
+        :manufacturing,
+        :reaction,
+        :researching_time_efficiency,
+        :researching_material_efficiency
+      ]
+
     belongs_to :system, System, references: :system_id, foreign_key: :system_id
 
     timestamps(type: :utc_datetime)

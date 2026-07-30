@@ -6,6 +6,8 @@ defmodule EveIndustrex.Market.AveragePrice.Query do
 
   def get_average_prices_for_published_types() do
     query = from(t in Type, where: t.published == true)
-    from(ap in AveragePrice, join: t in subquery(query), on: ap.type_id == t.type_id) |> Repo.all
+
+    from(ap in AveragePrice, join: t in subquery(query), on: ap.type_id == t.type_id)
+    |> Repo.all()
   end
 end

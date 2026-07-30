@@ -8,6 +8,9 @@ defmodule EveIndustrex.Repo.Migrations.AlterMasrketStatisticsPriceTypes do
       modify :lowest, :float, from: :bigint
       modify :date, :date, from: :utc_datetime
     end
-    create unique_index(:market_statistics, [:date, :type_id, :region_id], name: :unique_date_type_region)
+
+    create unique_index(:market_statistics, [:date, :type_id, :region_id],
+             name: :unique_date_type_region
+           )
   end
 end

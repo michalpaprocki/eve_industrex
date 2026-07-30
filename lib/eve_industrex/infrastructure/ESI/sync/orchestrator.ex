@@ -1,16 +1,13 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
-
   alias EveIndustrex.Infrastructure.ESI.Sync.SyncEvents
   alias EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService
   alias EveIndustrex.Infrastructure.ESI.RouteGroups
   alias EveIndustrex.Infrastructure.ESI.RateLimiter
 
-
   alias EveIndustrex.Infrastructure.ESI.Sync
   require Logger
 
   def initiate_resource_sync(strategy_id, attempt, max_attempts, fetch_fn) do
-
     strategy = Sync.Query.get_strategy(strategy_id)
 
     rate_limit_group = RouteGroups.get(strategy.resource_type.name)
@@ -21,7 +18,15 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
 
         generation = OrchestratorService.prepare_generation(strategy)
 
-        case OrchestratorService.orchestrate(fetch_fn, generation.id, strategy.next_generation, attempt, max_attempts, strategy, metadata) do
+        case OrchestratorService.orchestrate(
+               fetch_fn,
+               generation.id,
+               strategy.next_generation,
+               attempt,
+               max_attempts,
+               strategy,
+               metadata
+             ) do
           {:snooze, delay} ->
             Logger.warning("job snoozed")
             {:snooze, delay}
@@ -30,19 +35,14 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
             :ok
         end
 
-
       false ->
-
-            Logger.error("postpone from ratelimiter")
-      # make it dynamic based on budget / refill pace
-      {:snooze, OrchestratorService.calc_delay(attempt)}
-
+        Logger.error("postpone from ratelimiter")
+        # make it dynamic based on budget / refill pace
+        {:snooze, OrchestratorService.calc_delay(attempt)}
     end
   end
 
-
   def initiate_paginated_resource_sync(strategy_id, attempt, max_attempts, fetch_fn) do
-
     strategy = Sync.Query.get_strategy(strategy_id)
 
     rate_limit_group = RouteGroups.get(strategy.resource_type.name)
@@ -51,69 +51,88 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
       true ->
         metadata = %{etag: strategy.last_etag, expires_at: strategy.last_expires_at}
 
+        generation = OrchestratorService.prepare_generation(strategy)
 
-          generation = OrchestratorService.prepare_generation(strategy)
+        case OrchestratorService.orchestrate(
+               fetch_fn,
+               generation.id,
+               strategy.next_generation,
+               attempt,
+               max_attempts,
+               strategy,
+               metadata,
+               1
+             ) do
+          {:snooze, delay} ->
+            {:snooze, delay}
 
-          case OrchestratorService.orchestrate(fetch_fn, generation.id, strategy.next_generation, attempt, max_attempts, strategy, metadata, 1) do
-            {:snooze, delay} ->
-              {:snooze, delay}
+          {:fanout, pages} ->
+            {:fanout, pages, generation.id}
 
-            {:fanout, pages} ->
-              {:fanout, pages, generation.id}
+          {:ok, pages, generation_id} ->
+            {:ok, pages, generation_id}
 
-            {:ok, pages, generation_id}->
-              {:ok, pages, generation_id}
-            :ok ->
-              :ok
-          end
+          :ok ->
+            :ok
+        end
 
-
-          false ->
-            Logger.warning("Strategy #{strategy_id} postponed - ratelimited")
-            # make it dynamic based on budget / refill pace
-            {:snooze, OrchestratorService.calc_delay(attempt)}
-          end
-  end
-  def sync_paginated_resource(strategy_id, generation_id, attempt, max_attempts, fetch_fn, page) do
-
-      strategy = Sync.Query.get_strategy(strategy_id)
-      generation = Sync.Query.get_generation(generation_id)
-      rate_limit_group = RouteGroups.get(strategy.resource_type.name)
-
-      case RateLimiter.available?(rate_limit_group) do
-        true ->
-          metadata = %{etag: generation.snapshot_etag, expires_at: generation.snapshot_expires_at}
-
-          case OrchestratorService.orchestrate(fetch_fn, generation_id, strategy.next_generation, attempt, max_attempts, strategy, metadata, page) do
-            {:snooze, delay} ->
-              {:snooze, delay}
-
-            :ok ->
-              :ok
-          end
       false ->
         Logger.warning("Strategy #{strategy_id} postponed - ratelimited")
         # make it dynamic based on budget / refill pace
         {:snooze, OrchestratorService.calc_delay(attempt)}
-
-      end
+    end
   end
+
+  def sync_paginated_resource(strategy_id, generation_id, attempt, max_attempts, fetch_fn, page) do
+    strategy = Sync.Query.get_strategy(strategy_id)
+    generation = Sync.Query.get_generation(generation_id)
+    rate_limit_group = RouteGroups.get(strategy.resource_type.name)
+
+    case RateLimiter.available?(rate_limit_group) do
+      true ->
+        metadata = %{etag: generation.snapshot_etag, expires_at: generation.snapshot_expires_at}
+
+        case OrchestratorService.orchestrate(
+               fetch_fn,
+               generation_id,
+               strategy.next_generation,
+               attempt,
+               max_attempts,
+               strategy,
+               metadata,
+               page
+             ) do
+          {:snooze, delay} ->
+            {:snooze, delay}
+
+          :ok ->
+            :ok
+        end
+
+      false ->
+        Logger.warning("Strategy #{strategy_id} postponed - ratelimited")
+        # make it dynamic based on budget / refill pace
+        {:snooze, OrchestratorService.calc_delay(attempt)}
+    end
+  end
+
   def finalize(strategy_id, attempt, _max_attempts) do
-       strategy = Sync.Query.get_strategy_with_generation(strategy_id)
+    strategy = Sync.Query.get_strategy_with_generation(strategy_id)
 
-       generation = Enum.at(strategy.generations, 0)
+    generation = Enum.at(strategy.generations, 0)
 
-       case generation.status do
-        :running  ->
-          cond do
-            generation.pages_completed == generation.pages_total ->
-
-              {:ok, gen} = OrchestratorService.update_generation(generation.id, %{
+    case generation.status do
+      :running ->
+        cond do
+          generation.pages_completed == generation.pages_total ->
+            {:ok, gen} =
+              OrchestratorService.update_generation(generation.id, %{
                 status: :completed,
                 finished_at: OrchestratorService.now()
-                })
+              })
 
-                SyncEvents.generation_completed(gen, strategy)
+            SyncEvents.generation_completed(gen, strategy)
+
             OrchestratorService.finalize_strategy(strategy, %{
               last_modified: generation.snapshot_last_modified,
               status: :idle,
@@ -121,17 +140,24 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
               last_etag: generation.snapshot_etag,
               last_expires_at: generation.snapshot_expires_at,
               last_successful_sync: OrchestratorService.now(),
-              next_run_at: OrchestratorService.calc_next_run(strategy.sync_interval_seconds, generation.started_at)
-              })
-              :ok
-            is_nil(generation.pages_total) and is_nil(generation.target_id) ->
+              next_run_at:
+                OrchestratorService.calc_next_run(
+                  strategy.sync_interval_seconds,
+                  generation.started_at
+                )
+            })
 
-              {:ok, gen} = OrchestratorService.update_generation(generation.id, %{
+            :ok
+
+          is_nil(generation.pages_total) and is_nil(generation.target_id) ->
+            {:ok, gen} =
+              OrchestratorService.update_generation(generation.id, %{
                 status: :completed,
                 finished_at: OrchestratorService.now()
-                })
+              })
 
-                SyncEvents.generation_completed(gen, strategy)
+            SyncEvents.generation_completed(gen, strategy)
+
             OrchestratorService.finalize_strategy(strategy, %{
               last_modified: generation.snapshot_last_modified,
               status: :idle,
@@ -139,93 +165,131 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
               last_etag: generation.snapshot_etag,
               last_expires_at: generation.snapshot_expires_at,
               last_successful_sync: OrchestratorService.now(),
-              next_run_at: OrchestratorService.calc_next_run(strategy.sync_interval_seconds, generation.started_at)
+              next_run_at:
+                OrchestratorService.calc_next_run(
+                  strategy.sync_interval_seconds,
+                  generation.started_at
+                )
+            })
+
+            :ok
+
+          true ->
+            # most likely after server error >= 500
+            if Enum.any?(generation.generation_pages, fn gp -> gp.status == :retryable end) do
+              SyncEvents.generation_failed(generation, strategy)
+
+              OrchestratorService.finalize_strategy(strategy, %{
+                status: :failed,
+                next_generation: strategy.next_generation + 1,
+                next_run_at:
+                  OrchestratorService.calc_next_run(
+                    strategy.sync_interval_seconds,
+                    generation.started_at
+                  ),
+                enabled: true
               })
+
               :ok
-            true ->
-              # most likely after server error >= 500
-              if Enum.any?(generation.generation_pages, fn gp -> gp.status == :retryable end) do
-                SyncEvents.generation_failed(generation, strategy)
-                OrchestratorService.finalize_strategy(strategy, %{
-                  status: :failed,
-                  next_generation: strategy.next_generation + 1,
-                  next_run_at: OrchestratorService.calc_next_run(strategy.sync_interval_seconds, generation.started_at),
-                  enabled: true
-                  })
-                :ok
-              else
-                {:snooze, OrchestratorService.calc_delay(attempt)}
-              end
-          end
+            else
+              {:snooze, OrchestratorService.calc_delay(attempt)}
+            end
+        end
 
-        :completed ->
-          SyncEvents.generation_completed(generation, strategy)
+      :completed ->
+        SyncEvents.generation_completed(generation, strategy)
 
-          OrchestratorService.finalize_strategy(strategy, %{
-            last_modified: generation.snapshot_last_modified,
-            status: :idle,
-            next_generation: strategy.next_generation + 1,
-            last_etag: generation.snapshot_etag,
-            last_expires_at: generation.snapshot_expires_at,
-            last_successful_sync: OrchestratorService.now(),
-            next_run_at: OrchestratorService.calc_next_run(strategy.sync_interval_seconds, generation.started_at)
-            })
+        OrchestratorService.finalize_strategy(strategy, %{
+          last_modified: generation.snapshot_last_modified,
+          status: :idle,
+          next_generation: strategy.next_generation + 1,
+          last_etag: generation.snapshot_etag,
+          last_expires_at: generation.snapshot_expires_at,
+          last_successful_sync: OrchestratorService.now(),
+          next_run_at:
+            OrchestratorService.calc_next_run(
+              strategy.sync_interval_seconds,
+              generation.started_at
+            )
+        })
 
-            :ok
-        :not_modified ->
+        :ok
 
-           SyncEvents.generation_not_modified(generation, strategy)
-           if strategy.resource_type.name == "market_orders" do
+      :not_modified ->
+        SyncEvents.generation_not_modified(generation, strategy)
 
-             OrchestratorService.mark_orders_as_new_gen(generation.target_id, generation.generation)
-           end
-          OrchestratorService.finalize_strategy(strategy, %{
-            status: :idle,
-            next_generation: strategy.next_generation + 1,
-            last_modified: generation.snapshot_last_modified,
-            last_etag: generation.snapshot_etag,
-            last_expires_at: generation.snapshot_expires_at,
-            last_successful_sync: OrchestratorService.now(),
-            next_run_at: OrchestratorService.calc_next_run(strategy.sync_interval_seconds, generation.started_at)
-            })
+        if strategy.resource_type.name == "market_orders" do
+          OrchestratorService.mark_orders_as_new_gen(generation.target_id, generation.generation)
+        end
 
-            :ok
-        :superseded ->
+        OrchestratorService.finalize_strategy(strategy, %{
+          status: :idle,
+          next_generation: strategy.next_generation + 1,
+          last_modified: generation.snapshot_last_modified,
+          last_etag: generation.snapshot_etag,
+          last_expires_at: generation.snapshot_expires_at,
+          last_successful_sync: OrchestratorService.now(),
+          next_run_at:
+            OrchestratorService.calc_next_run(
+              strategy.sync_interval_seconds,
+              generation.started_at
+            )
+        })
 
-          SyncEvents.generation_superseded(generation, strategy)
-          OrchestratorService.finalize_strategy(strategy, %{
-            status: :failed,
-            next_generation: strategy.next_generation,
-            next_run_at: OrchestratorService.now(),
-            enabled: true
-            })
-            OrchestratorService.delete_superseded_gen(generation.id)
-          :ok
-        :critical ->
-           Logger.error("Finalizer critical #{inspect(strategy_id)}")
-           SyncEvents.generation_critical(generation, strategy)
-           OrchestratorService.finalize_strategy(strategy, %{
-            status: :critical,
-            next_generation: strategy.next_generation + 1,
-            next_run_at: OrchestratorService.calc_next_run(strategy.sync_interval_seconds, generation.started_at),
-            enabled: false
-            })
-          :ok
-        :failed ->
-          Logger.warning("Finalizer failure - rate limited")
-           SyncEvents.generation_failed(generation, strategy)
-           OrchestratorService.finalize_strategy(strategy, %{
-            status: :failed,
-            next_generation: strategy.next_generation + 1,
-            next_run_at: OrchestratorService.calc_next_run(strategy.sync_interval_seconds, generation.started_at),
-            enabled: true
-            })
-          :ok
+        :ok
 
-       end
+      :superseded ->
+        SyncEvents.generation_superseded(generation, strategy)
+
+        OrchestratorService.finalize_strategy(strategy, %{
+          status: :failed,
+          next_generation: strategy.next_generation,
+          next_run_at: OrchestratorService.now(),
+          enabled: true
+        })
+
+        OrchestratorService.delete_superseded_gen(generation.id)
+        :ok
+
+      :critical ->
+        Logger.error("Finalizer critical #{inspect(strategy_id)}")
+        SyncEvents.generation_critical(generation, strategy)
+
+        OrchestratorService.finalize_strategy(strategy, %{
+          status: :critical,
+          next_generation: strategy.next_generation + 1,
+          next_run_at:
+            OrchestratorService.calc_next_run(
+              strategy.sync_interval_seconds,
+              generation.started_at
+            ),
+          enabled: false
+        })
+
+        :ok
+
+      :failed ->
+        Logger.warning("Finalizer failure - rate limited")
+        SyncEvents.generation_failed(generation, strategy)
+
+        OrchestratorService.finalize_strategy(strategy, %{
+          status: :failed,
+          next_generation: strategy.next_generation + 1,
+          next_run_at:
+            OrchestratorService.calc_next_run(
+              strategy.sync_interval_seconds,
+              generation.started_at
+            ),
+          enabled: true
+        })
+
+        :ok
+    end
   end
+
   def clean_up_prev_gen_targets(strategy_id, _attempt, clean_up_fun) do
     strategy = Sync.Query.get_strategy(strategy_id)
+
     if strategy.next_generation == 1 do
       :ok
     else

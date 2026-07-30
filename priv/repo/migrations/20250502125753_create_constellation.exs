@@ -10,6 +10,5 @@ defmodule EveIndustrex.Repo.Migrations.CreateConstellation do
     end
 
     create unique_index(:constellations, [:constellation_id])
-
   end
 end

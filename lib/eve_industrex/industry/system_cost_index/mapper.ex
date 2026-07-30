@@ -1,19 +1,18 @@
 defmodule EveIndustrex.Industry.SystemCostIndex.Mapper do
-
-
   def from_esi(data) do
-       Enum.map(Map.get(data, "cost_indices", []), fn ci ->
+    Enum.map(Map.get(data, "cost_indices", []), fn ci ->
       create_activity_map(ci, Map.get(data, "solar_system_id", nil))
     end)
   end
 
   defp create_activity_map(data, system_id) do
-      %{
-        activity: put_activity(Map.get(data, "activity", nil)),
-        system_id: system_id,
-        cost_index: Map.get(data, "cost_index", nil)
-      }
+    %{
+      activity: put_activity(Map.get(data, "activity", nil)),
+      system_id: system_id,
+      cost_index: Map.get(data, "cost_index", nil)
+    }
   end
+
   defp put_activity(nil), do: nil
   defp put_activity("manufacturing"), do: :manufacturing
   defp put_activity("copying"), do: :copying

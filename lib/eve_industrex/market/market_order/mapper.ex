@@ -1,11 +1,10 @@
 defmodule EveIndustrex.Market.MarketOrder.Mapper do
-
   def from_esi(data, generation, region_id) do
     %{
-      duration: Map.get(data,"duration"),
-      is_buy_order: Map.get(data,"is_buy_order"),
-      issued: from_iso(Map.get(data,"issued")),
-      location_id: Map.get(data,"location_id"),
+      duration: Map.get(data, "duration"),
+      is_buy_order: Map.get(data, "is_buy_order"),
+      issued: from_iso(Map.get(data, "issued")),
+      location_id: Map.get(data, "location_id"),
       min_volume: Map.get(data, "min_volume"),
       order_id: Map.get(data, "order_id"),
       price: Map.get(data, "price"),
@@ -18,9 +17,9 @@ defmodule EveIndustrex.Market.MarketOrder.Mapper do
       region_id: region_id
     }
   end
+
   defp from_iso(data) do
     {:ok, date, _x} = DateTime.from_iso8601(data)
     date
   end
-
 end

@@ -3,14 +3,14 @@ defmodule EveIndustrex.Infrastructure.Operations.Service do
   alias EveIndustrex.Infrastructure.Operations.Metrics
   alias EveIndustrex.Infrastructure.Operations.Snapshot
   alias EveIndustrex.Infrastructure.ESI
-  def snapshot() do
 
-      %Snapshot{
-        resources: get_resources(),
-        buckets: get_buckets(),
-        metrics: Metrics.get_metrics(),
-        activity: Activity.get_activities() |> Enum.sort_by(& &1.timestamp, :desc)
-      }
+  def snapshot() do
+    %Snapshot{
+      resources: get_resources(),
+      buckets: get_buckets(),
+      metrics: Metrics.get_metrics(),
+      activity: Activity.get_activities() |> Enum.sort_by(& &1.timestamp, :desc)
+    }
   end
 
   defp get_resources() do
@@ -19,8 +19,8 @@ defmodule EveIndustrex.Infrastructure.Operations.Service do
     |> Enum.sort_by(& &1.timestamp, :desc)
     |> Enum.uniq_by(& &1.resource)
   end
+
   defp get_buckets() do
     ESI.RateLimiter.check()
   end
-
 end

@@ -1,53 +1,55 @@
 defmodule EveIndustrex.Market.MarketOrder.Jobs.SyncMarketOrdersRootWorker do
-alias EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService
-alias EveIndustrex.Infrastructure.ESI.Client
+  alias EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService
+  alias EveIndustrex.Infrastructure.ESI.Client
 
-alias EveIndustrex.Infrastructure.ESI.Sync.Orchestrator
-require Logger
-use Oban.Worker, queue: :market_orders, max_attempts: 5
+  alias EveIndustrex.Infrastructure.ESI.Sync.Orchestrator
+  require Logger
+  use Oban.Worker, queue: :market_orders, max_attempts: 5
 
-
-# maybe check etag store for expires_at and start job right after expiry to prevent esi cache refresh during job
+  # maybe check etag store for expires_at and start job right after expiry to prevent esi cache refresh during job
   @impl Oban.Worker
   def perform(%Oban.Job{args: args, attempt: attempt, max_attempts: max_attempts}) do
     %{"strategy_id" => strategy_id} = args
 
-      case Orchestrator.initiate_paginated_resource_sync(strategy_id, attempt, max_attempts, &Client.fetch_market_orders/3) do
-        {:snooze, delay} ->
+    case Orchestrator.initiate_paginated_resource_sync(
+           strategy_id,
+           attempt,
+           max_attempts,
+           &Client.fetch_market_orders/3
+         ) do
+      {:snooze, delay} ->
+        {:snooze, delay}
 
-          {:snooze, delay}
-
-        {:fanout, pages, generation_id} ->
-
+      {:fanout, pages, generation_id} ->
         jobs =
           Enum.map(2..pages, fn p ->
             EveIndustrex.Market.MarketOrder.Jobs.SyncMarketOrdersPagesWorker.new(%{
               strategy_id: strategy_id,
               generation_id: generation_id,
               page: p
-              })
-            end)
-            Oban.insert_all(jobs)
-          :ok
+            })
+          end)
 
-        {:ok, pages, generation_id} ->
+        Oban.insert_all(jobs)
+        :ok
 
-          OrchestratorService.update_generation(generation_id, %{
+      {:ok, pages, generation_id} ->
+        OrchestratorService.update_generation(generation_id, %{
           status: :completed,
           finished_at: OrchestratorService.now(),
           pages_total: pages,
           pages_completed: pages
-          }
-        )
+        })
 
-          :ok
-        :ok ->
+        :ok
 
-          :ok
-      end
+      :ok ->
+        :ok
+    end
 
-
-
-          EveIndustrex.Market.MarketOrder.Jobs.SyncMarketOrdersFinalizer.new(%{"strategy_id" => strategy_id}) |> Oban.insert()
-        end
-      end
+    EveIndustrex.Market.MarketOrder.Jobs.SyncMarketOrdersFinalizer.new(%{
+      "strategy_id" => strategy_id
+    })
+    |> Oban.insert()
+  end
+end

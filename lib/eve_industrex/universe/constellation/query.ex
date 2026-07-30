@@ -1,5 +1,4 @@
 defmodule EveIndustrex.Universe.Constellation.Query do
-
   alias EveIndustrex.Universe.Constellation
   alias EveIndustrex.Repo
 

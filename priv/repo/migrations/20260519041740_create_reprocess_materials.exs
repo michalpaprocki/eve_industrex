@@ -10,13 +10,15 @@ defmodule EveIndustrex.Repo.Migrations.CreateReprocessMaterials do
       add :quantity_min, :integer
       timestamps()
     end
-  create unique_index(
-      :reprocess_materials,
-      [:source_type_id, :material_type_id]
-    )
-  create index(
-      :reprocess_materials,
-      [:material_type_id]
-    )
+
+    create unique_index(
+             :reprocess_materials,
+             [:source_type_id, :material_type_id]
+           )
+
+    create index(
+             :reprocess_materials,
+             [:material_type_id]
+           )
   end
 end

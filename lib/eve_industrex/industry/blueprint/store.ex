@@ -3,10 +3,12 @@ defmodule EveIndustrex.Industry.Blueprint.Store do
     case :ets.lookup(:blueprints, id) do
       [{id, bp}] ->
         {id, bp}
+
       [] ->
         []
     end
   end
+
   def get_all() do
     :ets.tab2list(:blueprints)
   end

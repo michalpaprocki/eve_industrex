@@ -7,13 +7,24 @@ defmodule EveIndustrex.Market.AveragePrice.Jobs.SyncAveragePricesWorker do
   def perform(%Oban.Job{args: args, attempt: attempt, max_attempts: max_attempts}) do
     Logger.info("Average Prices Sync Running...")
     %{"strategy_id" => strategy_id} = args
-    case Orchestrator.initiate_resource_sync(strategy_id, attempt, max_attempts, &Client.fetch_average_prices/3) do
+
+    case Orchestrator.initiate_resource_sync(
+           strategy_id,
+           attempt,
+           max_attempts,
+           &Client.fetch_average_prices/3
+         ) do
       {:snooze, delay} ->
-          Logger.info("Snoozing #{__MODULE__}")
+        Logger.info("Snoozing #{__MODULE__}")
         {:snooze, delay}
+
       :ok ->
         :ok
     end
-    EveIndustrex.Market.AveragePrice.Jobs.SyncAveragePricesFinalizer.new(%{"strategy_id" => strategy_id}) |> Oban.insert()
+
+    EveIndustrex.Market.AveragePrice.Jobs.SyncAveragePricesFinalizer.new(%{
+      "strategy_id" => strategy_id
+    })
+    |> Oban.insert()
   end
 end

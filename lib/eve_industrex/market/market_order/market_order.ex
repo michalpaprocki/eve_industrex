@@ -1,5 +1,4 @@
 defmodule EveIndustrex.Market.MarketOrder do
-
   alias EveIndustrex.Universe.Station
   use Ecto.Schema
   import Ecto.Changeset
@@ -29,7 +28,23 @@ defmodule EveIndustrex.Market.MarketOrder do
 
   def changeset(market_order, attrs) do
     market_order
-    |> cast(attrs, [:duration, :is_buy_order, :issued, :location_id, :min_volume, :order_id, :price, :range, :station_id, :system_id, :type_id, :volume_remain, :volume_total, :region_id, :generation])
+    |> cast(attrs, [
+      :duration,
+      :is_buy_order,
+      :issued,
+      :location_id,
+      :min_volume,
+      :order_id,
+      :price,
+      :range,
+      :station_id,
+      :system_id,
+      :type_id,
+      :volume_remain,
+      :volume_total,
+      :region_id,
+      :generation
+    ])
     |> unique_constraint(:order_id, name: :market_orders_order_id_index)
   end
 end

@@ -1,5 +1,4 @@
 defmodule EveIndustrex.Universe.Station.Mapper do
-
   def from_dump(data) do
     %{
       station_id: Map.get(data, "_key"),
@@ -21,5 +20,6 @@ defmodule EveIndustrex.Universe.Station.Mapper do
       system_id: Map.get(data, "system_id")
     }
   end
-  def dump_to_ids(map), do: Enum.map(map, fn m ->  Map.get(m, "_key") end)
+
+  def dump_to_ids(map), do: Enum.map(map, fn m -> Map.get(m, "_key") end)
 end

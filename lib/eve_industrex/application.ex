@@ -7,29 +7,29 @@ defmodule EveIndustrex.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      {Task.Supervisor, name: EveIndustrex.TaskSupervisor, strategy: :one_for_one},
-      EveIndustrex.Infrastructure.Readiness,
-      EveIndustrex.Infrastructure.ESI.RouteGroups,
-      EveIndustrex.Infrastructure.ESI.RateLimiter,
-      EveIndustrex.Infrastructure.ESI.EtagStore,
-      EveIndustrex.Infrastructure.Cache.Supervisor,
-      EveIndustrexWeb.Telemetry,
-      EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor,
-      EveIndustrex.Repo,
-      {Oban, Application.fetch_env!(:eve_industrex, Oban)},
-      {DNSCluster, query: Application.get_env(:eve_industrex, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: EveIndustrex.PubSub},
-      # Start the Finch HTTP client for sending emails
-      {Finch, name: EveIndustrex.Finch},
+    children =
+      [
+        {Task.Supervisor, name: EveIndustrex.TaskSupervisor, strategy: :one_for_one},
+        EveIndustrex.Infrastructure.Readiness,
+        EveIndustrex.Infrastructure.ESI.RouteGroups,
+        EveIndustrex.Infrastructure.ESI.RateLimiter,
+        EveIndustrex.Infrastructure.ESI.EtagStore,
+        EveIndustrex.Infrastructure.Cache.Supervisor,
+        EveIndustrexWeb.Telemetry,
+        EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor,
+        EveIndustrex.Repo,
+        {Oban, Application.fetch_env!(:eve_industrex, Oban)},
+        {DNSCluster, query: Application.get_env(:eve_industrex, :dns_cluster_query) || :ignore},
+        {Phoenix.PubSub, name: EveIndustrex.PubSub},
+        # Start the Finch HTTP client for sending emails
+        {Finch, name: EveIndustrex.Finch},
+        {Registry, keys: :unique, name: EveIndustrex.Registry},
 
-      {Registry, keys: :unique, name: EveIndustrex.Registry},
-
-      # Start a worker by calling: EveIndustrex.Worker.start_link(arg)
-      # {EveIndustrex.Worker, arg},
-      # Start to serve requests, typically the last entry
-      EveIndustrexWeb.Endpoint
-    ] ++ extra_children()
+        # Start a worker by calling: EveIndustrex.Worker.start_link(arg)
+        # {EveIndustrex.Worker, arg},
+        # Start to serve requests, typically the last entry
+        EveIndustrexWeb.Endpoint
+      ] ++ extra_children()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

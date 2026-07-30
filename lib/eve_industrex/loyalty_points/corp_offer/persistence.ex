@@ -6,10 +6,10 @@ defmodule EveIndustrex.LoyaltyPoints.CorpOffer.Persistence do
     rows =
       for {cid, offer_ids} <- corps_offers,
           offer_id <- offer_ids do
-          %{
-              corp_id: cid,
-              offer_id: offer_id
-            }
+        %{
+          corp_id: cid,
+          offer_id: offer_id
+        }
       end
 
     Repo.insert_all(
@@ -18,7 +18,5 @@ defmodule EveIndustrex.LoyaltyPoints.CorpOffer.Persistence do
       on_conflict: :nothing,
       conflict_target: [:corp_id, :offer_id]
     )
-
   end
-
 end

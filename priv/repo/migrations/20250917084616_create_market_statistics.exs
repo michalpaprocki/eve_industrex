@@ -12,8 +12,7 @@ defmodule EveIndustrex.Repo.Migrations.CreateMarketStatistics do
       add :volume, :bigint
       add :type_id, references(:types, column: :type_id, type: :bigint)
 
-    timestamps(type: :utc_datetime)
-
+      timestamps(type: :utc_datetime)
     end
   end
 end

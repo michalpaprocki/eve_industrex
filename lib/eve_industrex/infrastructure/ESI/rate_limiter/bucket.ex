@@ -10,13 +10,17 @@ defmodule EveIndustrex.Infrastructure.ESI.RateLimiter.Bucket do
       cooldown_until: cooldown
     }
   end
+
   defp parse_limit(nil), do: nil
+
   defp parse_limit(limit) do
     [capacity, window] = String.split(limit, "/")
+
     %{
       capacity: String.to_integer(capacity),
       window: parse_window(window)
     }
   end
+
   defp parse_window("15m"), do: 900
 end

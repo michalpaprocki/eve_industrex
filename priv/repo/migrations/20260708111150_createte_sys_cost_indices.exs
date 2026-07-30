@@ -7,6 +7,7 @@ defmodule EveIndustrex.Repo.Migrations.CreateteSysCostIndices do
       add :activity, :string
       add :system_id, references(:systems, column: :system_id, type: :integer), null: false
     end
+
     create unique_index(:system_cost_indices, [:activity, :system_id])
   end
 end

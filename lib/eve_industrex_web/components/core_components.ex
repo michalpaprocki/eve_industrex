@@ -1,5 +1,6 @@
 defmodule EveIndustrexWeb.CoreComponents do
   import EveIndustrexWeb.Glyph
+
   @moduledoc """
   Provides core UI components.
 
@@ -20,7 +21,6 @@ defmodule EveIndustrexWeb.CoreComponents do
 
   alias Phoenix.LiveView.JS
 
-
   @doc """
   A styled link component that wraps the default Phoenix <.link>.
   """
@@ -34,14 +34,8 @@ defmodule EveIndustrexWeb.CoreComponents do
 
   def custom_link(assigns) do
     ~H"""
-    <.link
-      navigate={@navigate}
-      patch={@patch}
-      href={@href}
-      class={@class}
-      {@rest}
-    >
-      <%= render_slot(@inner_block) %>
+    <.link navigate={@navigate} patch={@patch} href={@href} class={@class} {@rest}>
+      {render_slot(@inner_block)}
     </.link>
     """
   end
@@ -61,7 +55,15 @@ defmodule EveIndustrexWeb.CoreComponents do
 
   def header_link(assigns) do
     ~H"""
-      <.link class={["font-bold font-headers text-lg focus:text-ei-text-muted focus:bg-ei-bg hover:text-ei-text-muted hover:bg-ei-bg hover:shard transition px-4 py-2 rounded-md", @class]} navigate={@destination} ><%= @inner_text %><span class="trailing-text pl-[0.1rem] spacing-6 hover:text-ei-hover transition"><%= @trailing_text %></span></.link>
+    <.link
+      class={[
+        "font-bold font-headers text-lg focus:text-ei-text-muted focus:bg-ei-bg hover:text-ei-text-muted hover:bg-ei-bg hover:shard transition px-4 py-2 rounded-md",
+        @class
+      ]}
+      navigate={@destination}
+    >
+      {@inner_text}<span class="trailing-text pl-[0.1rem] spacing-6 hover:text-ei-hover transition"><%= @trailing_text %></span>
+    </.link>
     """
   end
 
@@ -96,7 +98,11 @@ defmodule EveIndustrexWeb.CoreComponents do
       data-cancel={JS.exec(@on_cancel, "phx-remove")}
       class="relative z-50 hidden"
     >
-      <div id={"#{@id}-bg"} class="backdrop-blur-sm fixed inset-0 transition-opacity" aria-hidden="true" />
+      <div
+        id={"#{@id}-bg"}
+        class="backdrop-blur-sm fixed inset-0 transition-opacity"
+        aria-hidden="true"
+      />
       <div
         class="fixed inset-0 overflow-y-auto"
         aria-labelledby={"#{@id}-title"}
@@ -319,6 +325,7 @@ defmodule EveIndustrexWeb.CoreComponents do
   attr :label, :string, default: nil
   attr :value, :any
   attr :class, :string, default: ""
+
   attr :type, :string,
     default: "text",
     values: ~w(checkbox color date datetime-local email file month number password
@@ -381,7 +388,10 @@ defmodule EveIndustrexWeb.CoreComponents do
       <select
         id={@id}
         name={@name}
-        class={["mt-2 block w-full rounded-md border border-surface-border bg-surface shadow-sm focus:border-surface-border p-1 font-headers focus:ring-0", @class]}
+        class={[
+          "mt-2 block w-full rounded-md border border-surface-border bg-surface shadow-sm focus:border-surface-border p-1 font-headers focus:ring-0",
+          @class
+        ]}
         multiple={@multiple}
         {@rest}
       >
@@ -401,7 +411,8 @@ defmodule EveIndustrexWeb.CoreComponents do
         id={@id}
         name={@name}
         class={[
-          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6 min-h-[6rem]", @class,
+          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6 min-h-[6rem]",
+          @class,
           @errors == [] && "border-zinc-300 focus:border-zinc-400",
           @errors != [] && "border-rose-400 focus:border-rose-400"
         ]}
@@ -443,7 +454,10 @@ defmodule EveIndustrexWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class={["block text-sm text-nowrap font-semibold leading-6 text-ei-text font-headers", @class]}>
+    <label
+      for={@for}
+      class={["block text-sm text-nowrap font-semibold leading-6 text-ei-text font-headers", @class]}
+    >
       {render_slot(@inner_block)}
     </label>
     """

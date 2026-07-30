@@ -7,6 +7,7 @@ defmodule EveIndustrex.Universe.MarketGroup.Mapper do
       parent_group_id: Map.get(data, "parentGroupID", nil)
     }
   end
+
   def from_esi(data) do
     %{
       market_group_id: Map.get(data, "market_group_id"),
@@ -15,18 +16,20 @@ defmodule EveIndustrex.Universe.MarketGroup.Mapper do
       parent_group_id: Map.get(data, "parent_group_id", nil)
     }
   end
+
   def to_projection_parent(mg) do
     {mg.market_group_id, mg.name}
   end
+
   def to_projection_child(mg) do
     {mg.parent_group_id,
-    %{
-      market_group_id: mg.market_group_id,
-      name: mg.name,
-      }
-    }
+     %{
+       market_group_id: mg.market_group_id,
+       name: mg.name
+     }}
   end
-    defp get_desc(map) do
+
+  defp get_desc(map) do
     if Map.has_key?(map, "description"), do: Map.get(Map.get(map, "description"), "en"), else: nil
   end
 end

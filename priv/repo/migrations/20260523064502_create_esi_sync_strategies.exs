@@ -9,6 +9,5 @@ defmodule EveIndustrex.Repo.Migrations.CreateEsiSyncStrategy do
       add :enabled, :boolean, default: true, null: false
       timestamps(type: :utc_datetime)
     end
-
   end
 end

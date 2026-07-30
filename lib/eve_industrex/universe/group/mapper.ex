@@ -1,5 +1,4 @@
 defmodule EveIndustrex.Universe.Group.Mapper do
-
   def from_dump(data) do
     %{
       category_id: Map.get(data, "categoryID"),
@@ -8,6 +7,7 @@ defmodule EveIndustrex.Universe.Group.Mapper do
       published: Map.get(data, "published")
     }
   end
+
   def from_esi(data) do
     %{
       category_id: Map.get(data, "category_id"),
@@ -16,6 +16,7 @@ defmodule EveIndustrex.Universe.Group.Mapper do
       published: Map.get(data, "published")
     }
   end
+
   def to_projection(g) do
     {g.category_id, g.group_id, g.name}
   end

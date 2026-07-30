@@ -1,23 +1,24 @@
 defmodule EveIndustrex.LoyaltyPoints.LpReqItem.Mapper do
-
   def get_offer_type_ids(offers) do
     ri_type_ids = type_ids_from_req_items(offers)
     offers_type_ids = Enum.map(offers, fn o -> o["type_id"] end)
-    ri_type_ids ++ offers_type_ids |> Enum.uniq() |> List.flatten
+    (ri_type_ids ++ offers_type_ids) |> Enum.uniq() |> List.flatten()
   end
-  def get_req_items(offers) do
-    Enum.map(offers, fn o -> Enum.map(o["required_items"], fn ri ->
 
-    %{
-      :quantity=> Map.get(ri, "quantity"),
-      :offer_id => Map.get(o, "offer_id"),
-      :type_id => Map.get(ri, "type_id")
-    }
-  end) end)
+  def get_req_items(offers) do
+    Enum.map(offers, fn o ->
+      Enum.map(o["required_items"], fn ri ->
+        %{
+          :quantity => Map.get(ri, "quantity"),
+          :offer_id => Map.get(o, "offer_id"),
+          :type_id => Map.get(ri, "type_id")
+        }
+      end)
+    end)
   end
 
   defp type_ids_from_req_items(offers) do
-    Enum.map(offers, fn  o -> Enum.map(o["required_items"], fn  ri-> ri["type_id"] end) end)
+    Enum.map(offers, fn o -> Enum.map(o["required_items"], fn ri -> ri["type_id"] end) end)
   end
 
   # def upsert_lp_offers(list_of_offers) when is_list(list_of_offers) do
@@ -28,7 +29,6 @@ defmodule EveIndustrex.LoyaltyPoints.LpReqItem.Mapper do
   #   corps_offers = Enum.map(npc_offers, fn {cid, offer} -> {cid, Enum.map(offer, fn o -> o["offer_id"] end)} end)
 
   #   # delete_req_items()
-
 
   #   Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, offers, fn o ->
   #     case get_lp_offer(o["offer_id"]) do
@@ -44,7 +44,6 @@ defmodule EveIndustrex.LoyaltyPoints.LpReqItem.Mapper do
 
   #   ri_type_ids = Enum.map(offers, fn  o -> Enum.map(o["required_items"], fn  ri-> ri["type_id"] end) end)
   #   offers_type_ids = Enum.map(offers, fn o -> o["type_id"] end)
-
 
   #   type_ids = ri_type_ids ++ offers_type_ids |> Enum.uniq() |> List.flatten
 

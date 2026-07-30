@@ -12,15 +12,17 @@ defmodule EveIndustrexWeb.Glyph do
       case File.read(path) do
         {:ok, contents} ->
           contents
-        _ -> "<svg></svg>"
+
+        _ ->
+          "<svg></svg>"
       end
 
-      assigns = assign(assigns, :svg, Phoenix.HTML.raw(svg))
+    assigns = assign(assigns, :svg, Phoenix.HTML.raw(svg))
 
-      ~H"""
-        <span class={@class}>
-          <%= @svg %>
-        </span>
-      """
+    ~H"""
+    <span class={@class}>
+      {@svg}
+    </span>
+    """
   end
 end

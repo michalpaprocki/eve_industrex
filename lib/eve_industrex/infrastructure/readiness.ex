@@ -6,27 +6,33 @@ defmodule EveIndustrex.Infrastructure.Readiness do
   def start_link(_) do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
+
   def init(_) do
     Logger.info("Starting #{inspect(__MODULE__)}...")
     :ets.new(:readiness, [:named_table, :set, :public, read_concurrency: true])
     Enum.map(@flags, fn f -> :ets.insert(:readiness, {f, false}) end)
     {:ok, %{}}
   end
+
   def mark_ready(flag) when is_atom(flag) and flag in @flags do
     GenServer.cast(__MODULE__, {:mark_ready, flag})
   end
+
   def ready?() do
     @flags
     |> Enum.all?(&enabled?/1)
   end
+
   def enabled?(flag) do
     case :ets.lookup(:readiness, flag) do
       [{^flag, value}] ->
         value
+
       [] ->
         false
     end
   end
+
   def read_state() do
     :ets.tab2list(:readiness)
   end

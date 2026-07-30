@@ -2,7 +2,6 @@ defmodule EveIndustrex.Repo.Migrations.CreateType do
   use Ecto.Migration
 
   def change do
-
     create table("types", primary_key: false) do
       add :capacity, :float
       add :icon_id, :integer
@@ -16,11 +15,13 @@ defmodule EveIndustrex.Repo.Migrations.CreateType do
       add :radius, :float
       add :type_id, :bigint, primary_key: true
       add :volume, :float
-      add :market_group_id, references(:market_groups, column: :market_group_id, type: :bigint), null: true
+
+      add :market_group_id, references(:market_groups, column: :market_group_id, type: :bigint),
+        null: true
 
       timestamps()
     end
-    create unique_index(:types, [:type_id])
 
+    create unique_index(:types, [:type_id])
   end
 end

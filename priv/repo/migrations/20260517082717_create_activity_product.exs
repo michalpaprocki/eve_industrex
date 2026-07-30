@@ -21,5 +21,4 @@ defmodule EveIndustrex.Repo.Migrations.CreateActivityProduct do
              [:blueprint_type_id, :activity_type, :type_id]
            )
   end
-
 end

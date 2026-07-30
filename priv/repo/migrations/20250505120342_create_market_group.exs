@@ -11,7 +11,7 @@ defmodule EveIndustrex.Repo.Migrations.CreateMarketGroup do
 
       timestamps()
     end
-    create unique_index(:market_groups, [:market_group_id])
 
+    create unique_index(:market_groups, [:market_group_id])
   end
 end

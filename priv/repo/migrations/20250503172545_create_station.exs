@@ -12,6 +12,7 @@ defmodule EveIndustrex.Repo.Migrations.CreateStation do
 
       timestamps()
     end
+
     create unique_index(:stations, [:station_id])
   end
 end

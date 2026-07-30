@@ -5,6 +5,7 @@ defmodule EveIndustrex.Universe.Group.Sync do
     case Client.fetch_market_group(group_id) do
       {:ok, response} ->
         {:ok, response}
+
       {:error, exception} ->
         {:error, exception}
     end

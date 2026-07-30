@@ -1,5 +1,4 @@
 defmodule EveIndustrex.Infrastructure.Parsers.Html do
-
   def parse_html_to_latest_patch_notes_path(html) do
     case extract_patch_path(html) do
       nil ->
@@ -9,6 +8,7 @@ defmodule EveIndustrex.Infrastructure.Parsers.Html do
         {:ok, path}
     end
   end
+
   defp extract_patch_path(html) do
     html
     |> String.split("<")
@@ -25,7 +25,7 @@ defmodule EveIndustrex.Infrastructure.Parsers.Html do
           nil -> nil
           url -> extract_slug(url)
         end
-      end
+    end
   end
 
   defp extract_slug(url) do
@@ -34,6 +34,7 @@ defmodule EveIndustrex.Infrastructure.Parsers.Html do
       _ -> nil
     end
   end
+
   def parse_path_to_tq_version(path) do
     case do_parse_version(path) do
       nil ->

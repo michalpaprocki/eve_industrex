@@ -73,8 +73,9 @@ config :eve_industrex, Oban,
     esi_metadata: 1,
     esi_general: 5,
     industry: 5
-    ],
+  ],
   repo: EveIndustrex.Repo
+
 config :logger, level: :debug
 config :oban, log: :debug
 config :elixir, :time_zone_database, Tz.TimeZoneDatabase

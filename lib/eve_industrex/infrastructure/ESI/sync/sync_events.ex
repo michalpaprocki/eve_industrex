@@ -1,8 +1,8 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncEvents do
+  require Logger
 
-require Logger
   def generation_running(generation, strategy) do
-      :telemetry.execute(
+    :telemetry.execute(
       [:eve_industrex, :sync, :generation, :running],
       %{duration_ms: generation.duration_ms},
       %{
@@ -14,10 +14,11 @@ require Logger
         generation: generation.generation,
         last_error: generation.last_error,
         started_at: generation.started_at,
-        finished_at: generation.finished_at,
+        finished_at: generation.finished_at
       }
     )
   end
+
   def generation_completed(generation, strategy) do
     :telemetry.execute(
       [:eve_industrex, :sync, :generation, :completed],
@@ -31,13 +32,13 @@ require Logger
         generation: generation.generation,
         last_error: generation.last_error,
         started_at: generation.started_at,
-        finished_at: generation.finished_at,
+        finished_at: generation.finished_at
       }
     )
-
   end
+
   def generation_superseded(generation, strategy) do
-      :telemetry.execute(
+    :telemetry.execute(
       [:eve_industrex, :sync, :generation, :superseded],
       %{duration_ms: generation.duration_ms},
       %{
@@ -49,12 +50,13 @@ require Logger
         generation: generation.generation,
         last_error: generation.last_error,
         started_at: generation.started_at,
-        finished_at: generation.finished_at,
+        finished_at: generation.finished_at
       }
     )
   end
+
   def generation_not_modified(generation, strategy) do
-      :telemetry.execute(
+    :telemetry.execute(
       [:eve_industrex, :sync, :generation, :not_modified],
       %{duration_ms: generation.duration_ms},
       %{
@@ -66,12 +68,13 @@ require Logger
         generation: generation.generation,
         last_error: generation.last_error,
         started_at: generation.started_at,
-        finished_at: generation.finished_at,
+        finished_at: generation.finished_at
       }
     )
   end
+
   def generation_critical(generation, strategy) do
-      :telemetry.execute(
+    :telemetry.execute(
       [:eve_industrex, :sync, :generation, :critical],
       %{duration_ms: generation.duration_ms},
       %{
@@ -83,13 +86,13 @@ require Logger
         generation: generation.generation,
         last_error: generation.last_error,
         started_at: generation.started_at,
-        finished_at: generation.finished_at,
+        finished_at: generation.finished_at
       }
     )
   end
 
   def generation_failed(generation, strategy) do
-      :telemetry.execute(
+    :telemetry.execute(
       [:eve_industrex, :sync, :generation, :failed],
       %{duration_ms: generation.duration_ms},
       %{
@@ -101,10 +104,11 @@ require Logger
         generation: generation.generation,
         last_error: generation.last_error,
         started_at: generation.started_at,
-        finished_at: generation.finished_at,
+        finished_at: generation.finished_at
       }
     )
   end
+
   def runtime(status, generation, page) do
     :telemetry.execute(
       [:eve_industrex, :sync, :page, :runtime],
@@ -120,9 +124,11 @@ require Logger
       }
     )
   end
+
   def dependencies_imported(0, _type) do
     :noop
   end
+
   def dependencies_imported(amount, type) do
     :telemetry.execute(
       [:eve_industrex, :universe, :dependencies],
@@ -130,6 +136,7 @@ require Logger
       %{entity: type}
     )
   end
+
   def sync_started(resource) do
     :telemetry.execute(
       [:eve_industrex, :activity, :sync_started],
@@ -137,6 +144,7 @@ require Logger
       %{resource: resource}
     )
   end
+
   def sync_finished(resource) do
     :telemetry.execute(
       [:eve_industrex, :activity, :sync_finished],
@@ -144,6 +152,7 @@ require Logger
       %{resource: resource}
     )
   end
+
   def rate_limit_discovered(group, route) do
     :telemetry.execute(
       [:eve_industrex, :activity, :rate_limit_group_discovered],
@@ -154,6 +163,7 @@ require Logger
       }
     )
   end
+
   def projection_rebuilt(resource) do
     :telemetry.execute(
       [:eve_industrex, :activity, :projection_rebuilt],

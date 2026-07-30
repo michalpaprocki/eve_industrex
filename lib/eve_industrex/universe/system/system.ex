@@ -1,5 +1,4 @@
 defmodule EveIndustrex.Universe.System do
-
   use Ecto.Schema
   alias EveIndustrex.Market.MarketOrder
   alias EveIndustrex.Universe.{Constellation, Station}
@@ -10,18 +9,22 @@ defmodule EveIndustrex.Universe.System do
     field :name, :string
     field :security_status, :float
     field :constellation_id, :integer
-    belongs_to :constellation, Constellation, references: :constellation_id, define_field: false, foreign_key: :constellation_id
+
+    belongs_to :constellation, Constellation,
+      references: :constellation_id,
+      define_field: false,
+      foreign_key: :constellation_id
+
     has_many :stations, Station, foreign_key: :system_id
     has_many :market_orders, MarketOrder, references: :system_id, foreign_key: :system_id
 
-
     timestamps(type: :utc_datetime)
   end
+
   def changeset(system, attrs) do
     system
     |> cast(attrs, [:name, :system_id, :constellation_id, :security_status])
     |> unique_constraint([:system_id])
     |> validate_required([:system_id])
   end
-
 end

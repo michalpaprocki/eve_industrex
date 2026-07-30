@@ -1,6 +1,4 @@
 defmodule EveIndustrexWeb.Router do
-
-
   use EveIndustrexWeb, :router
 
   pipeline :browser do
@@ -14,33 +12,6 @@ defmodule EveIndustrexWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
-  end
-
-  scope "/", EveIndustrexWeb do
-    pipe_through :browser
-    live "/boot", BootLive
-
-    live_session :default, on_mount: [EveIndustrexWeb.Readiness] do
-
-    live "/", HomeLive
-    live "/operations", OperationsLive
-    live "/market", MarketLive
-    live "/market/browser", Market.BrowserLive
-    live "/market/browser/*path", Market.BrowserLive
-    live "/market/lp_shop", Market.LpShopLive
-    live "/market/lp_shop/:hub_id", Market.LpShopLive
-    live "/market/lp_shop/:hub_id/:corp_id", Market.LpShopLive
-    live "/market/lp_shop/:hub_id/:corp_id/:order_type", Market.LpShopLive
-    live "/industry", IndustryLive
-    live "/industry/reactions", Industry.ReactionsLive
-    live "/industry/reactions/:hub_id", Industry.ReactionsLive
-    live "/industry/reactions/:hub_id/:order_type", Industry.ReactionsLive
-    # live "/tools/alchemy", AlchemyLive
-    # live "/tools/appraise", Tools.AppraiseLive
-    # live "/industry/production", Tools.ProductionLive
-    live "/nook/telemetry", Dashboard.DashboardLive
-  end
-    live "/*slug", NotFoundLive
   end
 
   # Other scopes may use custom stacks.
@@ -63,5 +34,32 @@ defmodule EveIndustrexWeb.Router do
       live_dashboard "/dashboard", metrics: EveIndustrexWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
+  end
+
+  scope "/", EveIndustrexWeb do
+    pipe_through :browser
+    live "/boot", BootLive
+
+    live_session :default, on_mount: [EveIndustrexWeb.Readiness] do
+      live "/", HomeLive
+      live "/operations", OperationsLive
+      live "/market", MarketLive
+      live "/market/browser", Market.BrowserLive
+      live "/market/browser/*path", Market.BrowserLive
+      live "/market/lp_shop", Market.LpShopLive
+      live "/market/lp_shop/:hub_id", Market.LpShopLive
+      live "/market/lp_shop/:hub_id/:corp_id", Market.LpShopLive
+      live "/market/lp_shop/:hub_id/:corp_id/:order_type", Market.LpShopLive
+      live "/industry", IndustryLive
+      live "/industry/reactions", Industry.ReactionsLive
+      live "/industry/reactions/:hub_id", Industry.ReactionsLive
+      live "/industry/reactions/:hub_id/:order_type", Industry.ReactionsLive
+      # live "/tools/alchemy", AlchemyLive
+      # live "/tools/appraise", Tools.AppraiseLive
+      # live "/industry/production", Tools.ProductionLive
+      live "/nook/telemetry", Dashboard.DashboardLive
+    end
+
+    live "/*slug", NotFoundLive
   end
 end

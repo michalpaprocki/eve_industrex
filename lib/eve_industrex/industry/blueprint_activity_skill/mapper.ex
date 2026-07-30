@@ -1,6 +1,4 @@
 defmodule EveIndustrex.Industry.BlueprintActivitySkill.Mapper do
-
-
   def from_dump(data) do
     %{
       level: Map.get(data, "level"),

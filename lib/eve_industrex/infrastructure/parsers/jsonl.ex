@@ -22,6 +22,7 @@ defmodule EveIndustrex.Infrastructure.Parsers.Jsonl do
   def get_types_path, do: @types_path
   def get_type_materials_path, do: @type_materials_path
   def get_npc_corps_path, do: @npc_corps_path
+
   def read_jsonl(path) do
     {:ok, file} = File.read(path)
     objects = String.split(file, "\n", trim: true)

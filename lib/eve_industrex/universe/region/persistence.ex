@@ -4,12 +4,15 @@ defmodule EveIndustrex.Universe.Region.Persistence do
 
   def upsert_all(list_of_regions, return? \\ false) when is_list(list_of_regions) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
-    rows = Enum.map(list_of_regions, fn r ->
-      Map.merge(r, %{
-        inserted_at: now,
-        updated_at: now
-      })
-    end)
+
+    rows =
+      Enum.map(list_of_regions, fn r ->
+        Map.merge(r, %{
+          inserted_at: now,
+          updated_at: now
+        })
+      end)
+
     Repo.insert_all(
       Region,
       rows,
@@ -22,6 +25,9 @@ defmodule EveIndustrex.Universe.Region.Persistence do
   def upsert(region) do
     %Region{}
     |> Region.changeset(region)
-    |> Repo.insert(on_conflict: {:replace, [:name, :description, :updated_at]}, conflict_target: :region_id)
+    |> Repo.insert(
+      on_conflict: {:replace, [:name, :description, :updated_at]},
+      conflict_target: :region_id
+    )
   end
 end

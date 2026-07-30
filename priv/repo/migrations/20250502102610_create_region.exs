@@ -10,6 +10,7 @@ defmodule EveIndustrex.Repo.Migrations.CreateRegion do
 
       timestamps()
     end
+
     create unique_index(:regions, [:region_id])
   end
 end

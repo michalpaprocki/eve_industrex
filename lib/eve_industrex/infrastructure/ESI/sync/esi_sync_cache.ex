@@ -11,8 +11,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.EsiSyncCache do
     field :last_checked_at, :utc_datetime
     timestamps(type: :utc_datetime)
   end
+
   def changest(sync_cache, attrs) do
     sync_cache
-    |> cast(attrs,[:etag, :page_number, :last_checked_at, :expires_at, :esi_sync_strategy_id])
+    |> cast(attrs, [:etag, :page_number, :last_checked_at, :expires_at, :esi_sync_strategy_id])
   end
 end

@@ -7,6 +7,7 @@ defmodule EveIndustrex.Schemas.TqVersion do
     field :version, :string
     timestamps()
   end
+
   def changeset(tq_version, attrs) do
     tq_version
     |> cast(attrs, [:version])

@@ -5,6 +5,5 @@ defmodule EveIndustrex.Repo.Migrations.RemoveMaterialsBpProductTypesBlueprintPro
     drop table(:bp_product_types)
     drop table(:materials)
     drop table(:blueprint_products)
-
   end
 end

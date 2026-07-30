@@ -4,6 +4,7 @@ defmodule EveIndustrex.Industry.BlueprintActivityMaterial.Persistence do
 
   def upsert_all(list_of_blueprints, return? \\ false) when is_list(list_of_blueprints) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
+
     rows =
       Enum.flat_map(list_of_blueprints, fn bp ->
         Enum.flat_map(bp.activities, fn activity ->
@@ -19,6 +20,7 @@ defmodule EveIndustrex.Industry.BlueprintActivityMaterial.Persistence do
           end)
         end)
       end)
+
     Repo.insert_all(
       BlueprintActivityMaterial,
       rows,

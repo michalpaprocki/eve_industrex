@@ -1,5 +1,5 @@
 defmodule Domain.Market.MarketGroup.PersistenceTest do
-Persistence
+  Persistence
   alias EveIndustrex.Universe.MarketGroup.Persistence
   alias EveIndustrex.Universe.MarketGroup
   use EveIndustrex.DataCase
@@ -7,26 +7,29 @@ Persistence
   @market_group %{
     :market_group_id => 1,
     :description => "test_desc",
-    :name => "test",
-
+    :name => "test"
   }
   @market_groups [
     @market_group,
     %{
-    :market_group_id => 2,
-    :description => "test_desc",
-    :name => "test",
+      :market_group_id => 2,
+      :description => "test_desc",
+      :name => "test"
     }
   ]
   test "inserts a single market_group" do
     {:ok, %MarketGroup{} = _market_group} = Persistence.upsert(@market_group)
   end
+
   test "updates a single market_group" do
-    assert {:ok, %MarketGroup{} = market_group} = Persistence.upsert(Map.replace(@market_group, :name, "updated_name"))
+    assert {:ok, %MarketGroup{} = market_group} =
+             Persistence.upsert(Map.replace(@market_group, :name, "updated_name"))
+
     assert market_group.market_group_id == 1
     assert market_group.name == "updated_name"
     assert market_group.description == "test_desc"
   end
+
   test "inserts multiple market_groups" do
     assert {num_of_inserted, nil} = Persistence.upsert_all(@market_groups)
     assert num_of_inserted == 2

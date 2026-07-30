@@ -6,7 +6,9 @@ defmodule EveIndustrex.Repo.Migrations.CreateSystem do
       add :name, :string
       add :system_id, :bigint, primary_key: true
       add :stations, {:array, :bigint}
-      add :constellation_id, references(:constellations, column: :constellation_id, type: :bigint), null: false
+
+      add :constellation_id,
+          references(:constellations, column: :constellation_id, type: :bigint), null: false
 
       timestamps()
     end

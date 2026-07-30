@@ -7,7 +7,11 @@ defmodule EveIndustrex.LoyaltyPoints.NpcCorp do
     field :name, :string
 
     field :description, :string
-    many_to_many :offers, LpOffer, join_through: "corps_offers", join_keys: [corp_id: :corp_id, offer_id: :offer_id]
+
+    many_to_many :offers, LpOffer,
+      join_through: "corps_offers",
+      join_keys: [corp_id: :corp_id, offer_id: :offer_id]
+
     timestamps(type: :utc_datetime)
   end
 

@@ -7,6 +7,7 @@ defmodule EveIndustrex.Repo.Migrations.CreateCorpsOffersJoinTable do
 
       add :offer_id, references(:lp_offers, column: :offer_id, type: :bigint), null: false
     end
+
     create unique_index(:corps_offers, [:corp_id, :offer_id])
   end
 end

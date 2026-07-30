@@ -11,6 +11,7 @@ defmodule EveIndustrex.Market.AveragePrice do
 
     timestamps(type: :utc_datetime)
   end
+
   def changeset(average_price, attrs) do
     average_price
     |> cast(attrs, [:adjusted_price, :average_price, :type_id])

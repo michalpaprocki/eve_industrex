@@ -1,96 +1,139 @@
 defmodule EveIndustrex.Utils do
-@sde_files ["categories.jsonl", "types.jsonl", "groups.jsonl", "blueprints.jsonl", "typeMaterials.jsonl", "marketGroups.jsonl", "mapConstellations.jsonl", "mapRegions.jsonl", "mapSolarSystems.jsonl", "npcStations.jsonl", "npcCorporations.jsonl"]
-# @sde_files ["categories.yaml", "types.yaml", "groups.yaml", "blueprints.yaml", "typeMaterials.yaml", "marketGroups.yaml"]
-# @sde_url "https://eve-static-data-export.s3-eu-west-1.amazonaws.com/tranquility/fsd.zip"
-@sde_json_url "https://developers.eveonline.com/static-data/eve-online-static-data-latest-jsonl.zip"
+  @sde_files [
+    "categories.jsonl",
+    "types.jsonl",
+    "groups.jsonl",
+    "blueprints.jsonl",
+    "typeMaterials.jsonl",
+    "marketGroups.jsonl",
+    "mapConstellations.jsonl",
+    "mapRegions.jsonl",
+    "mapSolarSystems.jsonl",
+    "npcStations.jsonl",
+    "npcCorporations.jsonl"
+  ]
+  # @sde_files ["categories.yaml", "types.yaml", "groups.yaml", "blueprints.yaml", "typeMaterials.yaml", "marketGroups.yaml"]
+  # @sde_url "https://eve-static-data-export.s3-eu-west-1.amazonaws.com/tranquility/fsd.zip"
+  @sde_json_url "https://developers.eveonline.com/static-data/eve-online-static-data-latest-jsonl.zip"
   def get_pages_ammount(url) when is_binary(url) do
     request = Req.Request.new(url: url, method: :head)
     {_req, res} = Req.run(request)
+
     case res do
-      %Req.Response{status: 200, body: _body, headers:
-        %{"x-pages" => pages},
-        private: _private, trailers: _trailers} ->
+      %Req.Response{
+        status: 200,
+        body: _body,
+        headers: %{"x-pages" => pages},
+        private: _private,
+        trailers: _trailers
+      } ->
         {:ok, pages}
 
-      %Req.Response{status: 200, body: _body, headers: _headers,
-        private: _private, trailers: _trailers} ->
-       {:ok, nil}
-      %Req.Response{status: status, body: body, headers: _headers,
-        private: _private, trailers: _trailers} ->
+      %Req.Response{
+        status: 200,
+        body: _body,
+        headers: _headers,
+        private: _private,
+        trailers: _trailers
+      } ->
+        {:ok, nil}
+
+      %Req.Response{
+        status: status,
+        body: body,
+        headers: _headers,
+        private: _private,
+        trailers: _trailers
+      } ->
         {:error, {status, body}}
-      _->
+
+      _ ->
         nil
     end
   end
 
   def get_chunked_list(list, chunk), do: Enum.chunk_every(list, chunk)
+
   def can_fetch?(url) do
     case Req.head(url) do
       {:error, exception} ->
         {false, {:req_exception, exception.reason, url}}
+
       {:ok, %Req.Response{:status => 200} = _response} ->
         true
+
       {:ok, %Req.Response{:status => status} = _response} ->
         {false, {:err_responded_with, Integer.to_string(status), url}}
     end
   end
+
   def fetch_from_url(url) do
     case Req.get(url: url) do
       {:error, exception} ->
         {:error, {:req_exception, exception.reason, url}}
-      {:ok, %Req.Response{:status=> 200} = response} ->
+
+      {:ok, %Req.Response{:status => 200} = response} ->
         {:ok, response.body}
-      {:ok, %Req.Response{:status=> status}} = _response ->
+
+      {:ok, %Req.Response{:status => status}} = _response ->
         {:error, {:err_responded_with, Integer.to_string(status), url}}
     end
   end
+
   def fetch_from_url!(url) do
     Req.get!(url).body
   end
+
   def fetch_from_url_with_headers(url) do
     case Req.get(url: url) do
       {:error, exception} ->
         {:error, {:req_exception, exception.reason, url}}
-      {:ok, %Req.Response{} = response} ->
 
+      {:ok, %Req.Response{} = response} ->
         {:ok, response}
     end
   end
+
   def calculate_time_difference(%DateTime{} = time) do
     {:ok, now} = DateTime.now("Etc/UTC")
     diff = DateTime.diff(now, time)
     format_time(diff)
   end
+
   def get_ESI_pages_amount(url) do
     case Req.head(url) do
-      {:ok, %Req.Response{:status=> 200} = response} ->
+      {:ok, %Req.Response{:status => 200} = response} ->
         {:ok, response.headers["x-pages"]}
-        {:ok, %Req.Response{:status=> status} = _response} ->
-          {:error, {:err_responded_with, Integer.to_string(status), url}}
-          {:error, exception} ->
-            {:error, {:req_exception, exception.reason, url}}
-          end
-        end
+
+      {:ok, %Req.Response{:status => status} = _response} ->
+        {:error, {:err_responded_with, Integer.to_string(status), url}}
+
+      {:error, exception} ->
+        {:error, {:req_exception, exception.reason, url}}
+    end
+  end
+
   def get_ESI_pages_amount!(url) do
     String.to_integer(hd(Req.head!(url).headers["x-pages"]))
   end
+
   def fetch_ESI_pages(url, page_number, types \\ []) when is_integer(page_number) do
+    {status, response = %Req.Response{}} =
+      Req.get(url <> "?datasource=tranquility&page=#{Integer.to_string(page_number)}")
 
-    {status, response = %Req.Response{}} = Req.get(url<>"?datasource=tranquility&page=#{Integer.to_string(page_number)}")
+    if status != :ok, do: raise("An error occured, try again later")
 
-      if  status != :ok , do: raise "An error occured, try again later"
+    updated_types = [response.body | types]
 
-      updated_types = [response.body | types]
-      if page_number == 1 do
-        List.flatten(updated_types)
-      else
-
-        fetch_ESI_pages(url, page_number - 1, updated_types)
+    if page_number == 1 do
+      List.flatten(updated_types)
+    else
+      fetch_ESI_pages(url, page_number - 1, updated_types)
     end
   end
+
   defp format_time(time) do
     cond do
-
       time > 60 * 60 * 24 * 30 ->
         if floor(time / (3600 * 24 * 30)) == 1,
           do: "1 month ago",
@@ -117,109 +160,145 @@ defmodule EveIndustrex.Utils do
   end
 
   def get_time_left(date, duration) do
-        ends = DateTime.add(date, duration, :day)
-        now = DateTime.now!("Etc/UTC")
-        format_time_left(DateTime.diff(ends, now, :second))
+    ends = DateTime.add(date, duration, :day)
+    now = DateTime.now!("Etc/UTC")
+    format_time_left(DateTime.diff(ends, now, :second))
   end
+
   defp format_time_left(time) do
     days = div(div(div(time, 60), 60), 24)
-    hours = floor(((time - days * 60 * 60 * 24) / (60 * 60)))
-    minutes = floor(rem((time - days * 60 * 60 * 24), (60 * 60)) / 60)
+    hours = floor((time - days * 60 * 60 * 24) / (60 * 60))
+    minutes = floor(rem(time - days * 60 * 60 * 24, 60 * 60) / 60)
     ~s"#{days}d #{hours}h #{minutes}m"
   end
 
   def format_with_coma(price_float) when is_float(price_float) do
-  price = :erlang.float_to_binary(price_float, [decimals: 2])
-  reversed_string = String.reverse(price)
-  pre_with_comas = Enum.map(Enum.with_index(String.to_charlist(reversed_string)), fn {s, index} -> if index > 3 && rem(index + 1, 3) == 0 && index != String.length(reversed_string) - 1, do: [s,","], else: s end)
-  with_comas = String.reverse(List.to_string(List.flatten(pre_with_comas)))
-  if String.at(with_comas, 0) == "-" && String.at(with_comas, 1) == "," do
-    tail = elem(String.split_at(with_comas, 2), 1)
-    "-"<>tail
-  else
-    with_comas
+    price = :erlang.float_to_binary(price_float, decimals: 2)
+    reversed_string = String.reverse(price)
+
+    pre_with_comas =
+      Enum.map(Enum.with_index(String.to_charlist(reversed_string)), fn {s, index} ->
+        if index > 3 && rem(index + 1, 3) == 0 && index != String.length(reversed_string) - 1,
+          do: [s, ","],
+          else: s
+      end)
+
+    with_comas = String.reverse(List.to_string(List.flatten(pre_with_comas)))
+
+    if String.at(with_comas, 0) == "-" && String.at(with_comas, 1) == "," do
+      tail = elem(String.split_at(with_comas, 2), 1)
+      "-" <> tail
+    else
+      with_comas
+    end
   end
-  end
+
   def format_with_coma(price_integer) when is_integer(price_integer) do
-  reversed_string = String.reverse(Integer.to_string(price_integer))
-  pre_with_comas = Enum.map(Enum.with_index(String.to_charlist(reversed_string)), fn {s, index} -> if rem(index + 1, 3) == 0 && index != String.length(reversed_string) - 1, do: [s,","], else: s end)
-  with_comas = String.reverse(List.to_string(List.flatten(pre_with_comas)))
-  if String.at(with_comas, 0) == "-" && String.at(with_comas, 1) == "," do
-   tail = elem(String.split_at(with_comas, 2), 1)
-    "-"<>tail
-  else
-    with_comas
+    reversed_string = String.reverse(Integer.to_string(price_integer))
+
+    pre_with_comas =
+      Enum.map(Enum.with_index(String.to_charlist(reversed_string)), fn {s, index} ->
+        if rem(index + 1, 3) == 0 && index != String.length(reversed_string) - 1,
+          do: [s, ","],
+          else: s
+      end)
+
+    with_comas = String.reverse(List.to_string(List.flatten(pre_with_comas)))
+
+    if String.at(with_comas, 0) == "-" && String.at(with_comas, 1) == "," do
+      tail = elem(String.split_at(with_comas, 2), 1)
+      "-" <> tail
+    else
+      with_comas
+    end
   end
 
-  end
   def date_string_to_date_time(date_string) do
-
-    with  {:ok, date} <- Date.from_iso8601(date_string),
-          {:ok, naive} <- NaiveDateTime.new(date, ~T[00:00:00]),
-          {:ok, date_time} <- DateTime.from_naive(naive, "Etc/UTC") do
+    with {:ok, date} <- Date.from_iso8601(date_string),
+         {:ok, naive} <- NaiveDateTime.new(date, ~T[00:00:00]),
+         {:ok, date_time} <- DateTime.from_naive(naive, "Etc/UTC") do
       {:ok, date_time}
     else
       error -> error
     end
   end
-  def date_string_to_date_time!(date_string) do
 
-    with  {:ok, date} <- Date.from_iso8601(date_string),
-          {:ok, naive} <- NaiveDateTime.new(date, ~T[00:00:00]),
-          {:ok, date_time} <- DateTime.from_naive(naive, "Etc/UTC") do
+  def date_string_to_date_time!(date_string) do
+    with {:ok, date} <- Date.from_iso8601(date_string),
+         {:ok, naive} <- NaiveDateTime.new(date, ~T[00:00:00]),
+         {:ok, date_time} <- DateTime.from_naive(naive, "Etc/UTC") do
       date_time
     else
       error ->
         raise error
     end
   end
+
   def apply_color_on_status(sec_status) do
     case sec_status do
       "1.0" ->
         "text-system1.0"
+
       "0.9" ->
         "text-system0.9"
+
       "0.8" ->
         "text-system0.8"
+
       "0.7" ->
         "text-system0.7"
+
       "0.6" ->
         "text-system0.6"
+
       "0.5" ->
         "text-system0.5"
+
       "0.4" ->
         "text-system0.4"
+
       "0.3" ->
         "text-system0.3"
+
       "0.2" ->
         "text-system0.2"
+
       "0.1" ->
         "text-system0.1"
+
       _ ->
         "text-system0.0"
     end
   end
-   def fetch_SDE() do
+
+  def fetch_SDE() do
     File.mkdir(Path.join(File.cwd!(), "/data_dump/"))
+
     case Req.get(@sde_json_url) do
       {:ok, resp} ->
         if resp.status == 200 do
           sde = resp.body
 
           Enum.filter(sde, fn x -> String.contains?(List.to_string(elem(x, 0)), @sde_files) end)
-          |> Enum.map(fn x -> File.write(Path.join(File.cwd!(), "/data_dump/"<>List.to_string(elem(x, 0))), elem(x, 1)) end)
+          |> Enum.map(fn x ->
+            File.write(
+              Path.join(File.cwd!(), "/data_dump/" <> List.to_string(elem(x, 0))),
+              elem(x, 1)
+            )
+          end)
+
           :ok
         else
           {:error, {:err_responded_with, Integer.to_string(resp.status), @sde_json_url}}
         end
+
       {:error, exception} ->
         {:error, {:req_exception, exception.reason, @sde_json_url}}
     end
   end
+
   def remove_SDE_files() do
     {:ok, files} = File.ls(Path.join(File.cwd!(), "/data_dump/"))
     Enum.map(files, fn f -> File.rm(Path.join(File.cwd!(), "/data_dump/#{f}")) end)
-
   end
-
 end

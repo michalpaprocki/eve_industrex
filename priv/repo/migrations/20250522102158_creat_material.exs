@@ -7,6 +7,7 @@ defmodule EveIndustrex.Repo.Migrations.CreatMaterial do
       add :type_id, :bigint
       add :materials, :binary
     end
+
     create unique_index(:materials, [:type_id])
   end
 end

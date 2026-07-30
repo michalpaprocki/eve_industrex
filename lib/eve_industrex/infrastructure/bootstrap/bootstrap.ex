@@ -15,53 +15,59 @@ defmodule EveIndustrex.Infrastructure.Bootstrap do
 
   defp seed_if_needed do
     case Service.get_present_records() do
-        {false, counts }->
-          Logger.info("Found empty DB rows... fetching SDE")
-          Utils.fetch_SDE()
-          Logger.info("Populating the DB...")
-          Enum.each(counts, fn {schema, count} -> read_out_schema(schema, count) |> Service.populate_db() end)
-          Utils.remove_SDE_files()
+      {false, counts} ->
+        Logger.info("Found empty DB rows... fetching SDE")
+        Utils.fetch_SDE()
+        Logger.info("Populating the DB...")
 
-          tq_version = Scraper.get_latest_tq_version()
-          TqVersionService.upsert_tq_version(tq_version)
-          Readiness.mark_ready(:bootstrap)
-        {true} ->
-          Logger.info("DB records present...")
-          Readiness.mark_ready(:bootstrap)
-          :ok
-    end
-      Logger.info("Populating the Cache...")
-      with :ok <-Service.populate_cache()  do
-        Logger.info("Caches warmed...")
-        Readiness.mark_ready(:sde_cache)
+        Enum.each(counts, fn {schema, count} ->
+          read_out_schema(schema, count) |> Service.populate_db()
+        end)
+
+        Utils.remove_SDE_files()
+
+        tq_version = Scraper.get_latest_tq_version()
+        TqVersionService.upsert_tq_version(tq_version)
+        Readiness.mark_ready(:bootstrap)
+
+      {true} ->
+        Logger.info("DB records present...")
+        Readiness.mark_ready(:bootstrap)
         :ok
+    end
 
-      end
+    Logger.info("Populating the Cache...")
 
+    with :ok <- Service.populate_cache() do
+      Logger.info("Caches warmed...")
+      Readiness.mark_ready(:sde_cache)
+      :ok
+    end
   end
+
   defp sync_tq_version do
     {:ok, tq_version} = Scraper.get_latest_tq_version()
     TqVersionService.upsert_tq_version(tq_version)
   end
+
   defp read_out_schema(schema, count) do
     Logger.info("#{count} entries of #{inspect(schema)} found... Updating... ")
     schema
   end
+
   defp start_scheduler() do
     if Service.resources_missing?() do
       Logger.info("ESI Resources missing... Populating...")
       Service.put_resources()
     end
+
     Logger.info("Checking for Resources Strategies...")
     Service.maybe_allocate_strategies()
-
 
     Schedulers.StrategyScheduler.new(%{}) |> Oban.insert()
     Schedulers.ProjectionScheduler.new(%{}) |> Oban.insert()
     Schedulers.TelemetryScheduler.new(%{}) |> Oban.insert()
     Schedulers.StrategyCleanUpScheduler.new(%{}) |> Oban.insert()
     # Schedulers.JanitorScheduler.new(%{}) |> Oban.insert()
-
   end
-
 end

@@ -17,7 +17,6 @@ defmodule EveIndustrex.Repo.Migrations.CreateMarketOrder do
       add :system_id, :bigint
 
       timestamps()
-
     end
   end
 end

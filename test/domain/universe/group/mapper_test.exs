@@ -1,6 +1,7 @@
 defmodule Domain.Universe.Group.MapperTest do
   use ExUnit.Case
   alias EveIndustrex.Universe.Group.Mapper
+
   setup_all do
     mock_esi_groups = [
       %{
@@ -22,6 +23,7 @@ defmodule Domain.Universe.Group.MapperTest do
         ]
       }
     ]
+
     mock_dump_groups = [
       %{
         "_key" => 1,
@@ -62,19 +64,43 @@ defmodule Domain.Universe.Group.MapperTest do
         "useBasePrice" => false
       }
     ]
+
     {:ok, %{:dump => mock_dump_groups, :esi => mock_esi_groups}}
   end
 
   test "Converts jsonl entries into unified maps", context do
     jsonl = context.dump
     maps = Enum.map(jsonl, fn j -> Mapper.from_dump(j) end)
-    assert(Enum.each(maps, fn j -> Map.has_key?(j, :category_id) && Map.has_key?(j, :group_id) && Map.has_key?(j, :name) && Map.has_key?(j ,:published) end), "Every map in the list has :category_id, :group_id, :name and :published keys")
-    assert(Enum.each(maps, fn m -> Map.keys(m) |> Enum.each(fn k -> is_atom(k) end) end), "Every key in a map is an atom")
+
+    assert(
+      Enum.each(maps, fn j ->
+        Map.has_key?(j, :category_id) && Map.has_key?(j, :group_id) && Map.has_key?(j, :name) &&
+          Map.has_key?(j, :published)
+      end),
+      "Every map in the list has :category_id, :group_id, :name and :published keys"
+    )
+
+    assert(
+      Enum.each(maps, fn m -> Map.keys(m) |> Enum.each(fn k -> is_atom(k) end) end),
+      "Every key in a map is an atom"
+    )
   end
+
   test "Converts esi response into unified maps", context do
     data = context.esi
     maps = Enum.map(data, fn d -> Mapper.from_esi(d) end)
-    assert(Enum.each(maps, fn m -> Map.has_key?(m, :group_id) && Map.has_key?(m, :category_id) && Map.has_key?(m, :name) && Map.has_key?(m ,:published) end), "Every map in the list has :category_id, :group_id, :name and :published keys")
-    assert(Enum.each(maps, fn m -> Map.keys(m) |> Enum.each(fn k -> is_atom(k) end) end), "Every key in a map is an atom")
+
+    assert(
+      Enum.each(maps, fn m ->
+        Map.has_key?(m, :group_id) && Map.has_key?(m, :category_id) && Map.has_key?(m, :name) &&
+          Map.has_key?(m, :published)
+      end),
+      "Every map in the list has :category_id, :group_id, :name and :published keys"
+    )
+
+    assert(
+      Enum.each(maps, fn m -> Map.keys(m) |> Enum.each(fn k -> is_atom(k) end) end),
+      "Every key in a map is an atom"
+    )
   end
 end
