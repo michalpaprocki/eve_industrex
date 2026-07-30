@@ -14,13 +14,15 @@ defmodule Infrastructure.ESI.Sync.OrchestratorTest do
   describe "initiate_paginated_resource_sync/4" do
     setup do
       resource_type = resource_type_fixture("orchestrator_test_resource")
-      strategy = strategy_fixture(resource_type.id)
+      strategy = strategy_fixture(resource_type)
+
       # generation = generation_fixture(strategy.id)
       {:ok, %{resource_type: resource_type, strategy: strategy}}
     end
 
     test "creates a new generation for a 1 pagesync op, stores snapshot etag and expires_at, returns :ok, amount of pages completed and generation id",
          %{resource_type: _resource_type, strategy: strategy} do
+
       result =
         Orchestrator.initiate_paginated_resource_sync(
           strategy.id,
@@ -28,7 +30,6 @@ defmodule Infrastructure.ESI.Sync.OrchestratorTest do
           5,
           fetch_fn(esi_response(200, [], "1", "test_etag"))
         )
-
       gen_id = elem(result, 2)
       strategy_updated = get_strategy_with_gens(strategy.id)
       {gen, gen_page} = get_generation(gen_id, 1)
@@ -68,7 +69,7 @@ defmodule Infrastructure.ESI.Sync.OrchestratorTest do
   describe "sync_paginated_resource/6" do
     setup do
       resource_type = resource_type_fixture("orchestrator_test_resource")
-      strategy = strategy_fixture(resource_type.id)
+      strategy = strategy_fixture(resource_type)
       generation = generation_fixture(strategy.id)
       {:ok, %{resource_type: resource_type, strategy: strategy, generation: generation}}
     end
@@ -107,7 +108,7 @@ defmodule Infrastructure.ESI.Sync.OrchestratorTest do
   describe "finalize/3" do
     setup do
       resource_type = resource_type_fixture("orchestrator_test_resource")
-      strategy = strategy_fixture(resource_type.id)
+      strategy = strategy_fixture(resource_type)
       generation = generation_fixture(strategy.id)
       {:ok, %{resource_type: resource_type, strategy: strategy, generation: generation}}
     end

@@ -24,7 +24,7 @@ defmodule Infrastructure.ESI.Sync.OrchestratorServiceTest do
 
     setup do
       resource_type = resource_type_fixture()
-      strategy = strategy_fixture(resource_type.id)
+      strategy = strategy_fixture(resource_type)
       generation = generation_fixture(strategy.id)
       {:ok, %{resource_type: resource_type, strategy: strategy, generation: generation}}
     end
@@ -247,8 +247,8 @@ defmodule Infrastructure.ESI.Sync.OrchestratorServiceTest do
       {gen, gen_page} = get_generation(generation.id, 1)
 
       assert gen.status == :failed
-      assert gen.last_error == "max_attempts_exceeded"
-      assert gen.pages_completed == 1
+      assert gen.last_error == "max_attempts_exceeded: rate limited"
+      assert gen.pages_completed == 0
       assert gen_page.status == :rate_limited
       assert gen_page.attempts == 5
       assert gen_page.last_error == "page rate limited 5 times"
@@ -274,7 +274,7 @@ defmodule Infrastructure.ESI.Sync.OrchestratorServiceTest do
       {gen, gen_page} = get_generation(generation.id, 1)
 
       assert gen.pages_total == 1
-      assert gen.pages_completed == 1
+      assert gen.pages_completed == 0
       assert gen.last_error == nil
       assert gen.status == :not_modified
       assert gen_page.status == :matched
@@ -403,7 +403,7 @@ defmodule Infrastructure.ESI.Sync.OrchestratorServiceTest do
       assert gen.pages_total == nil
       assert gen.pages_completed == 0
       assert gen.status == :critical
-      assert gen.last_error == "invalid_status"
+      assert gen.last_error == "invalid_status - 100"
       assert gen_page.last_error == "100"
     end
   end

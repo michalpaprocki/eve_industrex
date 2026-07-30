@@ -8,9 +8,9 @@ defmodule EveIndustrex.Test.EsiFixtures do
     |> Sync.Persistence.insert_resource_type()
   end
 
-  def strategy_fixture(resource_id) do
+  def strategy_fixture(resource) do
     %Sync.EsiSyncStrategy{}
-    |> Sync.EsiSyncStrategy.changeset(Sync.SyncProvider.default_strategy(1, resource_id))
+    |> Sync.EsiSyncStrategy.changeset(Sync.SyncProvider.default_strategy(1, resource))
     |> Sync.Persistence.insert_strategy()
     |> EveIndustrex.Repo.preload(:resource_type)
   end
