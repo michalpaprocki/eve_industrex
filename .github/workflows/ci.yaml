@@ -51,6 +51,8 @@ jobs:
 
       - run: mix compile --warnings-as-errors
 
+      - run: mix credo
+      
       - run: mix test
 
       - run: MIX_ENV=prod mix release
