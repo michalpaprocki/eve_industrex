@@ -2,6 +2,8 @@ defmodule EveIndustrex.LiveParser do
   @moduledoc """
     This is an extendable parser that filters collections for live view items (like lp offers, reactions etc). It also appends query to the url based on filters
   """
+  # credo:disable-for-this-file Credo.Check.Refactor.CyclomaticComplexity
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   def apply_expression(collection, key, expression) do
     case expression do
       {:profit} ->

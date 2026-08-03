@@ -1,5 +1,7 @@
 defmodule EveIndustrex.Utils do
   @moduledoc false
+  # credo:disable-for-this-file Credo.Check.Refactor.CyclomaticComplexity
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   @sde_files [
     "categories.jsonl",
     "types.jsonl",

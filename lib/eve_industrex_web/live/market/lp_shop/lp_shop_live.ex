@@ -7,7 +7,8 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
   alias EveIndustrexWeb.Layouts
   alias Phoenix.LiveView.AsyncResult
   use EveIndustrexWeb, :live_view
-
+  # credo:disable-for-this-file Credo.Check.Refactor.CyclomaticComplexity
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   @form_types %{
     tax_rate: :float,
     selected_corp: :integer,

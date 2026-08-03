@@ -2,7 +2,8 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
   alias EveIndustrex.Universe.Type
   alias EveIndustrex.LoyaltyPoints
   alias EveIndustrex.Industry
-
+  # credo:disable-for-this-file Credo.Check.Refactor.CyclomaticComplexity
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   @moduledoc """
     This service constructs loyalty points view, updates prices based on user input and calculates offers' profitability.
   """
@@ -207,28 +208,28 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
   defp calc_materials_cost(offer, prices) do
     materials = offer.blueprint.activities.manufacturing.materials
 
-    if !Enum.all?(materials, fn m ->
+    if Enum.all?(materials, fn m ->
          prices[m.type_id]
        end) do
-      nil
-    else
       List.foldl(materials, 0, fn m, acc ->
         prices[m.type_id] * m.quantity + acc
       end)
+    else
+      nil
     end
   end
 
   defp calc_req_items_cost(req_items, prices) do
-    if !Enum.all?(
+    if Enum.all?(
          Enum.map(req_items, fn ri ->
            prices[ri.type_id]
          end)
        ) do
-      nil
-    else
       List.foldl(req_items, 0, fn ri, acc ->
         prices[ri.type_id] * ri.quantity + acc
       end)
+    else
+      nil
     end
   end
 

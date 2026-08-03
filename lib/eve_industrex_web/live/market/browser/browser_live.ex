@@ -3,7 +3,8 @@ defmodule EveIndustrexWeb.Market.BrowserLive do
   alias EveIndustrex.Market
   alias Phoenix.LiveView.AsyncResult
   alias EveIndustrex.Universe.MarketGroup.Store
-
+  # credo:disable-for-this-file Credo.Check.Refactor.CyclomaticComplexity
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   use EveIndustrexWeb, :live_view
 
   def mount(%{"path" => id} = _params, _session, socket) do

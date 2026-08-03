@@ -3,7 +3,8 @@ defmodule EveIndustrex.Infrastructure.ESI.RateLimiter do
   alias EveIndustrex.Infrastructure.ESI.{Headers}
   use GenServer
   require Logger
-
+  # credo:disable-for-this-file Credo.Check.Refactor.CyclomaticComplexity
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   @moduledoc """
     Simple rate limit tracking module.
   """
@@ -63,7 +64,7 @@ defmodule EveIndustrex.Infrastructure.ESI.RateLimiter do
   end
 
   def handle_cast({:observe, %Headers{} = headers}, state) do
-    if not is_nil(headers.rate_limit_group) do
+    if headers.rate_limit_group do
       :ets.insert(:rate_limiter, {headers.rate_limit_group, Bucket.new(headers)})
     else
       :ets.insert(:rate_limiter, {"global", Global.new(headers)})
@@ -73,7 +74,7 @@ defmodule EveIndustrex.Infrastructure.ESI.RateLimiter do
   end
 
   def handle_cast({:cooldown, %Headers{} = headers}, state) do
-    if not is_nil(headers.rate_limit_group) do
+    if headers.rate_limit_group do
       cooldown =
         DateTime.utc_now()
         |> DateTime.truncate(:second)

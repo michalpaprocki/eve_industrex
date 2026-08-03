@@ -5,6 +5,8 @@ defmodule EveIndustrex.Infrastructure.Bootstrap.Service do
   alias EveIndustrex.Infrastructure.ESI.Sync
   alias EveIndustrex.Repo
   @moduledoc false
+  # credo:disable-for-this-file Credo.Check.Refactor.CyclomaticComplexity
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   alias EveIndustrex.Universe.{
     Region,
     Constellation,

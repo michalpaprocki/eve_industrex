@@ -435,6 +435,6 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
   end
 
   defp maybe_insert_pages_total(headers) do
-    if(not is_nil(headers.pages), do: String.to_integer(headers.pages), else: nil)
+    if headers.pages, do: String.to_integer(headers.pages), else: nil
   end
 end

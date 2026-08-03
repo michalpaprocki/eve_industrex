@@ -112,7 +112,7 @@ defmodule EveIndustrexWeb.BootLive do
   end
 
   def handle_info(:check, socket) do
-    if !Enum.any?(socket.assigns, fn a -> a == false end) do
+    if Enum.all?(socket.assigns, fn a -> a == true end) do
       {:noreply, socket |> put_flash(:info, "Bootstraping Completed...") |> redirect(to: ~p"/")}
     else
       {:noreply, socket}

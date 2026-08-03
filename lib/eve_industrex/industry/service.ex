@@ -188,28 +188,28 @@ defmodule EveIndustrex.Industry.Service do
   defp calc_materials_price(formula, prices) do
     materials = formula.bp.activities.reaction.materials
 
-    if !Enum.all?(materials, fn m ->
+    if Enum.all?(materials, fn m ->
          prices[m.type_id]
        end) do
-      nil
-    else
       List.foldl(materials, 0, fn m, acc ->
         prices[m.type_id] * m.quantity + acc
       end)
+    else
+      nil
     end
   end
 
   defp calc_products_price(formula, prices) do
     products = formula.bp.activities.reaction.products
 
-    if !Enum.all?(products, fn p ->
+    if Enum.all?(products, fn p ->
          prices[p.type_id]
        end) do
-      nil
-    else
       List.foldl(products, 0, fn p, acc ->
         prices[p.type_id] * p.quantity + acc
       end)
+    else
+      nil
     end
   end
 

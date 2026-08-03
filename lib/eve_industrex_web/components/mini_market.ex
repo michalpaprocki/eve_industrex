@@ -3,6 +3,8 @@ defmodule EveIndustrexWeb.MiniMarket do
   alias EveIndustrex.Utils
   alias EveIndustrex.Market
   @moduledoc false
+  # credo:disable-for-this-file Credo.Check.Refactor.CyclomaticComplexity
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   @types ["SELL", "BUY"]
   @form_types %{custom_price: :float, order_type: :string}
   def update_component(cid, %{:update => data}) do
@@ -189,7 +191,9 @@ defmodule EveIndustrexWeb.MiniMarket do
       :show_modal => show_modal
     } = socket.assigns
 
-    if !orders_fetched do
+    if orders_fetched do
+      {:noreply, socket |> assign(:show_modal, !show_modal)}
+    else
       {:noreply,
        socket
        |> assign(:show_modal, !show_modal)
@@ -198,8 +202,6 @@ defmodule EveIndustrexWeb.MiniMarket do
          Market.Service.get_mini_market_view(selected_trade_hub, item.type_id)
        end)
        |> assign(:orders, [])}
-    else
-      {:noreply, socket |> assign(:show_modal, !show_modal)}
     end
   end
 

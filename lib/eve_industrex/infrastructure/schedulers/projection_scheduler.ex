@@ -2,6 +2,8 @@ defmodule EveIndustrex.Infrastructure.Schedulers.ProjectionScheduler do
   alias EveIndustrex.Infrastructure.ESI.Sync.Query
   use Oban.Worker, queue: :schedulers, unique: [period: :infinity]
   require Logger
+  # credo:disable-for-this-file Credo.Check.Refactor.CyclomaticComplexity
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   @moduledoc false
   @workers %{
     "market_orders" => EveIndustrex.Market.MarketOrder.Jobs.MarketStoreProjectionWorker,

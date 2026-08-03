@@ -6,7 +6,8 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
   alias EveIndustrex.LiveParser
   alias EveIndustrexWeb.Layouts
   use EveIndustrexWeb, :live_view
-
+  # credo:disable-for-this-file Credo.Check.Refactor.CyclomaticComplexity
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   @form_types %{
     structure_tax: :float,
     fw_upgrade: :integer,

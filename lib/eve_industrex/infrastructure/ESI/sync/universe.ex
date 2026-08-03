@@ -22,7 +22,6 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Universe do
              &Type.Mapper.from_esi/1
            ),
          group_ids = extract_group_ids(missing_types),
-         SyncEvents.dependencies_imported(length(missing_types), :type),
          market_group_ids = extract_market_group_ids(missing_types),
          {:ok, missing_groups} <-
            resolve_dependencies(
@@ -32,7 +31,6 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Universe do
              &Group.Mapper.from_esi/1
            ),
          category_ids = extract_category_ids(missing_groups),
-         SyncEvents.dependencies_imported(length(missing_groups), :group),
          {:ok, missing_categories} <-
            resolve_dependencies(
              category_ids,
@@ -40,15 +38,18 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Universe do
              &Client.fetch_category/1,
              &Category.Mapper.from_esi/1
            ),
-         SyncEvents.dependencies_imported(length(missing_categories), :category),
          {:ok, missing_market_groups} <-
            resolve_dependencies(
              market_group_ids,
              &MarketGroup.Store.filter_unknown/1,
              &Client.fetch_market_group/1,
              &MarketGroup.Mapper.from_esi/1
-           ),
-         SyncEvents.dependencies_imported(length(missing_market_groups), :market_group) do
+           ) do
+      SyncEvents.dependencies_imported(length(missing_types), :type)
+      SyncEvents.dependencies_imported(length(missing_groups), :group)
+      SyncEvents.dependencies_imported(length(missing_market_groups), :market_group)
+      SyncEvents.dependencies_imported(length(missing_categories), :category)
+
       persist(%{
         types: missing_types,
         groups: missing_groups,

@@ -2,6 +2,8 @@ defmodule EveIndustrex.Industry.BlueprintActivityMaterial.Persistence do
   alias EveIndustrex.Industry.BlueprintActivityMaterial
   alias EveIndustrex.Repo
   @moduledoc false
+  # credo:disable-for-this-file Credo.Check.Refactor.CyclomaticComplexity
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   def upsert_all(list_of_blueprints, return? \\ false) when is_list(list_of_blueprints) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 

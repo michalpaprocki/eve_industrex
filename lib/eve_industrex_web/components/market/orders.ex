@@ -1,6 +1,8 @@
 defmodule EveIndustrexWeb.Market.Orders do
   alias EveIndustrex.Utils
   use EveIndustrexWeb, :live_component
+  # credo:disable-for-this-file Credo.Check.Refactor.CyclomaticComplexity
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   @moduledoc false
   def update(%{:data => []} = assigns, socket) do
     {:ok, socket |> assign(assigns)}

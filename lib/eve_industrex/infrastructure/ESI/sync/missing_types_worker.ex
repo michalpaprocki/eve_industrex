@@ -4,7 +4,8 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.MissingTypesWorker do
   alias EveIndustrex.Universe.Type
   @moduledoc false
   require Logger
-
+  # credo:disable-for-this-file Credo.Check.Refactor.CyclomaticComplexity
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   @impl Oban.Worker
   def perform(%Oban.Job{args: _args, attempt: _attempt, max_attempts: _max_attempts}) do
     retryables_ap = Oban.Job.query(queue: :average_prices, state: :retryable) |> Oban.all_jobs()

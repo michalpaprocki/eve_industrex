@@ -1,4 +1,6 @@
 defmodule EveIndustrex.Infrastructure.Parsers.Yaml do
+  # credo:disable-for-this-file Credo.Check.Refactor.CyclomaticComplexity
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   @moduledoc false
   require Logger
   @blueprints_path "data_dump/blueprints.yaml"
