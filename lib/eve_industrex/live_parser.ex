@@ -36,7 +36,7 @@ defmodule EveIndustrex.LiveParser do
             String.contains?(String.downcase(o.type.group), String.downcase(text_filter))
           end)
 
-        if length(group_filter) == 0 do
+        if group_filter == [] do
           Map.new(
             Enum.filter(collection, fn {_id, o} ->
               String.contains?(String.downcase(o.type.name), String.downcase(text_filter))

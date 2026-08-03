@@ -13,7 +13,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.MissingTypesWorker do
     discarded_mo = Oban.Job.query(queue: :market_orders, state: :discarded) |> Oban.all_jobs()
     overal = retryables_ap ++ discarded_ap ++ retryables_mo ++ discarded_mo
 
-    if length(overal) > 0 do
+    if overal != [] do
       missing_types_errors =
         Enum.map(overal, fn r ->
           Enum.map(r.errors, fn e ->

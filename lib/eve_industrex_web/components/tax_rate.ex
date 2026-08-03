@@ -67,7 +67,7 @@ defmodule EveIndustrexWeb.Common.TaxRate do
       ) do
     changeset = validate_input(tax, socket.assigns.form)
 
-    if length(changeset.errors) == 0 do
+    if changeset.errors == [] do
       send(self(), {:new_tax_rate, changeset.changes.tax_rate})
     end
 
@@ -81,7 +81,7 @@ defmodule EveIndustrexWeb.Common.TaxRate do
       ) do
     changeset = validate_input(tax, socket.assigns.form)
 
-    if length(changeset.errors) == 0 do
+    if changeset.errors == [] do
       send(self(), {:new_tax_rate, changeset.changes.tax_rate})
     end
 

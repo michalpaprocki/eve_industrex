@@ -10,7 +10,7 @@ defmodule EveIndustrex.Infrastructure.Readiness do
   def init(_) do
     Logger.info("Starting #{inspect(__MODULE__)}...")
     :ets.new(:readiness, [:named_table, :set, :public, read_concurrency: true])
-    Enum.map(@flags, fn f -> :ets.insert(:readiness, {f, false}) end)
+    Enum.each(@flags, fn f -> :ets.insert(:readiness, {f, false}) end)
     {:ok, %{}}
   end
 

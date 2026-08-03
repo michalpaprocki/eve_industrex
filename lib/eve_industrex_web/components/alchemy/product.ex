@@ -59,7 +59,7 @@ defmodule EveIndustrexWeb.Alchemy.Product do
 
       total_list =
         Enum.map(amounts_and_orders, fn aao ->
-          if length(aao.orders) > 0,
+          if aao.orders != [],
             do: %{
               :type_id => aao.type_id,
               :price => hd(aao.orders).price,
@@ -87,7 +87,7 @@ defmodule EveIndustrexWeb.Alchemy.Product do
       }
 
       total_list =
-        if length(amount_and_orders.orders) > 0,
+        if amount_and_orders.orders != [],
           do: %{
             :type_id => amount_and_orders.type_id,
             :price => hd(amount_and_orders.orders).price,

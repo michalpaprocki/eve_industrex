@@ -7,8 +7,8 @@ defmodule EveIndustrex.Infrastructure.Schedulers.TelemetryScheduler do
     failed_and_critical =
       EveIndustrex.Infrastructure.ESI.Sync.Query.get_failed_and_critical_strategies()
 
-    if length(failed_and_critical) > 0 do
-      Enum.map(failed_and_critical, fn fic ->
+    if failed_and_critical != [] do
+      Enum.each(failed_and_critical, fn fic ->
         Logger.warning("Found failed or critical job: #{inspect(fic.id)}")
       end)
     else

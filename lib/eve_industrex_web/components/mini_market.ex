@@ -105,7 +105,7 @@ defmodule EveIndustrexWeb.MiniMarket do
                     min="0.00"
                     step="0.01"
                     value={
-                      if length(@form[:custom_price].errors) == 0,
+                      if @form[:custom_price].errors == [],
                         do: Utils.format_with_coma(@form[:custom_price].value),
                         else: 0.0
                     }
@@ -304,7 +304,7 @@ defmodule EveIndustrexWeb.MiniMarket do
   def handle_event("apply_price", %{"value" => ""} = _params, socket) do
     %{:form => form} = socket.assigns
 
-    if length(form.errors) == 0 do
+    if form.errors == [] do
       selected_order = %{
         :price => form[:custom_price].value,
         :id => nil,

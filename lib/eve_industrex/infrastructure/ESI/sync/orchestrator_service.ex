@@ -368,7 +368,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
           {categories, groups, market_groups, types} ->
             Universe.update_caches({categories, groups, market_groups, types})
             chunks = Enum.chunk_every(average_prices, 5000)
-            Enum.map(chunks, fn chunk -> AveragePrice.Persistence.upsert_all(chunk) end)
+            Enum.each(chunks, fn chunk -> AveragePrice.Persistence.upsert_all(chunk) end)
             :ok
 
           err ->
@@ -383,7 +383,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
           |> List.flatten()
           |> Enum.chunk_every(5000)
 
-        Enum.map(system_cost_indices, fn chunk ->
+        Enum.each(system_cost_indices, fn chunk ->
           SystemCostIndex.Persistence.upsert_all(chunk)
         end)
 

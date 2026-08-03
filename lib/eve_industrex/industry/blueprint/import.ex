@@ -9,19 +9,19 @@ defmodule EveIndustrex.Industry.Blueprint.Import do
 
     Persistence.upsert_all(blueprints)
 
-    Enum.map(blueprints |> Enum.chunk_every(1000), fn chunk ->
+    Enum.each(blueprints |> Enum.chunk_every(1000), fn chunk ->
       EveIndustrex.Industry.BlueprintActivity.Persistance.upsert_all(chunk)
     end)
 
-    Enum.map(blueprints |> Enum.chunk_every(1000), fn chunk ->
+    Enum.each(blueprints |> Enum.chunk_every(1000), fn chunk ->
       EveIndustrex.Industry.BlueprintActivityMaterial.Persistence.upsert_all(chunk)
     end)
 
-    Enum.map(blueprints |> Enum.chunk_every(1000), fn chunk ->
+    Enum.each(blueprints |> Enum.chunk_every(1000), fn chunk ->
       EveIndustrex.Industry.BlueprintActivityProduct.Persistence.upsert_all(chunk)
     end)
 
-    Enum.map(blueprints |> Enum.chunk_every(1000), fn chunk ->
+    Enum.each(blueprints |> Enum.chunk_every(1000), fn chunk ->
       EveIndustrex.Industry.BlueprintActivitySkill.Persistence.upsert_all(chunk)
     end)
   end

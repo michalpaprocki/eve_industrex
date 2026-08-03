@@ -14,7 +14,7 @@ defmodule EveIndustrex.Infrastructure.Schedulers.ProjectionScheduler do
     Logger.info("Checking latest generations for cache projection...")
     resources = Query.get_resource_types()
 
-    Enum.map(resources, fn resource ->
+    Enum.each(resources, fn resource ->
       worker = Map.get(@workers, resource.name)
 
       if is_nil(worker) do

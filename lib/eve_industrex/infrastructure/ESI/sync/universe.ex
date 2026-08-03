@@ -78,10 +78,10 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Universe do
   end
 
   def update_caches({categories, groups, market_groups, types}) do
-    Enum.map(categories, fn c -> Category.Mapper.to_projection(c) |> Category.Store.add() end)
-    Enum.map(groups, fn g -> Group.Mapper.to_projection(g) |> Group.Store.add() end)
+    Enum.each(categories, fn c -> Category.Mapper.to_projection(c) |> Category.Store.add() end)
+    Enum.each(groups, fn g -> Group.Mapper.to_projection(g) |> Group.Store.add() end)
 
-    Enum.map(market_groups, fn mg ->
+    Enum.each(market_groups, fn mg ->
       if mg.parent_group_id == nil,
         do: MarketGroup.Mapper.to_projection_parent(mg) |> MarketGroup.Store.add_parent(),
         else: MarketGroup.Mapper.to_projection_child(mg) |> MarketGroup.Store.add_children()

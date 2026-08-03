@@ -280,7 +280,7 @@ defmodule EveIndustrex.Utils do
           sde = resp.body
 
           Enum.filter(sde, fn x -> String.contains?(List.to_string(elem(x, 0)), @sde_files) end)
-          |> Enum.map(fn x ->
+          |> Enum.each(fn x ->
             File.write(
               Path.join(File.cwd!(), "/data_dump/" <> List.to_string(elem(x, 0))),
               elem(x, 1)

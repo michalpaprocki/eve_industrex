@@ -17,12 +17,12 @@ defmodule EveIndustrex.Infrastructure.Schedulers.StrategyScheduler do
 
     Enum.map(strats, fn s -> s.resource_type.name end)
     |> Enum.uniq()
-    |> Enum.map(fn s -> SyncEvents.sync_started(s) end)
+    |> Enum.each(fn s -> SyncEvents.sync_started(s) end)
 
     Logger.info("Got #{inspect(length(strats))} due strats...")
 
     strats
-    |> Enum.map(fn strategy ->
+    |> Enum.each(fn strategy ->
       worker = Map.fetch!(@workers, strategy.resource_type.name)
 
       %{strategy_id: strategy.id}
