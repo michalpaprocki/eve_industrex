@@ -260,12 +260,6 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
     end
   end
 
-  # not sure what was the idea here
-
-  def compare_diff(:not_found, _), do: false
-  def compare_diff(%{:etag => nil, :expires_at => nil}, _), do: false
-  def compare_diff(metadata, now), do: DateTime.compare(metadata.expires_at, now) == :gt
-
   def prepare_generation(strategy) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 

@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
   use GenServer
   require Logger
-
+  #  TODO: clean up typos, clean memo - mowing window
   def start_link(_) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
@@ -10,13 +10,6 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
     Logger.info("Starting #{__MODULE__}...")
 
     :ets.new(:sync_metrics, [
-      :named_table,
-      :public,
-      read_concurrency: true,
-      write_concurrency: :auto
-    ])
-
-    :ets.new(:sync_runtime, [
       :named_table,
       :public,
       read_concurrency: true,
@@ -282,16 +275,6 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
       _ ->
         :noop
     end
-
-    # :ets.insert(:sync_runtime, {metadata.strategy_id, %{
-    #   generation: metadata.generation,
-    #   page: metadata.page,
-    #   started_at: metadata.started_at,
-    #   pages_total: metadata.pages_total,
-    #   status: metadata.status,
-    #   strategy_id: metadata.strategy_id,
-    #   target_id: metadata.target_id,
-    # }})
 
     {:noreply, state}
   end
