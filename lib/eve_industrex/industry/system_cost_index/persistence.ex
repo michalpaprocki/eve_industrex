@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Industry.SystemCostIndex.Persistence do
   alias EveIndustrex.Industry.SystemCostIndex
   alias EveIndustrex.Repo
-
+  @moduledoc false
   def upsert_all(list_of_system_cost_indices, return? \\ false)
       when is_list(list_of_system_cost_indices) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)

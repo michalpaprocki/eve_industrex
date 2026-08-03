@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Industry.ReprocessMaterial.Persistence do
   alias EveIndustrex.Industry.ReprocessMaterial
   alias EveIndustrex.Repo
-
+  @moduledoc false
   def upsert_all(reprocess_materials, return? \\ false) when is_list(reprocess_materials) do
     {normal, randomized} =
       Enum.split_with(reprocess_materials, fn r_mats -> Map.has_key?(r_mats, :materials) end)

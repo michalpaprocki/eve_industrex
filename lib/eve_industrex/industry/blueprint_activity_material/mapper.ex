@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Industry.BlueprintActivityMaterial.Mapper do
+  @moduledoc false
   def from_dump(data) do
     %{
       quantity: Map.get(data, "quantity"),

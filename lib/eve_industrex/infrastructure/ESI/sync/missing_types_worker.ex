@@ -2,7 +2,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.MissingTypesWorker do
   alias EveIndustrex.Universe
   use Oban.Worker, queue: :esi_general, max_attempts: 10
   alias EveIndustrex.Universe.Type
-
+  @moduledoc false
   require Logger
 
   @impl Oban.Worker

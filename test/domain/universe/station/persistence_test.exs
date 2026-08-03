@@ -2,7 +2,7 @@ defmodule Domain.Universe.Station.PersistenceTest do
   alias EveIndustrex.Universe.Station
   alias EveIndustrex.Universe.Station.Persistence
   use EveIndustrex.DataCase
-
+  @moduledoc false
   @region %{
     :region_id => 0,
     :name => "test region",

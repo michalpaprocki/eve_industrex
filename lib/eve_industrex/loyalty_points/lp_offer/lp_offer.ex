@@ -4,6 +4,7 @@ defmodule EveIndustrex.LoyaltyPoints.LpOffer do
   alias EveIndustrex.LoyaltyPoints.LpReqItem
   alias EveIndustrex.Universe.Type
   alias EveIndustrex.LoyaltyPoints.NpcCorp
+  @moduledoc false
   @primary_key {:offer_id, :integer, autogenerate: false}
   schema "lp_offers" do
     field :isk_cost, :integer

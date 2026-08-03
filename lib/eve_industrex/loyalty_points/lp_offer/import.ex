@@ -3,7 +3,7 @@ defmodule EveIndustrex.LoyaltyPoints.LpOffer.Import do
   alias EveIndustrex.LoyaltyPoints.LpOffer.Sync
   alias EveIndustrex.Infrastructure.Parsers.Jsonl
   alias EveIndustrex.LoyaltyPoints.LpOffer.Mapper
-
+  @moduledoc false
   def from_esi() do
     data = Jsonl.read_jsonl(Jsonl.get_npc_corps_path())
 
@@ -33,7 +33,7 @@ defmodule EveIndustrex.LoyaltyPoints.LpOffer.Import do
       end
       |> Enum.filter(fn {_t1, t2} -> t2 == nil end)
 
-    fetched_type_ids = EveIndustrex.Universe.Type.Sync.fetch_types_from_ESI!(missing_type_ids)
+    fetched_type_ids = EveIndustrex.Universe.Type.Sync.fetch_types_from_esi!(missing_type_ids)
 
     EveIndustrex.Universe.Type.Persistence.upsert_all(
       Enum.map(fetched_type_ids, fn t -> EveIndustrex.Universe.Type.Mapper.from_esi(t) end)

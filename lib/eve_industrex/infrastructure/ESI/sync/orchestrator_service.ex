@@ -11,6 +11,10 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
   alias EveIndustrex.Infrastructure.ESI.RouteGroups
   alias EveIndustrex.Infrastructure.ESI.RateLimiter
 
+  @moduledoc """
+    This is a service that deals with sync logic. At its core it is a simple state machine with side effects like observing rate limits and deciding sync generation status.
+  """
+
   def orchestrate(
         fetch_fn,
         generation_id,

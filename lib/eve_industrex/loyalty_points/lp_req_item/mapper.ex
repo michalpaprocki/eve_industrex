@@ -1,4 +1,5 @@
 defmodule EveIndustrex.LoyaltyPoints.LpReqItem.Mapper do
+  @moduledoc false
   def get_offer_type_ids(offers) do
     ri_type_ids = type_ids_from_req_items(offers)
     offers_type_ids = Enum.map(offers, fn o -> o["type_id"] end)

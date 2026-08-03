@@ -1,6 +1,6 @@
 defmodule EveIndustrexWeb.NavPanel do
   use Phoenix.Component
-
+  @moduledoc false
   slot :animation, required: true
   attr :text, :string, required: true
   attr :route, :string, required: true

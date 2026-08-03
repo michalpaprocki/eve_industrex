@@ -1,7 +1,7 @@
 defmodule EveIndustrexWeb.Market.Search do
   use EveIndustrexWeb, :live_component
   alias EveIndustrex.Universe.MarketGroup.Query
-
+  @moduledoc false
   def update(assigns, socket) do
     {:ok, socket |> assign(assigns) |> assign(:search_result, [])}
   end

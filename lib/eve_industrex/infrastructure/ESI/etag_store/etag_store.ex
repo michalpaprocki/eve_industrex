@@ -2,7 +2,7 @@ defmodule EveIndustrex.Infrastructure.ESI.EtagStore do
   alias EveIndustrex.Infrastructure.ESI.EtagStore.Metadata
   use GenServer
   require Logger
-
+  @moduledoc false
   def init(_init_arg) do
     :ets.new(:etag_store, [:set, :protected, :named_table, read_concurrency: true])
     {:ok, %{}}

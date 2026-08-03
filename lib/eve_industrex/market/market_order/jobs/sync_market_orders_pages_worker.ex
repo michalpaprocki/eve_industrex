@@ -3,7 +3,7 @@ defmodule EveIndustrex.Market.MarketOrder.Jobs.SyncMarketOrdersPagesWorker do
 
   alias EveIndustrex.Infrastructure.ESI.Client
   use Oban.Worker, queue: :market_orders, max_attempts: 5
-
+  @moduledoc false
   #  move resolution logic to a resolver/finalizer worker - it's too crowded here
 
   require Logger

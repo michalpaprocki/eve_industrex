@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Universe.System.Persistence do
   alias EveIndustrex.Repo
   alias EveIndustrex.Universe.System
-
+  @moduledoc false
   def upsert_all(list_of_systems, return? \\ false) when is_list(list_of_systems) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 

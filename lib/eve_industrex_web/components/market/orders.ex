@@ -1,7 +1,7 @@
 defmodule EveIndustrexWeb.Market.Orders do
   alias EveIndustrex.Utils
   use EveIndustrexWeb, :live_component
-
+  @moduledoc false
   def update(%{:data => []} = assigns, socket) do
     {:ok, socket |> assign(assigns)}
   end

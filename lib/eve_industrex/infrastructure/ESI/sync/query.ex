@@ -6,7 +6,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Query do
   alias EveIndustrex.Repo
   import Ecto.Query
   @resources ["market_orders", "average_prices", "system_cost_indices"]
-
+  @moduledoc false
   def get_initial_resources(), do: @resources
 
   def get_resource_types_count() do

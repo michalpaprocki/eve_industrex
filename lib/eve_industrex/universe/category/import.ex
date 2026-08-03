@@ -2,7 +2,7 @@ defmodule EveIndustrex.Universe.Category.Import do
   alias EveIndustrex.Universe.Category.Mapper
   alias EveIndustrex.Universe.Category.Persistence
   alias EveIndustrex.Infrastructure.Parsers.Jsonl
-
+  @moduledoc false
   def from_dump do
     jsonl = Jsonl.read_jsonl(Jsonl.get_categories_path())
 

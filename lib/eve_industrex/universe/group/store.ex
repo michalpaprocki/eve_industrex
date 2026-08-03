@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Universe.Group.Store do
+  @moduledoc false
   def get_groups(), do: :ets.tab2list(:category_groups)
 
   def exists?(group_id) do

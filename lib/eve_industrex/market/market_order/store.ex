@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Market.MarketOrder.Store do
+  @moduledoc false
   def get_count() do
     :ets.tab2list(get_market_orders_table_id()) |> length()
   end

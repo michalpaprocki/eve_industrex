@@ -1,7 +1,7 @@
 defmodule Domain.Universe.Group.MapperTest do
   use ExUnit.Case
   alias EveIndustrex.Universe.Group.Mapper
-
+  @moduledoc false
   setup_all do
     mock_esi_groups = [
       %{

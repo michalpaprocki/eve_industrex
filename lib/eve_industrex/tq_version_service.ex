@@ -1,7 +1,7 @@
 defmodule EveIndustrex.TqVersionService do
   alias EveIndustrex.Schemas.TqVersion
   alias EveIndustrex.Repo
-
+  @moduledoc false
   def upsert_tq_version(string) do
     get_tq_version()
     |> TqVersion.changeset(%{:version => string})

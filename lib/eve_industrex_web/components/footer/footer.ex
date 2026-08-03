@@ -1,7 +1,7 @@
 defmodule EveIndustrexWeb.Footer do
   use EveIndustrexWeb, :live_component
   alias EveIndustrex.ReleaseInfo
-
+  @moduledoc false
   def update(assigns, socket) do
     {:ok, socket |> assign(assigns)}
   end

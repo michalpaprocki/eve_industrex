@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Infrastructure.ESI.Headers do
+  @moduledoc false
   defstruct [
     :etag,
     :expires_at,

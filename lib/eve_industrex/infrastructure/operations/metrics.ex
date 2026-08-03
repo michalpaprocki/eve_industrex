@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Infrastructure.Operations.Metrics do
+  @moduledoc false
   defstruct [
     :duration_count,
     :duration_total_ms,

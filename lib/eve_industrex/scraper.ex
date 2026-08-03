@@ -1,6 +1,6 @@
 defmodule EveIndustrex.Scraper do
   require Logger
-
+  @moduledoc false
   alias EveIndustrex.Infrastructure.Parsers.Html
   alias EveIndustrex.Error
 

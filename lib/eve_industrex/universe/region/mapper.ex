@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Universe.Region.Mapper do
+  @moduledoc false
   def from_dump(data) do
     %{
       region_id: Map.get(data, "_key"),

@@ -2,7 +2,7 @@ defmodule Domain.Universe.Group.PersistenceTest do
   use EveIndustrex.DataCase
   alias EveIndustrex.Universe.{Category, Group}
   alias EveIndustrex.Universe.Group.Persistence
-
+  @moduledoc false
   @category %{
     :category_id => 0,
     :published => true,

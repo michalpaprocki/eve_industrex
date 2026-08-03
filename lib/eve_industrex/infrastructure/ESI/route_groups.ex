@@ -2,6 +2,9 @@ defmodule EveIndustrex.Infrastructure.ESI.RouteGroups do
   use GenServer
   require Logger
 
+  @moduledoc """
+    A GenServer that tracks which resources use which rate limiting groups.
+  """
   def init(_init_arg) do
     Logger.info("Starting #{__MODULE__}...")
     :ets.new(:esi_route_groups, [:bag, :protected, :named_table, read_concurrency: true])

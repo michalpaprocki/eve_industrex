@@ -1,6 +1,6 @@
 defmodule EveIndustrex.Infrastructure.Cache.Loader.Type do
   alias EveIndustrex.Universe.Type.Query
-
+  @moduledoc false
   def init() do
     :ets.insert(:types, Query.get_published_types_with_details())
   end

@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Test.EsiFixtures do
   alias EveIndustrex.Infrastructure.ESI.{Headers, Response}
   alias EveIndustrex.Infrastructure.ESI.Sync
-
+  @moduledoc false
   def resource_type_fixture(name \\ "test_resource") do
     %Sync.ResourceType{}
     |> Sync.ResourceType.changeset(%{name: name})

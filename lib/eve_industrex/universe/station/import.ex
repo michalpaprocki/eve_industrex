@@ -4,10 +4,10 @@ defmodule EveIndustrex.Universe.Station.Import do
   alias EveIndustrex.Universe.Station.Mapper
 
   alias EveIndustrex.Infrastructure.Parsers.Jsonl
-
+  @moduledoc false
   def from_esi() do
     stations_ids = Jsonl.read_jsonl(Jsonl.get_stations_path()) |> Mapper.dump_to_ids()
-    data = Sync.update_from_ESI(stations_ids)
+    data = Sync.update_from_esi(stations_ids)
 
     stations =
       Task.Supervisor.async_stream(EveIndustrex.TaskSupervisor, data, fn d ->
@@ -19,6 +19,6 @@ defmodule EveIndustrex.Universe.Station.Import do
   end
 
   def one_from_esi(station_id) do
-    Sync.update_from_ESI([station_id]) |> Enum.map(fn s -> Mapper.from_esi(s) end)
+    Sync.update_from_esi([station_id]) |> Enum.map(fn s -> Mapper.from_esi(s) end)
   end
 end

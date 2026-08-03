@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Industry.SystemCostIndex.Mapper do
+  @moduledoc false
   def from_esi(data) do
     Enum.map(Map.get(data, "cost_indices", []), fn ci ->
       create_activity_map(ci, Map.get(data, "solar_system_id", nil))

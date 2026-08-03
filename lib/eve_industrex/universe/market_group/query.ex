@@ -4,7 +4,7 @@ defmodule EveIndustrex.Universe.MarketGroup.Query do
   alias EveIndustrex.Universe.Type
   alias EveIndustrex.Universe.MarketGroup
   alias EveIndustrex.Repo
-
+  @moduledoc false
   def get_market_groups_for_cache(),
     do:
       from(mg in MarketGroup,

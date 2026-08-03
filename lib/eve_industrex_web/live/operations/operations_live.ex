@@ -11,7 +11,7 @@ defmodule EveIndustrexWeb.OperationsLive do
     up_time = seconds_to_date(total_seconds)
 
     if connected?(socket) do
-      Process.send_after(self(), :refresh, 10000)
+      Process.send_after(self(), :refresh, 10_000)
       Process.send_after(self(), :clock, 1000)
     end
 
@@ -189,7 +189,7 @@ defmodule EveIndustrexWeb.OperationsLive do
   end
 
   def handle_info(:refresh, socket) do
-    Process.send_after(self(), :refresh, 10000)
+    Process.send_after(self(), :refresh, 10_000)
     {:noreply, socket |> assign(:snapshot, Operations.Service.snapshot())}
   end
 
@@ -212,8 +212,8 @@ defmodule EveIndustrexWeb.OperationsLive do
   end
 
   defp seconds_to_date(total_seconds) do
-    days = div(total_seconds, 86400)
-    hours = div(rem(total_seconds, 86400), 3600)
+    days = div(total_seconds, 86_400)
+    hours = div(rem(total_seconds, 86_400), 3600)
     minutes = div(rem(total_seconds, 3600), 60)
     seconds = rem(total_seconds, 60)
 

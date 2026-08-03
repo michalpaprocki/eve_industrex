@@ -1,4 +1,7 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncProvider do
+  @moduledoc """
+    Simple helper for generating default strategies.
+  """
   def default_strategy(target_id, resource) do
     case resource.name do
       "market_orders" ->
@@ -17,7 +20,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncProvider do
         %{
           resource_type_id: resource.id,
           target_id: nil,
-          sync_interval_seconds: 86400,
+          sync_interval_seconds: 86_400,
           last_successful_sync: nil,
           enabled: true,
           next_generation: 1,

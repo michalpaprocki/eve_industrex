@@ -28,7 +28,7 @@ defmodule EveIndustrexWeb.Dashboard.DashboardLive do
       |> Ecto.Changeset.cast(params, Map.keys(@form_types))
 
     Process.send_after(self(), {:tick}, 1000)
-    Process.send_after(self(), {:metrics}, 10000)
+    Process.send_after(self(), {:metrics}, 10_000)
 
     {:ok,
      socket

@@ -5,7 +5,7 @@ defmodule EveIndustrex.Market.MarketOrder.Jobs.MarketStoreProjectionWorker do
   alias EveIndustrex.Infrastructure.Cache
   alias EveIndustrex.Infrastructure.Readiness
   require Logger
-
+  @moduledoc false
   @impl Oban.Worker
   def perform(%Oban.Job{args: _args, attempt: _attempt}) do
     Logger.info("current_gen for MO: #{Cache.get_current_generation(:market_orders)}")

@@ -5,6 +5,9 @@ defmodule EveIndustrex.Industry.SystemCostIndex.Service do
   import Ecto.Query
   require Logger
 
+  @moduledoc """
+    Projects SCI to :ets table.
+  """
   def project_system_cost_indices(tid) do
     query =
       from(sci in SystemCostIndex,

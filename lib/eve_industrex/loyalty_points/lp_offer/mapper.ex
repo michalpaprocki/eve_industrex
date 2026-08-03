@@ -1,4 +1,5 @@
 defmodule EveIndustrex.LoyaltyPoints.LpOffer.Mapper do
+  @moduledoc false
   def from_esi(data) do
     %{
       :isk_cost => Map.get(data, "isk_cost"),

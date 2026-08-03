@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Industry.ReprocessMaterial.Mapper do
+  @moduledoc false
   def from_dump(%{"materials" => mats} = data) do
     %{
       source_type_id: Map.get(data, "_key"),

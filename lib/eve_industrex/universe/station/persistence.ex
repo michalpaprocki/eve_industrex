@@ -1,6 +1,6 @@
 defmodule EveIndustrex.Universe.Station.Persistence do
   # @trade_hubs [60003760,60008494,60011866,60004588,60005686]
-
+  @moduledoc false
   alias EveIndustrex.Repo
   alias EveIndustrex.Universe.Station
 

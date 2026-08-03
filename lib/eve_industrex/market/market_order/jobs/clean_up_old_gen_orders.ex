@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Market.MarketOrder.Jobs.CleanUpOldGenOrders do
   alias EveIndustrex.Infrastructure.ESI.Sync.Orchestrator
   use Oban.Worker, queue: :market_orders, max_attempts: 10
-
+  @moduledoc false
   @impl Oban.Worker
   def perform(%Oban.Job{args: args, attempt: attempt}) do
     %{"strategy_id" => strategy_id} = args

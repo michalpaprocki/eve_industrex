@@ -1,7 +1,7 @@
 defmodule Infrastructure.ESI.Sync.OrchestratorServiceTest do
   use EveIndustrex.DataCase
   use ExUnit.Case
-
+  @moduledoc false
   alias EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService
   alias EveIndustrex.Infrastructure.ESI.RouteGroups
 

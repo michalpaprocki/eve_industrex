@@ -1,6 +1,6 @@
 defmodule EveIndustrexWeb.Header.Header do
   use EveIndustrexWeb, :live_component
-
+  @moduledoc false
   def update(_assigns, socket) do
     {:ok, socket}
   end

@@ -1,7 +1,7 @@
 defmodule Domain.Universe.Category.MapperTest do
   use ExUnit.Case
   alias EveIndustrex.Universe.Category.Mapper
-
+  @moduledoc false
   setup_all do
     mock_esi_categories = [
       %{

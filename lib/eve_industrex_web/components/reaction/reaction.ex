@@ -2,7 +2,7 @@ defmodule EveIndustrexWeb.Reaction do
   use EveIndustrexWeb, :live_component
   alias EveIndustrex.Utils
   alias EveIndustrex.Market
-
+  @moduledoc false
   def update(assigns, socket) do
     eiv =
       Enum.reduce(assigns.reaction.bp.activities.reaction.materials, 0, fn x, acc ->

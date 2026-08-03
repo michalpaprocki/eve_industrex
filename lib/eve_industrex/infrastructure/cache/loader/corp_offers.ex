@@ -1,6 +1,6 @@
 defmodule EveIndustrex.Infrastructure.Cache.Loader.CorpOffers do
   alias EveIndustrex.LoyaltyPoints
-
+  @moduledoc false
   def init() do
     corp_offers =
       LoyaltyPoints.NpcCorp.Store.get_all()

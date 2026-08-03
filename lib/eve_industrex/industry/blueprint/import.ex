@@ -2,7 +2,7 @@ defmodule EveIndustrex.Industry.Blueprint.Import do
   alias EveIndustrex.Industry.Blueprint.Persistence
   alias EveIndustrex.Industry.Blueprint.Mapper
   alias EveIndustrex.Infrastructure.Parsers.Jsonl
-
+  @moduledoc false
   def from_dump() do
     data = Jsonl.read_jsonl(Jsonl.get_bp_path())
     blueprints = Enum.map(data, fn d -> Mapper.from_dump(d) end)

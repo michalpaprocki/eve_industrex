@@ -1,7 +1,7 @@
 defmodule Domain.Universe.Type.MapperTest do
   use ExUnit.Case
   alias EveIndustrex.Universe.Type.Mapper
-
+  @moduledoc false
   setup_all do
     mock_dump_types = [
       %{

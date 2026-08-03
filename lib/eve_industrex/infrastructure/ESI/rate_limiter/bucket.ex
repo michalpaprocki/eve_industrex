@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Infrastructure.ESI.RateLimiter.Bucket do
   defstruct [:limit, :remaining, :updated_at, :cooldown_until]
   alias EveIndustrex.Infrastructure.ESI.Headers
-
+  @moduledoc false
   def new(%Headers{} = headers, cooldown \\ nil) do
     %__MODULE__{
       limit: parse_limit(headers.rate_limit),

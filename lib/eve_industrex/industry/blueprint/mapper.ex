@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Industry.Blueprint.Mapper do
+  @moduledoc false
   def from_dump(data) do
     %{
       blueprint_type_id: Map.get(data, "_key"),

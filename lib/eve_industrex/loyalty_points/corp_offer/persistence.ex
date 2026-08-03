@@ -1,7 +1,7 @@
 defmodule EveIndustrex.LoyaltyPoints.CorpOffer.Persistence do
   alias EveIndustrex.LoyaltyPoints.CorpOffer
   alias EveIndustrex.Repo
-
+  @moduledoc false
   def upsert_all(corps_offers) do
     rows =
       for {cid, offer_ids} <- corps_offers,

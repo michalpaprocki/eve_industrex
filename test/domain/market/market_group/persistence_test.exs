@@ -3,7 +3,7 @@ defmodule Domain.Market.MarketGroup.PersistenceTest do
   alias EveIndustrex.Universe.MarketGroup.Persistence
   alias EveIndustrex.Universe.MarketGroup
   use EveIndustrex.DataCase
-
+  @moduledoc false
   @market_group %{
     :market_group_id => 1,
     :description => "test_desc",

@@ -2,6 +2,7 @@ defmodule EveIndustrex.LoyaltyPoints.CorpOffer.Query do
   alias EveIndustrex.LoyaltyPoints.CorpOffer
   alias EveIndustrex.Repo
   import Ecto.Query
+  @moduledoc false
   def get_db_count(), do: Repo.aggregate(CorpOffer, :count)
 
   def get_corp_offers_for_cache(corp_id) do

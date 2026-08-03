@@ -2,7 +2,7 @@ defmodule EveIndustrex.Infrastructure.Schedulers.ProjectionScheduler do
   alias EveIndustrex.Infrastructure.ESI.Sync.Query
   use Oban.Worker, queue: :schedulers, unique: [period: :infinity]
   require Logger
-
+  @moduledoc false
   @workers %{
     "market_orders" => EveIndustrex.Market.MarketOrder.Jobs.MarketStoreProjectionWorker,
     "average_prices" => EveIndustrex.Market.AveragePrice.Jobs.AveragePricesStoreProjectionWorker,

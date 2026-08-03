@@ -10,6 +10,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Universe do
   # this needs a huge refactor to accomodate headers
   require Logger
 
+  @moduledoc """
+    Handles missing dependencies discovery that may appear during sync.
+  """
   def ensure_type_dependencies(type_ids) do
     with {:ok, missing_types} <-
            resolve_dependencies(

@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Infrastructure.Schedulers.StrategyCleanUpScheduler do
   use Oban.Worker, queue: :schedulers, unique: [period: :infinity]
   require Logger
-
+  @moduledoc false
   @impl Oban.Worker
   def perform(_) do
     Logger.info("Running clean up for strategies...")

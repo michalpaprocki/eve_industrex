@@ -2,6 +2,7 @@ defmodule EveIndustrexWeb.MiniMarket do
   use EveIndustrexWeb, :live_component
   alias EveIndustrex.Utils
   alias EveIndustrex.Market
+  @moduledoc false
   @types ["SELL", "BUY"]
   @form_types %{custom_price: :float, order_type: :string}
   def update_component(cid, %{:update => data}) do

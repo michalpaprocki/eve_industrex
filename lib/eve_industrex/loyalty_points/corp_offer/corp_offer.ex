@@ -2,6 +2,7 @@ defmodule EveIndustrex.LoyaltyPoints.CorpOffer do
   use Ecto.Schema
   alias EveIndustrex.LoyaltyPoints.LpOffer
   alias EveIndustrex.LoyaltyPoints.NpcCorp
+
   @primary_key false
   schema "corps_offers" do
     belongs_to :corp, NpcCorp, foreign_key: :corp_id, references: :corp_id

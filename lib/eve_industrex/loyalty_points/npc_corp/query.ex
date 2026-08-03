@@ -3,7 +3,7 @@ defmodule EveIndustrex.LoyaltyPoints.NpcCorp.Query do
   alias EveIndustrex.LoyaltyPoints.NpcCorp.Store
   alias EveIndustrex.Repo
   import Ecto.Query
-
+  @moduledoc false
   def get_corp(id), do: Store.get_all() |> Enum.filter(fn {_cid, corp} -> corp.corp_id == id end)
 
   def corps_with_offers(),

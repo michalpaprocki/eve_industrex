@@ -2,7 +2,7 @@ defmodule EveIndustrex.Universe.MarketGroup.Persistence do
   alias EveIndustrex.Universe.MarketGroup
   alias EveIndustrex.Repo
   alias EveIndustrex.Universe.MarketGroup.Query
-
+  @moduledoc false
   def upsert_all(list_of_market_groups, return? \\ false) when is_list(list_of_market_groups) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 

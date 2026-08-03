@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Industry.Blueprint.Store do
+  @moduledoc false
   def get_blueprint(id) do
     case :ets.lookup(:blueprints, id) do
       [{id, bp}] ->

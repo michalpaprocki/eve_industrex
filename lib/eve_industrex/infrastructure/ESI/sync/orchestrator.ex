@@ -7,6 +7,10 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Orchestrator do
   alias EveIndustrex.Infrastructure.ESI.Sync
   require Logger
 
+  @moduledoc """
+    Module contains functions that orchestrate sync of resources. Rate limit group discovery happens here.
+  """
+
   def initiate_resource_sync(strategy_id, attempt, max_attempts, fetch_fn) do
     strategy = Sync.Query.get_strategy(strategy_id)
 

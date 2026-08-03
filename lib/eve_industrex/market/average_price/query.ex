@@ -3,7 +3,7 @@ defmodule EveIndustrex.Market.AveragePrice.Query do
   alias EveIndustrex.Universe.Type
   alias EveIndustrex.Repo
   alias EveIndustrex.Market.AveragePrice
-
+  @moduledoc false
   def get_average_prices_for_published_types() do
     query = from(t in Type, where: t.published == true)
 

@@ -2,7 +2,7 @@ defmodule EveIndustrex.Universe.Region.Import do
   alias EveIndustrex.Universe.Region.Mapper
   alias EveIndustrex.Infrastructure.Parsers.Jsonl
   alias EveIndustrex.Universe.Region.Persistence
-
+  @moduledoc false
   def from_dump() do
     jsonl = Jsonl.read_jsonl(Jsonl.get_regions_path())
 

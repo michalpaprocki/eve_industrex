@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Universe.System.Query do
   alias EveIndustrex.Universe.System
   alias EveIndustrex.Repo
-
+  @moduledoc false
   def get_systems_for_cache do
     System
     |> Repo.all()

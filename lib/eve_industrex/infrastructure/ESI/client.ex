@@ -4,6 +4,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Client do
   alias EveIndustrex.Infrastructure.ESI.{Headers, Response}
   require Logger
 
+  @moduledoc """
+    Bunch of wrapper functions around Req calls.
+  """
   alias EveIndustrex.Infrastructure.ESI.Endpoints.{
     AveragePrices,
     MarketOrders,

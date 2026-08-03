@@ -1,6 +1,7 @@
 defmodule EveIndustrexWeb.Common.TaxRate do
   use EveIndustrexWeb, :live_component
   @form_types %{tax_rate: :float}
+  @moduledoc false
   def update(assigns, socket) do
     params = %{"tax_rate" => 0.00}
 

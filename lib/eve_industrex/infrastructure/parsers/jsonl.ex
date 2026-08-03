@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Infrastructure.Parsers.Jsonl do
+  @moduledoc false
   require Jason
   @blueprints_path "data_dump/blueprints.jsonl"
   @categories_path "data_dump/categories.jsonl"

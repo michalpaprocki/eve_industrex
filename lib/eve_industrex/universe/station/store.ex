@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Universe.Station.Store do
+  @moduledoc false
   def get_stations(), do: :ets.tab2list(:stations)
 
   def get_station(station_id) do

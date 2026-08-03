@@ -1,6 +1,10 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
   use GenServer
   require Logger
+
+  @moduledoc """
+    SyncMonitor is responsible for populating telemetry ets tables.
+  """
   #  TODO: clean up typos, clean memo - mowing window
   def start_link(_) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)

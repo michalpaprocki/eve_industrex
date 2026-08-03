@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Industry.SystemCostIndex.Store do
+  @moduledoc false
   def get_all() do
     :ets.tab2list(get_system_cost_indices_table())
   end

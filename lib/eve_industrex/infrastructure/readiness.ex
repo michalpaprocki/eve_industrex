@@ -2,6 +2,10 @@ defmodule EveIndustrex.Infrastructure.Readiness do
   alias EveIndustrexWeb.Endpoint
   use GenServer
   require Logger
+
+  @moduledoc """
+    Purpose of this module is to track application's boostrap state.
+  """
   @flags [:bootstrap, :sde_cache, :market_orders, :average_prices, :system_cost_index]
   def start_link(_) do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)

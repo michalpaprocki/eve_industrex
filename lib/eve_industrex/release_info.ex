@@ -1,6 +1,9 @@
 defmodule EveIndustrex.ReleaseInfo do
   defstruct [:name, :version, :otp_release, :elixir_version]
 
+  @moduledoc """
+    Gathers app specific data for operations page.
+  """
   def get() do
     struct(__MODULE__,
       name: Application.spec(:eve_industrex, :description) |> List.to_string(),

@@ -3,6 +3,7 @@ defmodule EveIndustrex.Industry.Blueprint.Query do
   alias EveIndustrex.Industry.{Blueprint, BlueprintActivityProduct}
   alias EveIndustrex.Universe.Type
   alias EveIndustrex.Repo
+  @moduledoc false
   def get_blueprints(), do: Repo.all(Blueprint) |> Repo.preload([:type])
 
   def get_blueprint(blueprint_type_id),

@@ -3,7 +3,7 @@ defmodule EveIndustrex.Market.MarketOrder.Persistence do
   alias EveIndustrex.Repo
   alias EveIndustrex.Market.MarketOrder
   import Ecto.Query
-
+  @moduledoc false
   def upsert_all(list_of_market_orders, return? \\ false) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 

@@ -1,6 +1,6 @@
 defmodule EveIndustrexWeb.Market.ToolPanel do
   use EveIndustrexWeb, :live_component
-
+  @moduledoc false
   def update(assigns, socket) do
     {:ok,
      socket

@@ -2,7 +2,7 @@ defmodule EveIndustrexWeb.Market.CategoryBrowser do
   use EveIndustrexWeb, :live_component
   alias Phoenix.LiveView.AsyncResult
   alias EveIndustrex.Universe.MarketGroup.Store
-
+  @moduledoc false
   def update(assigns, socket) do
     {:ok, socket |> assign(assigns) |> assign(:market_groups, Store.get_init_market_groups())}
   end

@@ -3,6 +3,7 @@ defmodule EveIndustrex.Market.AveragePrice.Jobs.SyncAveragePricesWorker do
   use Oban.Worker, queue: :average_prices, max_attempts: 10
   alias EveIndustrex.Infrastructure.ESI.Client
   alias EveIndustrex.Infrastructure.ESI.Sync.Orchestrator
+  @moduledoc false
   @impl Oban.Worker
   def perform(%Oban.Job{args: args, attempt: attempt, max_attempts: max_attempts}) do
     Logger.info("Average Prices Sync Running...")

@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Industry.BlueprintActivity.Mapper do
+  @moduledoc false
   def from_dump({"copying", %{} = map}) do
     %{
       activity_type: :copying,

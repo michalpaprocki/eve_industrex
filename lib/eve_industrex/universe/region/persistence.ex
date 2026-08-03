@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Universe.Region.Persistence do
   alias EveIndustrex.Repo
   alias EveIndustrex.Universe.Region
-
+  @moduledoc false
   def upsert_all(list_of_regions, return? \\ false) when is_list(list_of_regions) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 

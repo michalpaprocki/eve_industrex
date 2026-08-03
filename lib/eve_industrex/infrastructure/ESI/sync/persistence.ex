@@ -5,7 +5,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Persistence do
   alias EveIndustrex.Repo
   alias EveIndustrex.Infrastructure.ESI.Sync.ResourceType
   import Ecto.Query
-
+  @moduledoc false
   def delete_resources() do
     Repo.delete_all(ResourceType)
   end

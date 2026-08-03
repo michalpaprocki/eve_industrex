@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Infrastructure.Cache.Supervisor do
   use Supervisor
   alias EveIndustrex.Infrastructure.Cache
-
+  @moduledoc false
   def start_link(_arg) do
     Supervisor.start_link(__MODULE__, [], name: :cache_supervisor)
   end

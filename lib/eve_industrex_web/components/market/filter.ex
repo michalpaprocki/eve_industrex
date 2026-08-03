@@ -1,6 +1,6 @@
 defmodule EveIndustrexWeb.Market.Filter do
   use EveIndustrexWeb, :live_component
-
+  @moduledoc false
   def update(assigns, socket) do
     {:ok,
      socket

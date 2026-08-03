@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Infrastructure.Schedulers.JanitorScheduler do
   use Oban.Worker, queue: :schedulers, unique: [period: :infinity]
   require Logger
-
+  @moduledoc false
   @impl Oban.Worker
   def perform(%Oban.Job{args: _args}) do
     Logger.info("Checking for retryable or discarded jobs...")

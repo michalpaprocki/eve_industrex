@@ -3,6 +3,7 @@ defmodule EveIndustrexWeb.Market.Showcase do
   alias EveIndustrex.Market.AveragePrice
   alias EveIndustrex.Utils
   use EveIndustrexWeb, :live_component
+  @moduledoc false
   @image_url "https://images.evetech.net/types/"
   def update_component(cid, assigns) do
     send_update(__MODULE__, id: cid, update: %{:type_id => assigns})

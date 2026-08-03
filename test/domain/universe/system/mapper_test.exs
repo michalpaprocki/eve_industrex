@@ -1,7 +1,8 @@
 defmodule Domain.Universe.System.MapperTest do
   alias EveIndustrex.Universe.System.Mapper
   use ExUnit.Case
-
+  # credo:disable-for-this-file Credo.Check.Readability.LargeNumbers
+  @moduledoc false
   setup_all do
     mock_esi_systems = [
       %{

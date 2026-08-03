@@ -2,7 +2,7 @@ defmodule Domain.Universe.Type.PersistenceTest do
   alias EveIndustrex.Universe.Type.Persistence
   alias EveIndustrex.Universe.Type
   use EveIndustrex.DataCase
-
+  @moduledoc false
   @category %{
     :category_id => 0,
     :published => true,
@@ -30,7 +30,7 @@ defmodule Domain.Universe.Type.PersistenceTest do
     :published => true,
     :radius => 50.0,
     :type_id => 1,
-    :volume => 10000.0,
+    :volume => 10_000.0,
     :group_id => 1,
     :market_group_id => 1
   }
@@ -48,7 +48,7 @@ defmodule Domain.Universe.Type.PersistenceTest do
       :published => true,
       :radius => 50.0,
       :type_id => 2,
-      :volume => 10000.0,
+      :volume => 10_000.0,
       :group_id => 1,
       :market_group_id => 1
     }

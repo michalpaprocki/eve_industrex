@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Universe.System.Mapper do
+  @moduledoc false
   def from_dump(data) do
     %{
       system_id: Map.get(data, "_key"),

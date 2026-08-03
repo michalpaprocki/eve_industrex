@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Error do
+  @moduledoc false
   @type t :: %{
           type: atom(),
           reason: any(),

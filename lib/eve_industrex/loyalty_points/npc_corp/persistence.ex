@@ -1,7 +1,7 @@
 defmodule EveIndustrex.LoyaltyPoints.NpcCorp.Persistence do
   alias EveIndustrex.LoyaltyPoints.NpcCorp
   alias EveIndustrex.Repo
-
+  @moduledoc false
   def upsert_all(list_of_npc_corps, return? \\ false) when is_list(list_of_npc_corps) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 

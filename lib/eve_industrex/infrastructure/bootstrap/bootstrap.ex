@@ -7,6 +7,9 @@ defmodule EveIndustrex.Infrastructure.Bootstrap do
   alias EveIndustrex.Infrastructure.Readiness
   require Logger
 
+  @moduledoc """
+    Bootstraping - makes sure that all necessary app data is loaded, generates sync strates, populates the SDE caches and starts schedulers.
+  """
   def run do
     seed_if_needed()
     sync_tq_version()
@@ -17,14 +20,14 @@ defmodule EveIndustrex.Infrastructure.Bootstrap do
     case Service.get_present_records() do
       {false, counts} ->
         Logger.info("Found empty DB rows... fetching SDE")
-        Utils.fetch_SDE()
+        Utils.fetch_sde()
         Logger.info("Populating the DB...")
 
         Enum.each(counts, fn {schema, count} ->
           read_out_schema(schema, count) |> Service.populate_db()
         end)
 
-        Utils.remove_SDE_files()
+        Utils.remove_sde_files()
 
         tq_version = Scraper.get_latest_tq_version()
         TqVersionService.upsert_tq_version(tq_version)

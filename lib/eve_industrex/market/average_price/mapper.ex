@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Market.AveragePrice.Mapper do
+  @moduledoc false
   def from_esi(ap) do
     %{
       type_id: Map.get(ap, "type_id"),

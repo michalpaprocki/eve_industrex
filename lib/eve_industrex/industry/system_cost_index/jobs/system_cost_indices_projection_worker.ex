@@ -5,7 +5,7 @@ defmodule EveIndustrex.Industry.SystemCostIndex.Jobs.SystemCostIndicesProjection
   alias EveIndustrex.Infrastructure.Cache
   alias EveIndustrex.Infrastructure.Readiness
   require Logger
-
+  @moduledoc false
   @impl Oban.Worker
   def perform(%Oban.Job{args: _args, attempt: _attempt}) do
     generation =

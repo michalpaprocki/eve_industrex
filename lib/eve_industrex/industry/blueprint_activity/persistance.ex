@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Industry.BlueprintActivity.Persistance do
   alias EveIndustrex.Repo
   alias EveIndustrex.Industry.BlueprintActivity
-
+  @moduledoc false
   def upsert_all(list_of_blueprints, return? \\ false) when is_list(list_of_blueprints) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 

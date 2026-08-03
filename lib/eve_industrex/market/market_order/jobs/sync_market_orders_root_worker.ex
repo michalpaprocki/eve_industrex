@@ -5,7 +5,7 @@ defmodule EveIndustrex.Market.MarketOrder.Jobs.SyncMarketOrdersRootWorker do
   alias EveIndustrex.Infrastructure.ESI.Sync.Orchestrator
   require Logger
   use Oban.Worker, queue: :market_orders, max_attempts: 5
-
+  @moduledoc false
   # maybe check etag store for expires_at and start job right after expiry to prevent esi cache refresh during job
   @impl Oban.Worker
   def perform(%Oban.Job{args: args, attempt: attempt, max_attempts: max_attempts}) do

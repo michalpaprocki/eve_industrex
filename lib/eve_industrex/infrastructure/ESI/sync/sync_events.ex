@@ -1,6 +1,9 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncEvents do
   require Logger
 
+  @moduledoc """
+    Functions that emit telemetry events.
+  """
   def generation_running(generation, strategy) do
     :telemetry.execute(
       [:eve_industrex, :sync, :generation, :running],

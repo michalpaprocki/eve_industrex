@@ -1,8 +1,7 @@
 defmodule EveIndustrex.LoyaltyPoints.LpOffer.Persistence do
-  LoyaltyPoints
   alias EveIndustrex.LoyaltyPoints.LpOffer
   alias EveIndustrex.Repo
-
+  @moduledoc false
   def upsert_all(list_of_lp_offers, return? \\ false) when is_list(list_of_lp_offers) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 

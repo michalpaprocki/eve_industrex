@@ -6,6 +6,9 @@ defmodule EveIndustrex.Market.AveragePrice.Service do
   import Ecto.Query
   require Logger
 
+  @moduledoc """
+    Projects ap to :ets table.
+  """
   def project_average_prices(tid) do
     subquery = from(t in Type, where: t.published == true)
 

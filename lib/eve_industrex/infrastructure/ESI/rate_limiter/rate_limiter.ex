@@ -4,6 +4,9 @@ defmodule EveIndustrex.Infrastructure.ESI.RateLimiter do
   use GenServer
   require Logger
 
+  @moduledoc """
+    Simple rate limit tracking module.
+  """
   def init(_init_arg) do
     :ets.new(:rate_limiter, [:set, :protected, :named_table, read_concurrency: true])
     {:ok, %{}}
@@ -15,11 +18,40 @@ defmodule EveIndustrex.Infrastructure.ESI.RateLimiter do
   end
 
   def available?(rate_limit_group, threshold \\ 10) do
-    GenServer.call(__MODULE__, {:available?, rate_limit_group, threshold})
+    group = rate_limit_group
+
+    case :ets.lookup(:rate_limiter, group) do
+      [{^group, %Bucket{} = bucket}] ->
+        cond do
+          cooldown_active?(bucket) ->
+            false
+
+          bucket.remaining > threshold ->
+            true
+
+          true ->
+            false
+        end
+
+      [{^group, %Global{} = bucket}] ->
+        cond do
+          global_cooldown_active?(bucket) ->
+            false
+
+          bucket.error_limit_remain > threshold ->
+            true
+
+          true ->
+            false
+        end
+
+      [] ->
+        true
+    end
   end
 
   def check() do
-    GenServer.call(__MODULE__, {:check})
+    :ets.tab2list(:rate_limiter)
   end
 
   def observe(%Headers{} = headers) do
@@ -28,44 +60,6 @@ defmodule EveIndustrex.Infrastructure.ESI.RateLimiter do
 
   def cooldown(%Headers{} = headers) do
     GenServer.cast(__MODULE__, {:cooldown, headers})
-  end
-
-  def handle_call({:check}, _from, state) do
-    rl = :ets.tab2list(:rate_limiter)
-    {:reply, rl, state}
-  end
-
-  def handle_call({:available?, rate_limit_group, threshold}, _from, state) do
-    group = rate_limit_group
-
-    case :ets.lookup(:rate_limiter, group) do
-      [{^group, %Bucket{} = bucket}] ->
-        cond do
-          cooldown_active?(bucket) ->
-            {:reply, false, state}
-
-          bucket.remaining > threshold ->
-            {:reply, true, state}
-
-          true ->
-            {:reply, false, state}
-        end
-
-      [{^group, %Global{} = bucket}] ->
-        cond do
-          global_cooldown_active?(bucket) ->
-            {:reply, false, state}
-
-          bucket.error_limit_remain > threshold ->
-            {:reply, true, state}
-
-          true ->
-            {:reply, false, state}
-        end
-
-      [] ->
-        {:reply, true, state}
-    end
   end
 
   def handle_cast({:observe, %Headers{} = headers}, state) do

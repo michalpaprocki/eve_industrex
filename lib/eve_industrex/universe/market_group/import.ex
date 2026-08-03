@@ -3,7 +3,7 @@ defmodule EveIndustrex.Universe.MarketGroup.Import do
   alias EveIndustrex.Universe.MarketGroup.Mapper
   alias EveIndustrex.Universe.MarketGroup.Persistence
   alias EveIndustrex.Infrastructure.Parsers.Jsonl
-
+  @moduledoc false
   def from_dump do
     jsonl = Jsonl.read_jsonl(Jsonl.get_market_groups_path())
 
@@ -34,8 +34,8 @@ defmodule EveIndustrex.Universe.MarketGroup.Import do
     end
   end
 
-  def from_ESI(market_group_id) do
-    case Sync.fetch_from_ESI(market_group_id) do
+  def from_esi(market_group_id) do
+    case Sync.fetch_from_esi(market_group_id) do
       {:ok, response} ->
         Mapper.from_esi(response.body)
         |> Persistence.upsert()

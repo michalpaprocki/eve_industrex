@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Universe.MarketGroup.Mapper do
+  @moduledoc false
   def from_dump(data) do
     %{
       market_group_id: Map.get(data, "_key"),

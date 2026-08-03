@@ -1,4 +1,5 @@
 defmodule EveIndustrex.LoyaltyPoints.NpcCorp.Mapper do
+  @moduledoc false
   def from_dump(data) do
     %{
       :name => Map.get(Map.get(data, "name"), "en"),

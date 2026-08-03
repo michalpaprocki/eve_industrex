@@ -1,6 +1,6 @@
 defmodule EveIndustrexWeb.Dashboard.RuntimeDetails do
   use EveIndustrexWeb, :live_component
-
+  @moduledoc false
   def update(assigns, socket) do
     {:ok, socket |> assign(assigns) |> assign(:show_details, false)}
   end

@@ -1,7 +1,7 @@
 defmodule EveIndustrexWeb.Market.Category do
   alias EveIndustrex.Universe.MarketGroup.Store
   use EveIndustrexWeb, :live_component
-
+  @moduledoc false
   def update(assigns, socket) do
     cat_indent = "ml-" <> ~s"#{assigns.indent}"
     %{:market_group => market_group} = assigns

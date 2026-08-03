@@ -5,7 +5,7 @@ defmodule EveIndustrex.Universe.Station.Query do
   alias EveIndustrex.Universe.System
   alias EveIndustrex.Repo
   alias EveIndustrex.Universe.Station
-
+  @moduledoc false
   def get_trade_hub_station_ids(),
     do: [60_003_760, 60_008_494, 60_011_866, 60_004_588, 60_005_686]
 

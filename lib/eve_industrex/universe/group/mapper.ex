@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Universe.Group.Mapper do
+  @moduledoc false
   def from_dump(data) do
     %{
       category_id: Map.get(data, "categoryID"),

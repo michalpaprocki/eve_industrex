@@ -3,7 +3,7 @@ defmodule EveIndustrex.Universe.Type.Import do
   alias EveIndustrex.Universe.Type.Sync
   alias EveIndustrex.Universe.Type.Persistence
   alias EveIndustrex.Infrastructure.Parsers.Jsonl
-
+  @moduledoc false
   def from_dump() do
     jsonl = Jsonl.read_jsonl(Jsonl.get_types_path())
 
@@ -15,8 +15,8 @@ defmodule EveIndustrex.Universe.Type.Import do
     Enum.map(types, fn t -> Persistence.upsert_all(t) end)
   end
 
-  def type_from_ESI(type_id) do
-    case Sync.fetch_type_from_ESI(type_id) do
+  def type_from_esi(type_id) do
+    case Sync.fetch_type_from_esi(type_id) do
       {:ok, response} ->
         type = Mapper.from_esi(response.body)
         Persistence.upsert(type)

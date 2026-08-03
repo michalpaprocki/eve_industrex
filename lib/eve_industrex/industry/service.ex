@@ -2,6 +2,9 @@ defmodule EveIndustrex.Industry.Service do
   alias EveIndustrex.Universe.{System, Type}
   alias EveIndustrex.Industry
 
+  @moduledoc """
+  This service deals with all the live view ralated industrial needs, liek generating reactions view, enriching said views and updating them by user inputs.
+  """
   def get_reactions_view() do
     formulas = Industry.Blueprint.Query.get_reaction_formulas()
 

@@ -3,7 +3,7 @@ defmodule EveIndustrex.Infrastructure.Schedulers.StrategyScheduler do
   use Oban.Worker, queue: :schedulers, unique: [period: :infinity]
   require Logger
   alias EveIndustrex.Infrastructure.ESI.Sync.Query
-
+  @moduledoc false
   @workers %{
     "market_orders" => EveIndustrex.Market.MarketOrder.Jobs.SyncMarketOrdersRootWorker,
     "average_prices" => EveIndustrex.Market.AveragePrice.Jobs.SyncAveragePricesWorker,

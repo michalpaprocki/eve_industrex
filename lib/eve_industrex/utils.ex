@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Utils do
+  @moduledoc false
   @sde_files [
     "categories.jsonl",
     "types.jsonl",
@@ -100,7 +101,7 @@ defmodule EveIndustrex.Utils do
     format_time(diff)
   end
 
-  def get_ESI_pages_amount(url) do
+  def get_esi_pages_amount(url) do
     case Req.head(url) do
       {:ok, %Req.Response{:status => 200} = response} ->
         {:ok, response.headers["x-pages"]}
@@ -113,11 +114,11 @@ defmodule EveIndustrex.Utils do
     end
   end
 
-  def get_ESI_pages_amount!(url) do
+  def get_esi_pages_amount!(url) do
     String.to_integer(hd(Req.head!(url).headers["x-pages"]))
   end
 
-  def fetch_ESI_pages(url, page_number, types \\ []) when is_integer(page_number) do
+  def fetch_esi_pages(url, page_number, types \\ []) when is_integer(page_number) do
     {status, response = %Req.Response{}} =
       Req.get(url <> "?datasource=tranquility&page=#{Integer.to_string(page_number)}")
 
@@ -128,7 +129,7 @@ defmodule EveIndustrex.Utils do
     if page_number == 1 do
       List.flatten(updated_types)
     else
-      fetch_ESI_pages(url, page_number - 1, updated_types)
+      fetch_esi_pages(url, page_number - 1, updated_types)
     end
   end
 
@@ -271,7 +272,7 @@ defmodule EveIndustrex.Utils do
     end
   end
 
-  def fetch_SDE() do
+  def fetch_sde() do
     File.mkdir(Path.join(File.cwd!(), "/data_dump/"))
 
     case Req.get(@sde_json_url) do
@@ -297,7 +298,7 @@ defmodule EveIndustrex.Utils do
     end
   end
 
-  def remove_SDE_files() do
+  def remove_sde_files() do
     {:ok, files} = File.ls(Path.join(File.cwd!(), "/data_dump/"))
     Enum.map(files, fn f -> File.rm(Path.join(File.cwd!(), "/data_dump/#{f}")) end)
   end

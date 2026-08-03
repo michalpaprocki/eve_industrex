@@ -2,6 +2,7 @@ defmodule EveIndustrex.Universe.Region.Query do
   alias EveIndustrex.Universe.Region
   alias EveIndustrex.Repo
   import Ecto.Query
+  @moduledoc false
   def get_region(region_id), do: Repo.get(Region, region_id)
 
   def get_regions_for_cache() do

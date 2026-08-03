@@ -2,7 +2,7 @@ defmodule EveIndustrex.LoyaltyPoints.NpcCorp.Import do
   alias EveIndustrex.LoyaltyPoints.NpcCorp.Mapper
   alias EveIndustrex.LoyaltyPoints.NpcCorp.Persistence
   alias EveIndustrex.Infrastructure.Parsers.Jsonl
-
+  @moduledoc false
   def from_dump() do
     jsonl = Jsonl.read_jsonl(Jsonl.get_npc_corps_path())
 

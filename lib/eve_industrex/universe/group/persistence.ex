@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Universe.Group.Persistence do
   alias EveIndustrex.Repo
   alias EveIndustrex.Universe.Group
-
+  @moduledoc false
   def upsert_all(list_of_groups, return? \\ false) when is_list(list_of_groups) do
     Repo.insert_all(
       Group,

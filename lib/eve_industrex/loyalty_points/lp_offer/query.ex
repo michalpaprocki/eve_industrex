@@ -1,7 +1,7 @@
 defmodule EveIndustrex.LoyaltyPoints.LpOffer.Query do
   alias EveIndustrex.LoyaltyPoints.LpOffer
   alias EveIndustrex.Repo
-
+  @moduledoc false
   def get_offers_for_cache(),
     do:
       Repo.all(LpOffer)

@@ -2,7 +2,7 @@ defmodule EveIndustrex.Universe.Constellation.Import do
   alias EveIndustrex.Universe.Constellation.Mapper
   alias EveIndustrex.Universe.Constellation.Persistence
   alias EveIndustrex.Infrastructure.Parsers.Jsonl
-
+  @moduledoc false
   def from_dump() do
     data = Jsonl.read_jsonl(Jsonl.get_constellations_path())
 

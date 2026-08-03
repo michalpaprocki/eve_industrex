@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Universe.Type.Persistence do
   alias EveIndustrex.Repo
   alias EveIndustrex.Universe.Type
-
+  @moduledoc false
   def upsert_all(list_of_types, return? \\ false) when is_list(list_of_types) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 

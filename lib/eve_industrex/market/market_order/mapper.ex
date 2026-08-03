@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Market.MarketOrder.Mapper do
+  @moduledoc false
   def from_esi(data, generation, region_id) do
     %{
       duration: Map.get(data, "duration"),

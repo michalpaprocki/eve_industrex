@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Universe.Constellation.Persistence do
   alias EveIndustrex.Repo
   alias EveIndustrex.Universe.Constellation
-
+  @moduledoc false
   def upsert_all(list_of_constellations, return? \\ false) when is_list(list_of_constellations) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 

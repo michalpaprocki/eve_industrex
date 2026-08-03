@@ -1,6 +1,6 @@
 defmodule EveIndustrex.Infrastructure.Cache.Loader.Blueprint do
   alias EveIndustrex.Industry.Blueprint
-
+  @moduledoc false
   def init() do
     blueprints =
       Blueprint.Query.get_blueprint_for_cache()

@@ -1,4 +1,5 @@
 defmodule EveIndustrex.LoyaltyPoints.CorpOffer.Parser do
+  @moduledoc false
   def apply_expression(offers, expression) do
     case expression do
       {:profit} ->

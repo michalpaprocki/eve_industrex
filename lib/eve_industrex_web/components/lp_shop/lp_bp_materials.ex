@@ -1,7 +1,7 @@
 defmodule EveIndustrexWeb.LpShop.LpBpMaterials do
   alias EveIndustrex.Utils
   use EveIndustrexWeb, :live_component
-
+  @moduledoc false
   def update_component(cid, %{:update => data}) do
     send_update(__MODULE__, id: cid, update: data)
   end

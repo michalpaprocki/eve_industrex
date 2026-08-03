@@ -2,6 +2,9 @@ defmodule EveIndustrex.Market.Service do
   alias EveIndustrex.Market.{AveragePrice, MarketOrder}
   alias EveIndustrex.Universe
 
+  @moduledoc """
+    Module responsible for constructing market related views, initial item prices etc.
+  """
   def get_market_view(type_id) do
     buy_orders =
       MarketOrder.Store.get_market_orders(type_id, :buy)

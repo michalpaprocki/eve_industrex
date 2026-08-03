@@ -1,7 +1,8 @@
 defmodule Domain.Universe.Contellation.MapperTest do
   alias EveIndustrex.Universe.Constellation.Mapper
   use ExUnit.Case
-
+  # credo:disable-for-this-file Credo.Check.Readability.LargeNumbers
+  @moduledoc false
   setup_all do
     mock_esi_constellations = [
       %{

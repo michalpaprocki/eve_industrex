@@ -1,6 +1,6 @@
 defmodule EveIndustrexWeb.Glyph do
   use Phoenix.Component
-
+  @moduledoc false
   attr :name, :string, required: true
   attr :class, :string, default: "w-5 h-5"
 

@@ -2,7 +2,7 @@ defmodule EveIndustrex.Industry.ReprocessMaterial.Import do
   alias EveIndustrex.Industry.ReprocessMaterial.Persistence
   alias EveIndustrex.Industry.ReprocessMaterial.Mapper
   alias EveIndustrex.Infrastructure.Parsers.Jsonl
-
+  @moduledoc false
   def from_dump() do
     data = Jsonl.read_jsonl(Jsonl.get_type_materials_path())
 

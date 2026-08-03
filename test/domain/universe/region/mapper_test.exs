@@ -1,7 +1,8 @@
 defmodule Domain.Universe.Region.MapperTest do
   use ExUnit.Case
   alias EveIndustrex.Universe.Region.Mapper
-
+  # credo:disable-for-this-file Credo.Check.Readability.LargeNumbers
+  @moduledoc false
   setup_all do
     mock_esi_regions = [
       %{

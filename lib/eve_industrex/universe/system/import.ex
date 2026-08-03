@@ -2,7 +2,7 @@ defmodule EveIndustrex.Universe.System.Import do
   alias EveIndustrex.Universe.System.Mapper
   alias EveIndustrex.Infrastructure.Parsers.Jsonl
   alias EveIndustrex.Universe.System.Persistence
-
+  @moduledoc false
   def from_dump() do
     data = Jsonl.read_jsonl(Jsonl.get_systems_path())
 

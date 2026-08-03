@@ -1,6 +1,6 @@
 defmodule EveIndustrex.Infrastructure.Cache.Loader.MarketGroup do
   alias EveIndustrex.Universe.MarketGroup.Query
-
+  @moduledoc false
   def init do
     :ets.insert(:market_groups, Query.get_market_groups_for_cache())
     :ets.insert(:market_group_children, Query.get_market_groups_children_for_cache())

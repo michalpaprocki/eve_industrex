@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Universe.Type.Store do
+  @moduledoc false
   def get_type_id_details(type_id) when is_number(type_id) do
     case :ets.lookup(:types, type_id) do
       [{_id, map}] ->

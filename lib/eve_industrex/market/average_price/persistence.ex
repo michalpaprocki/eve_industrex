@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Market.AveragePrice.Persistence do
   alias EveIndustrex.Repo
   alias EveIndustrex.Market.AveragePrice
-
+  @moduledoc false
   def upsert_all(list_of_average_prices) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 

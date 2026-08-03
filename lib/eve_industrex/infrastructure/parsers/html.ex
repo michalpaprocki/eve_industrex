@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Infrastructure.Parsers.Html do
+  @moduledoc false
   def parse_html_to_latest_patch_notes_path(html) do
     case extract_patch_path(html) do
       nil ->

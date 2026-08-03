@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Universe.MarketGroup.Store do
+  @moduledoc false
   def get_init_market_groups(), do: :ets.tab2list(:market_groups) |> Enum.sort_by(&elem(&1, 1))
 
   def get_market_group_children(market_group_id),

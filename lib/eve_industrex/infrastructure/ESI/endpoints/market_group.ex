@@ -1,6 +1,6 @@
 defmodule EveIndustrex.Infrastructure.ESI.Endpoints.MarketGroup do
   @market_group_url "https://esi.evetech.net/markets/groups/"
-
+  @moduledoc false
   def get_market_group_url(), do: @market_group_url
 
   def compose(market_group_id) when is_number(market_group_id) do

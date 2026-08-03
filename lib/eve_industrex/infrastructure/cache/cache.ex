@@ -2,6 +2,9 @@ defmodule EveIndustrex.Infrastructure.Cache do
   require Logger
   use GenServer
 
+  @moduledoc """
+    This module serves as a central init place for all the stores in the application. It also deals with table swaps for projections.
+  """
   def init(_init_arg) do
     :ets.new(:regions, [
       :set,

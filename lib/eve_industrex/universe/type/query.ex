@@ -4,6 +4,7 @@ defmodule EveIndustrex.Universe.Type.Query do
   alias EveIndustrex.Universe.Type
   alias EveIndustrex.Repo
   import Ecto.Query
+  @moduledoc false
   def get_type(type_id), do: Repo.get_by(Type, type_id: type_id)
   def get_types(), do: Repo.all(Type)
 

@@ -1,6 +1,6 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.Mapper do
   alias EveIndustrex.Infrastructure.ESI.Sync.EsiSyncCache
-
+  @moduledoc false
   def to_resource_type(resource_name) do
     now = get_now()
 

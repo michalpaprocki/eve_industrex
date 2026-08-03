@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Universe.Category.Store do
+  @moduledoc false
   def get_categories, do: :ets.tab2list(:categories)
 
   def exists?(category_id) do

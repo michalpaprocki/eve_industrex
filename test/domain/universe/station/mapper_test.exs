@@ -1,7 +1,7 @@
 defmodule Domain.Universe.Station.MapperTest do
   use ExUnit.Case
   alias EveIndustrex.Universe.Station.Mapper
-
+  @moduledoc false
   setup_all do
     mock_esi_stations = [
       %{

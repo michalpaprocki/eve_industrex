@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Infrastructure.Schedulers.TelemetryScheduler do
   use Oban.Worker, queue: :schedulers, unique: [period: :infinity]
   require Logger
-
+  @moduledoc false
   @impl Oban.Worker
   def perform(_) do
     failed_and_critical =

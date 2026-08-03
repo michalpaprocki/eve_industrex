@@ -3,7 +3,7 @@ defmodule EveIndustrex.Infrastructure.Operations.Service do
   alias EveIndustrex.Infrastructure.Operations.Metrics
   alias EveIndustrex.Infrastructure.Operations.Snapshot
   alias EveIndustrex.Infrastructure.ESI
-
+  @moduledoc false
   def snapshot() do
     %Snapshot{
       resources: get_resources(),

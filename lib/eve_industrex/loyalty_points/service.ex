@@ -3,6 +3,9 @@ defmodule EveIndustrex.LoyaltyPoints.Service do
   alias EveIndustrex.LoyaltyPoints
   alias EveIndustrex.Industry
 
+  @moduledoc """
+    This service constructs loyalty points view, updates prices based on user input and calculates offers' profitability.
+  """
   def get_lp_shop_view(corp_id) do
     offers = LoyaltyPoints.CorpOffer.Query.get_corp_offers(corp_id)
     bps = get_offer_blueprints(offers)

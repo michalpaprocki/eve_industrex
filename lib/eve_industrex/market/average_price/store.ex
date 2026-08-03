@@ -1,4 +1,5 @@
 defmodule EveIndustrex.Market.AveragePrice.Store do
+  @moduledoc false
   def get_count() do
     :ets.tab2list(get_average_prices_table_id()) |> length()
   end

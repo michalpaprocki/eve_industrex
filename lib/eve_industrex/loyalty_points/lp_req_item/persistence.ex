@@ -1,7 +1,7 @@
 defmodule EveIndustrex.LoyaltyPoints.LpReqItem.Persistence do
   alias EveIndustrex.LoyaltyPoints.LpReqItem
   alias EveIndustrex.Repo
-
+  @moduledoc false
   def insert_all(list_of_req_items, return? \\ false) when is_list(list_of_req_items) do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 

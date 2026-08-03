@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Universe.Category.Persistence do
   alias EveIndustrex.Repo
   alias EveIndustrex.Universe.Category
-
+  @moduledoc false
   def upsert_all(list_of_categories, return? \\ false) when is_list(list_of_categories) do
     Repo.insert_all(
       Category,

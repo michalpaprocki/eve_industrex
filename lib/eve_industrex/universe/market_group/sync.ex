@@ -1,6 +1,6 @@
 defmodule EveIndustrex.Universe.MarketGroup.Sync do
   alias EveIndustrex.Infrastructure.ESI.Client
-
+  @moduledoc false
   def get_market_groups() do
     case Client.fetch_market_groups() do
       {:ok, response} ->
@@ -11,7 +11,7 @@ defmodule EveIndustrex.Universe.MarketGroup.Sync do
     end
   end
 
-  def fetch_from_ESI(market_group_id) do
+  def fetch_from_esi(market_group_id) do
     case Client.fetch_market_group(market_group_id) do
       {:ok, response} ->
         {:ok, response}

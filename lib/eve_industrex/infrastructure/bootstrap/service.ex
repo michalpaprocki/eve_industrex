@@ -4,7 +4,7 @@ defmodule EveIndustrex.Infrastructure.Bootstrap.Service do
   alias EveIndustrex.Schemas.TqVersion
   alias EveIndustrex.Infrastructure.ESI.Sync
   alias EveIndustrex.Repo
-
+  @moduledoc false
   alias EveIndustrex.Universe.{
     Region,
     Constellation,

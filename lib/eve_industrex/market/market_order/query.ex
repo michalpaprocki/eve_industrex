@@ -1,6 +1,6 @@
 defmodule EveIndustrex.Market.MarketOrder.Query do
   import Ecto.Query
-
+  @moduledoc false
   alias EveIndustrex.Market.MarketOrder
   alias EveIndustrex.Repo
   require Logger

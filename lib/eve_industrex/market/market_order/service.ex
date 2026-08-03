@@ -7,6 +7,9 @@ defmodule EveIndustrex.Market.MarketOrder.Service do
   @trade_hub_station_ids Station.Query.get_trade_hub_station_ids()
   require Logger
 
+  @moduledoc """
+    Module responsible for market projection logic.
+  """
   def project_orders_to_cache(tid) do
     max_gen = from(mo in MarketOrder, select: max(mo.generation))
 

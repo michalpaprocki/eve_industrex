@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Universe.Type.Mapper do
   alias EveIndustrex.Universe.Category
   alias EveIndustrex.Universe.Group
-
+  @moduledoc false
   def from_dump(data) do
     %{
       type_id: Map.get(data, "_key"),

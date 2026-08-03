@@ -10,7 +10,7 @@ defmodule Infrastructure.ESI.Sync.OrchestratorTest do
   alias EveIndustrex.Infrastructure.ESI.RouteGroups
   alias EveIndustrex.Infrastructure.ESI.EtagStore
   import EveIndustrex.Test.EsiFixtures
-
+  @moduledoc false
   describe "initiate_paginated_resource_sync/4" do
     setup do
       resource_type = resource_type_fixture("orchestrator_test_resource")
