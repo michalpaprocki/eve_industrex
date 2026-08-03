@@ -302,7 +302,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.OrchestratorService do
   end
 
   def maybe_get_duration_ms(map, generation) do
-    if Map.has_key?(map, :finished_at) do
+    if Map.has_key?(map, :finished_at) and Map.has_key?(generation, :started_at) do
       Map.put(
         map,
         :duration_ms,
