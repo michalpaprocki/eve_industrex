@@ -40,7 +40,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.MissingTypesWorker do
 
       Enum.each(missing_type_ids, fn t ->
         if !Universe.Type.Query.type_present?(t) do
-          Type.Import.type_from_ESI(t)
+          Type.Import.type_from_esi(t)
         end
       end)
 
