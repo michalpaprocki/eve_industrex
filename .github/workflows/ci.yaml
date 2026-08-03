@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - ci-learning
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: eve_industrex_test
+          POSTGRES_PASSWORD: p4ssw0rd
+          POSTGRES_DB: eve_industrex_test
+        ports: 
+          - 5432:5432
+        options:
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install erlang and elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: "28.3.1"
+          elixir-version: "1.19.5-otp-28"
+
+
+      - name: Restore mix cache
+        uses: actions/cache@v4
+        with: 
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-
+            
+      - run: mix deps.get
+      
+      - run: mix format --check-formatted
+
+      - run: mix compile --warnings-as-errors
+
+      # - run: mix credo
+      
+      - run: mix test
+
+      - run: MIX_ENV=prod mix release

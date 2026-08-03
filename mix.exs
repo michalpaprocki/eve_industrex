@@ -62,7 +62,8 @@ defmodule EveIndustrex.MixProject do
       {:yamerl, "~> 0.4.0"},
       {:oban, "~> 2.19"},
       {:date_time_parser, "~> 1.2"},
-      {:tz, "~> 0.26.5"}
+      {:tz, "~> 0.26.5"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 
