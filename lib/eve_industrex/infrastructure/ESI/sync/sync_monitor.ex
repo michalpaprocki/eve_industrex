@@ -1,7 +1,8 @@
 defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
   use GenServer
   require Logger
-
+  @events_max_size 1000
+  @activity_max_size 100
   @moduledoc """
     SyncMonitor is responsible for populating telemetry ets tables.
   """
@@ -9,6 +10,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
   def start_link(_) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
+
+  def get_events_max_size(), do: @events_max_size
+  def get_activity_max_size(), do: @activity_max_size
 
   def init(_) do
     Logger.info("Starting #{__MODULE__}...")
@@ -73,7 +77,11 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
       self()
     )
 
-    {:ok, %{}}
+    {:ok,
+     %{
+       :sync_events_next_index => 0,
+       :activities_next_index => 0
+     }}
   end
 
   def handle_telemetry(event, measurements, metadata, pid) do
@@ -87,9 +95,11 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
     :ets.update_counter(:sync_metrics, :generations_started, 1, {:generations_started, 0})
     :ets.update_counter(:sync_metrics, :generations_running, 1, {:generations_running, 0})
 
+    next_index = rem(state.sync_events_next_index + 1, @events_max_size)
+
     :ets.insert(
       :sync_events,
-      {System.unique_integer(),
+      {next_index,
        %{
          timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
          event: :generation_started,
@@ -101,7 +111,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
        }}
     )
 
-    {:noreply, state}
+    {:noreply, %{state | :sync_events_next_index => next_index}}
   end
 
   def handle_info(
@@ -122,9 +132,11 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
     :ets.update_counter(:sync_metrics, :generations_completed, 1, {:generations_completed, 0})
     :ets.update_counter(:sync_metrics, :generations_running, -1, {:generations_running, 0})
 
+    next_index = rem(state.sync_events_next_index + 1, @events_max_size)
+
     :ets.insert(
       :sync_events,
-      {System.unique_integer(),
+      {next_index,
        %{
          timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
          event: :generation_completed,
@@ -135,7 +147,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
        }}
     )
 
-    {:noreply, state}
+    {:noreply, %{state | :sync_events_next_index => next_index}}
   end
 
   def handle_info(
@@ -156,9 +168,11 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
     :ets.update_counter(:sync_metrics, :generations_superseded, 1, {:generations_superseded, 0})
     :ets.update_counter(:sync_metrics, :generations_running, -1, {:generations_running, 0})
 
+    next_index = rem(state.sync_events_next_index + 1, @events_max_size)
+
     :ets.insert(
       :sync_events,
-      {System.unique_integer(),
+      {next_index,
        %{
          timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
          event: :generation_superseded,
@@ -170,7 +184,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
        }}
     )
 
-    {:noreply, state}
+    {:noreply, %{state | :sync_events_next_index => next_index}}
   end
 
   def handle_info(
@@ -197,9 +211,11 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
 
     :ets.update_counter(:sync_metrics, :generations_running, -1, {:generations_running, 0})
 
+    next_index = rem(state.sync_events_next_index + 1, @events_max_size)
+
     :ets.insert(
       :sync_events,
-      {System.unique_integer(),
+      {next_index,
        %{
          timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
          event: :generation_not_modified,
@@ -211,7 +227,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
        }}
     )
 
-    {:noreply, state}
+    {:noreply, %{state | :sync_events_next_index => next_index}}
   end
 
   def handle_info(
@@ -221,9 +237,11 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
     :ets.update_counter(:sync_metrics, :generations_critical, 1, {:generations_critical, 0})
     :ets.update_counter(:sync_metrics, :generations_running, -1, {:generations_running, 0})
 
+    next_index = rem(state.sync_events_next_index + 1, @events_max_size)
+
     :ets.insert(
       :sync_events,
-      {System.unique_integer(),
+      {next_index,
        %{
          timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
          event: :generation_critical,
@@ -235,7 +253,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
        }}
     )
 
-    {:noreply, state}
+    {:noreply, %{state | :sync_events_next_index => next_index}}
   end
 
   def handle_info(
@@ -245,9 +263,11 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
     :ets.update_counter(:sync_metrics, :generations_failed, 1, {:generations_failed, 0})
     :ets.update_counter(:sync_metrics, :generations_running, -1, {:generations_running, 0})
 
+    next_index = rem(state.sync_events_next_index + 1, @events_max_size)
+
     :ets.insert(
       :sync_events,
-      {System.unique_integer(),
+      {next_index,
        %{
          timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
          event: :generation_failed,
@@ -259,7 +279,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
        }}
     )
 
-    {:noreply, state}
+    {:noreply, %{state | :sync_events_next_index => next_index}}
   end
 
   def handle_info(
@@ -289,9 +309,11 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
            _measurements, %{entity: type} = _metadata},
         state
       ) do
+    activities_next_index = rem(state.activities_next_index + 1, @activity_max_size)
+
     :ets.insert(
       :sync_activities,
-      {System.unique_integer(),
+      {activities_next_index,
        %{
          activity: :dependecies_imported,
          timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
@@ -300,9 +322,11 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
        }}
     )
 
+    events_next_index = rem(state.sync_events_next_index + 1, @events_max_size)
+
     :ets.insert(
       :sync_events,
-      {System.unique_integer(),
+      {events_next_index,
        %{
          timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
          event: :dependecies_imported,
@@ -337,16 +361,23 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
         :noop
     end
 
-    {:noreply, state}
+    {:noreply,
+     %{
+       state
+       | :sync_events_next_index => events_next_index,
+         :activities_next_index => activities_next_index
+     }}
   end
 
   def handle_info(
         {:telemetry, [:eve_industrex, :activity, :sync_started], _measurements, metadata},
         state
       ) do
+    next_index = rem(state.activities_next_index + 1, @activity_max_size)
+
     :ets.insert(
       :sync_activities,
-      {System.unique_integer(),
+      {next_index,
        %{
          activity: :sync_started,
          timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
@@ -354,16 +385,18 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
        }}
     )
 
-    {:noreply, state}
+    {:noreply, %{state | :activities_next_index => next_index}}
   end
 
   def handle_info(
         {:telemetry, [:eve_industrex, :activity, :sync_finished], _measurements, metadata},
         state
       ) do
+    next_index = rem(state.activities_next_index + 1, @activity_max_size)
+
     :ets.insert(
       :sync_activities,
-      {System.unique_integer(),
+      {next_index,
        %{
          activity: :sync_finished,
          timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
@@ -371,7 +404,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
        }}
     )
 
-    {:noreply, state}
+    {:noreply, %{state | :activities_next_index => next_index}}
   end
 
   def handle_info(
@@ -379,9 +412,11 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
          metadata},
         state
       ) do
+    next_index = rem(state.activities_next_index + 1, @activity_max_size)
+
     :ets.insert(
       :sync_activities,
-      {System.unique_integer(),
+      {next_index,
        %{
          activity: :rate_limit_group_discovered,
          timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
@@ -390,16 +425,18 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
        }}
     )
 
-    {:noreply, state}
+    {:noreply, %{state | :activities_next_index => next_index}}
   end
 
   def handle_info(
         {:telemetry, [:eve_industrex, :activity, :projection_rebuilt], _measurements, metadata},
         state
       ) do
+    next_index = rem(state.activities_next_index + 1, @activity_max_size)
+
     :ets.insert(
       :sync_activities,
-      {System.unique_integer(),
+      {next_index,
        %{
          activity: :projection_rebuilt,
          timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
@@ -407,6 +444,6 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.SyncMonitor do
        }}
     )
 
-    {:noreply, state}
+    {:noreply, %{state | :activities_next_index => next_index}}
   end
 end
