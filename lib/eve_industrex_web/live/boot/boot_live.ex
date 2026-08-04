@@ -7,9 +7,7 @@ defmodule EveIndustrexWeb.BootLive do
     state = Readiness.read_state()
 
     state_map =
-      Map.new(state, fn {k, v} ->
-        {k, v}
-      end)
+      Map.new(state)
 
     ready =
       Enum.all?(state, fn {_k, v} ->
@@ -112,10 +110,14 @@ defmodule EveIndustrexWeb.BootLive do
   end
 
   def handle_info(:check, socket) do
-    if Enum.all?(socket.assigns, fn a -> a == true end) do
+    with true <- socket.assigns.bootstrap,
+         true <- socket.assigns.sde_cache,
+         true <- socket.assigns.market_orders,
+         true <- socket.assigns.average_prices,
+         true <- socket.assigns.system_cost_index do
       {:noreply, socket |> put_flash(:info, "Bootstraping Completed...") |> redirect(to: ~p"/")}
     else
-      {:noreply, socket}
+      _ -> {:noreply, socket}
     end
   end
 end

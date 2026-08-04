@@ -6,7 +6,7 @@ defmodule EveIndustrex.Infrastructure.Bootstrap do
   alias EveIndustrex.Infrastructure.Bootstrap.Service
   alias EveIndustrex.Infrastructure.Readiness
   require Logger
-
+  # TODO maybe make it a worker so it can retry on failure
   @moduledoc """
     Bootstraping - makes sure that all necessary app data is loaded, generates sync strates, populates the SDE caches and starts schedulers.
   """

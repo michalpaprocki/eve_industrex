@@ -3,7 +3,7 @@ defmodule EveIndustrex.Scraper do
   @moduledoc false
   alias EveIndustrex.Infrastructure.Parsers.Html
   alias EveIndustrex.Error
-
+  # TODO better error handling in case of match error
   @patch_notes_url "https://www.eveonline.com/news/t/patch-notes"
 
   @spec get_latest_tq_version() :: {:ok, String.t()} | {:error, map()}
