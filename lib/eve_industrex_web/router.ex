@@ -36,8 +36,17 @@ defmodule EveIndustrexWeb.Router do
     end
   end
 
+  scope "/api", EveIndustrexWeb do
+    pipe_through :api
+
+    get "/auth/callback", Api.Auth.CallbackController, :callback
+
+    get "/:slug", Api.NotFoundController, :not_found
+  end
+
   scope "/", EveIndustrexWeb do
     pipe_through :browser
+
     live "/boot", BootLive
 
     live_session :default, on_mount: [EveIndustrexWeb.Readiness] do
