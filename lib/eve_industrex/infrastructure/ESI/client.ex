@@ -2,6 +2,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Client do
   alias EveIndustrex.Infrastructure.ESI.Endpoints.Category
   alias EveIndustrex.Infrastructure.ESI.Endpoints.Group
   alias EveIndustrex.Infrastructure.ESI.{Headers, Response}
+  alias EveIndustrex.Infrastructure.ESI.UserAgent
   require Logger
 
   @moduledoc """
@@ -68,7 +69,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Client do
   end
 
   defp fetch(url) do
-    case Req.get(url) do
+    headers = [{"User-Agent", UserAgent.value()}]
+
+    case Req.get(url, headers: headers) do
       {:ok,
        %Req.Response{
          status: status,
@@ -103,7 +106,10 @@ defmodule EveIndustrex.Infrastructure.ESI.Client do
   end
 
   defp fetch(url, etag) do
-    req = Req.new(url: url, decode_body: true) |> Req.Request.put_header("if-none-match", etag)
+    req =
+      Req.new(url: url, decode_body: true)
+      |> Req.Request.put_header("If-None-Match", etag)
+      |> Req.Request.put_header("User-Agent", UserAgent.value())
 
     case Req.request(req) do
       {:ok,

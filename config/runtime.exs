@@ -20,6 +20,9 @@ if System.get_env("PHX_SERVER") do
   config :eve_industrex, EveIndustrexWeb.Endpoint, server: true
 end
 
+config :eve_industrex,
+  esi_contact_email: System.fetch_env!("ESI_CONTACT_EMAIL")
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
