@@ -20,8 +20,9 @@ if System.get_env("PHX_SERVER") do
   config :eve_industrex, EveIndustrexWeb.Endpoint, server: true
 end
 
+# default to satisfy CI - test workflow
 config :eve_industrex,
-  esi_contact_email: System.fetch_env!("ESI_CONTACT_EMAIL")
+  esi_contact_email: System.get_env("ESI_CONTACT_EMAIL", "unknown@example.com")
 
 if config_env() == :prod do
   database_url =
