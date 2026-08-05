@@ -16,28 +16,33 @@ RUN mix local.hex --force && mix local.rebar --force
 
 ENV MIX_ENV=prod
 
+# deps cache layer - invalidated by mix.exs or mix.lock changes
 COPY mix.exs mix.lock ./
-
 RUN mix deps.get --only $MIX_ENV
+
+# deps compilation cache layer - config.exs, prod.exs
 RUN mkdir config
 COPY config/config.exs config/${MIX_ENV}.exs config/
-
 RUN mix deps.compile
 
+# assets from priv
 RUN mix assets.setup
 COPY priv priv
-COPY lib lib
 
+
+# app compilation cache layer - lib invalidates cache
+COPY lib lib
 RUN mix compile
 
+# frontend assets cache layer - invalidated by change in assets
 COPY assets assets
-
 RUN mix assets.deploy
 
+# runtime.exs is not compile-time config, copied after compilation so editing it deosn't invalidate compiled code
 COPY config/runtime.exs config/
 
+# release
 COPY rel rel
-
 RUN mix release
 
 FROM ${RUNNER_IMAGE} AS runner
