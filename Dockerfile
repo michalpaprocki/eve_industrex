@@ -57,4 +57,6 @@ COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/eve_industrex
 
 USER nobody
 
-CMD ["/app/bin/server", "start"]
+ENV PHX_SERVER=true
+
+CMD ["/app/bin/eve_industrex", "start"]
