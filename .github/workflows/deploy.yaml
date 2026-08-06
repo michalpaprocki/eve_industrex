@@ -1,0 +1,41 @@
+name: Deploy
+  on:
+    workflow_run:
+      workflows" ["ci"]
+      types:
+      - completed
+      branches:
+        - main
+
+
+  jobs:
+    deploy:
+      if: ${{ github.event.workflow)run.conclusion == 'success' }}
+
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Deploy over ssh
+          uses: appleboy/ssh-action@v1
+          with:
+            host: ${{secrets.VPS_HOST}}
+            username: $${{secrets.VPS_USER}}
+            key: ${{secrets.VPS_SSH_KEY}}
+            port: ${{secrets.VPS_PORT}}
+
+            script:
+              cd /opt/eve_industrex
+
+              docker login ghcr.io -u ${{github.repository_owner}} -p ${{secrets.GITHUB_TOKEN}}
+
+              docker compose pull
+
+              docker compose run --rm eve_industrex bin/eve_industrex eval "EveIndustrex.Release.migrate"
+
+              docker compose up -d
+
+              docker image prune -f
+
+              curl --fail http://localhost:4001
+
+
