@@ -56,3 +56,5 @@ jobs:
       - run: mix test
 
       - run: MIX_ENV=prod mix release
+
+      - run: docker build .
