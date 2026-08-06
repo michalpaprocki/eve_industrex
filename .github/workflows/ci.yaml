@@ -2,12 +2,16 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+  pull_request:
   workflow_dispatch:
 
+
+permisions:
+  contents: read
+  packages: write
+
 jobs:
-  test:
+  ci:
     runs-on: ubuntu-latest
 
     services:
@@ -55,6 +59,33 @@ jobs:
       
       - run: mix test
 
-      - run: MIX_ENV=prod mix release
+      - name: Verify release builds
+        run: MIX_ENV=prod mix release
 
-      - run: docker build .
+      - name: Verify Docker image builds
+        run: docker build -t eve_industrex:test .
+
+
+  build-and-push:
+    needs: ci
+    if: github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Log to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Build image
+        run: docker build -t ghcr.io/michalpaprocki/eve_industrex:latest .
+
+      - name: Push image
+        run: docker push ghcr.io/michalpaprocki/eve_industrex:latest
