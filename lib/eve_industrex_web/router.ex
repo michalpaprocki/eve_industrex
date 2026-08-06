@@ -69,6 +69,6 @@ defmodule EveIndustrexWeb.Router do
       live "/nook/telemetry", Dashboard.DashboardLive
     end
 
-    live "/*slug", NotFoundLive
+    get "/*slug", NotFoundController, :not_found
   end
 end
