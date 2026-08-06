@@ -2,11 +2,13 @@ name: CI
 
 on:
   push:
+    branches:
+      - "**"
   pull_request:
   workflow_dispatch:
 
 
-permisions:
+permissions:
   contents: read
   packages: write
 
