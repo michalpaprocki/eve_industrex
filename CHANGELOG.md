@@ -10,3 +10,9 @@
 - Bootstrap screen
 - Live synchronization
 - Universe dependecy disccovery
+
+## [0.1.1]
+
+### Added
+
+- CI | CD workflows
