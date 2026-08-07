@@ -16,7 +16,12 @@ defmodule EveIndustrexWeb.BootLive do
 
     Endpoint.subscribe("readiness")
     socket = assign(socket, state_map)
-    {:ok, socket |> assign(:ready, ready)}
+
+    {:ok,
+     socket
+     |> assign(:ready, ready)
+     |> assign(:page_title, "Application Boot")
+     |> assign(:page_description, "EveIndustrex bootstraping progress.")}
   end
 
   def render(assigns) do
