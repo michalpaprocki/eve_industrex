@@ -9,7 +9,7 @@ defmodule EveIndustrex.Industry.Service do
     formulas = Industry.Blueprint.Query.get_reaction_formulas()
 
     Map.new(formulas, fn {id, f} ->
-      {id, %{type: f, bp: Industry.Blueprint.Store.get_blueprint(id) |> handle_prepare()}}
+      {id, Map.put(f, :bp, Industry.Blueprint.Store.get_blueprint(id) |> handle_prepare())}
     end)
   end
 

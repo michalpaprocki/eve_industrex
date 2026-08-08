@@ -38,13 +38,13 @@ defmodule EveIndustrex.LiveParser do
       _ ->
         group_filter =
           Enum.filter(collection, fn {_id, o} ->
-            String.contains?(String.downcase(o.type.group), String.downcase(text_filter))
+            String.contains?(String.downcase(o.group), String.downcase(text_filter))
           end)
 
         if group_filter == [] do
           Map.new(
             Enum.filter(collection, fn {_id, o} ->
-              String.contains?(String.downcase(o.type.name), String.downcase(text_filter))
+              String.contains?(String.downcase(o.name), String.downcase(text_filter))
             end)
           )
         else

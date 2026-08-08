@@ -285,7 +285,7 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
               selected_trade_hub={@form[:selected_trade_hub].value}
               order_type={@form[:order_type].value}
               reaction={f}
-              id={f.type.type_id}
+              id={f.type_id}
               system_cost_index={@form[:system_cost_index].value}
               ssc_tax={@form[:ssc_tax].value}
               fw_upgrade={@form[:fw_upgrade].value}
@@ -299,7 +299,7 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
               selected_trade_hub={@form[:selected_trade_hub].value}
               order_type={@form[:order_type].value}
               reaction={f}
-              id={f.type.type_id}
+              id={f.type_id}
               system_cost_index={@form[:system_cost_index].value}
               ssc_tax={@form[:ssc_tax].value}
               fw_upgrade={@form[:fw_upgrade].value}
@@ -527,13 +527,13 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
 
     cond do
       sorter == nil ->
-        Enum.sort_by(formulas, & &1.type.name, :asc)
+        Enum.sort_by(formulas, & &1.name, :asc)
 
       sorter == "name_asc" ->
-        Enum.sort_by(formulas, & &1.type.name, :asc)
+        Enum.sort_by(formulas, & &1.name, :asc)
 
       sorter == "name_desc" ->
-        Enum.sort_by(formulas, & &1.type.name, :desc)
+        Enum.sort_by(formulas, & &1.name, :desc)
 
       sorter == "profit_asc" ->
         {valid, nils} =

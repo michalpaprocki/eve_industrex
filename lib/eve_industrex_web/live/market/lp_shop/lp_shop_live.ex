@@ -494,13 +494,13 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
 
     cond do
       sorter == nil ->
-        Enum.sort_by(offers, & &1.type.name, :asc)
+        Enum.sort_by(offers, & &1.name, :asc)
 
       sorter == "name_asc" ->
-        Enum.sort_by(offers, & &1.type.name, :asc)
+        Enum.sort_by(offers, & &1.name, :asc)
 
       sorter == "name_desc" ->
-        Enum.sort_by(offers, & &1.type.name, :desc)
+        Enum.sort_by(offers, & &1.name, :desc)
 
       sorter == "isk_lp_asc" ->
         {valid, nils} =
