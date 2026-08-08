@@ -16,7 +16,7 @@ defmodule EveIndustrexWeb.LpShop.IskOnLpReturn do
       <%= cond do %>
         <% Map.has_key?(@offer, :blueprint) and @offer.prices.products[hd(@offer.blueprint.activities.manufacturing.products).type_id] == nil -> %>
           No product price set
-        <% !Map.has_key?(@offer, :blueprint) and @offer.prices.products[@offer.type.type_id] == nil -> %>
+        <% !Map.has_key?(@offer, :blueprint) and @offer.prices.products[@offer.type_id] == nil -> %>
           No product price set
         <% Map.has_key?(@offer, :blueprint) and Enum.any?(@offer.blueprint.activities.manufacturing.materials, fn m -> @offer.prices.materials[m.type_id] == nil end) -> %>
           Missing material item price

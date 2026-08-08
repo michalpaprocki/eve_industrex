@@ -13,33 +13,33 @@ defmodule EveIndustrexWeb.LpShop.LpShopItem do
         <div class="flex flex-col justify-between items-start ">
           <div class="flex flex-col">
             <div class="flex gap-2">
-              <%= case @offer.type.category_id do %>
+              <%= case @offer.category_id do %>
                 <% 9 -> %>
                   <img
                     class="h-10 w-10 block"
-                    src={"https://images.evetech.net/types/#{@offer.type.type_id}/bp?size=128"}
+                    src={"https://images.evetech.net/types/#{@offer.type_id}/bp?size=128"}
                   />
                 <% 91 -> %>
                   {nil}
                 <% _ -> %>
                   <img
                     class="h-10 w-10 block"
-                    src={"https://images.evetech.net/types/#{@offer.type.type_id}/icon?size=128"}
+                    src={"https://images.evetech.net/types/#{@offer.type_id}/icon?size=128"}
                   />
               <% end %>
               <div class="flex flex-col mb-5">
-                <span class="font-semibold overflow-hidden text-ellipsis">{@offer.type.name}</span>
-                <span class="text-ei-text-muted text-sm">{@offer.type.group}</span>
+                <span class="font-semibold overflow-hidden text-ellipsis">{@offer.name}</span>
+                <span class="text-ei-text-muted text-sm">{@offer.group}</span>
               </div>
             </div>
             <span>
-              {if String.contains?(@offer.type.name, "Blueprint"),
+              {if String.contains?(@offer.name, "Blueprint"),
                 do: "Runs: #{@offer.quantity}",
                 else: "Amount: #{@offer.quantity}"}
             </span>
           </div>
           <div class="flex flex-col justify-center">
-            <%= if String.contains?(@offer.type.name, "Blueprint") and !String.contains?(@offer.type.name, "Crate") do %>
+            <%= if String.contains?(@offer.name, "Blueprint") and !String.contains?(@offer.name, "Crate") do %>
               {Enum.map(@offer.blueprint.activities.manufacturing.products, fn bpp ->
                 "Portion size #{bpp.quantity}"
               end)}
@@ -53,7 +53,7 @@ defmodule EveIndustrexWeb.LpShop.LpShopItem do
                   id={"#{@id}_Product"}
                   item={
                     %{
-                      :category_id => @offer.type.category_id,
+                      :category_id => @offer.category_id,
                       :name => bpp.name,
                       :type_id => bpp.type_id,
                       :price => @offer.prices.products[bpp.type_id]
@@ -72,10 +72,10 @@ defmodule EveIndustrexWeb.LpShop.LpShopItem do
                 id={"#{@id}_Product"}
                 item={
                   %{
-                    :category_id => @offer.type.category_id,
-                    :name => @offer.type.name,
-                    :type_id => @offer.type.type_id,
-                    :price => @offer.prices.products[@offer.type.type_id]
+                    :category_id => @offer.category_id,
+                    :name => @offer.name,
+                    :type_id => @offer.type_id,
+                    :price => @offer.prices.products[@offer.type_id]
                   }
                 }
                 order_type={@order_type}
@@ -88,7 +88,7 @@ defmodule EveIndustrexWeb.LpShop.LpShopItem do
 
           <.live_component
             module={EveIndustrexWeb.LpShop.IskOnLpReturn}
-            id={"#{@id}_#{@offer.type.type_id}_ISK_per_LP"}
+            id={"#{@id}_#{@offer.type_id}_ISK_per_LP"}
             offer={@offer}
             order_type={@order_type}
           />
@@ -154,7 +154,7 @@ defmodule EveIndustrexWeb.LpShop.LpShopItem do
           </div>
         <% end %>
 
-        <%= if String.contains?(@offer.type.name, "Blueprint") and !String.contains?(@offer.type.name, "Crate") do %>
+        <%= if String.contains?(@offer.name, "Blueprint") and !String.contains?(@offer.name, "Crate") do %>
           <div class="flex justify-between">
             <span class="mt-4 text-ei-text-muted">Production Materials Cost:</span>
             <.live_component
@@ -163,7 +163,7 @@ defmodule EveIndustrexWeb.LpShop.LpShopItem do
               id={"#{@id}_BP_Materials"}
               bp_materials={@offer.blueprint.activities.manufacturing.materials}
               bp_material_prices={@offer.prices.materials}
-              production_product={@offer.type.name}
+              production_product={@offer.name}
               runs={@offer.quantity}
               order_type={@order_type}
               target_id={@offer.offer_id}
