@@ -272,7 +272,7 @@ defmodule EveIndustrexWeb.CoreComponents do
       <.button>Send!</.button>
       <.button phx-click="go" class="ml-2">Send!</.button>
   """
-  attr :type, :string, default: nil
+  attr :type, :string, default: "bg-surface hover:bg-surface-border"
   attr :class, :string, default: nil
   attr :rest, :global, include: ~w(disabled form name value)
 
@@ -283,7 +283,7 @@ defmodule EveIndustrexWeb.CoreComponents do
     <button
       type={@type}
       class={[
-        "phx-submit-loading:opacity-75 rounded-lg bg-surface hover:bg-surface-border py-2 px-3 font-headers capitalize",
+        "phx-submit-loading:opacity-75 rounded-lg  py-2 px-3 font-headers capitalize",
         "text-sm font-semibold leading-6 text-white active:text-white/80",
         @class
       ]}
