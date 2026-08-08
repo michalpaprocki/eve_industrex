@@ -13,6 +13,19 @@ defmodule EveIndustrexWeb.MarketLive do
       </h1>
       <div class="flex gap-2 flex-col p-4 mt-20">
         <.nav_panel
+          route="/market/browser"
+          text="Market Browser"
+          description="Browse market orders across New Eden."
+        >
+          <:animation>
+            <div class="w-24 h-24 flex justify-evenly relative blur-sm opacity-20 items-center">
+              <span class="w-6 block bg-ei-text market-column1 rounded-t-md rounded-b-md" />
+              <span class="w-6 block bg-ei-text market-column2 rounded-t-md rounded-b-md" />
+              <span class="w-6 block bg-ei-text market-column3 rounded-t-md rounded-b-md" />
+            </div>
+          </:animation>
+        </.nav_panel>
+        <.nav_panel
           route="/market/lp_shop"
           text="Loyalty Points Browser"
           description="Find profitable deals from NPC corporations' Loyalty Point Shops."
@@ -31,19 +44,6 @@ defmodule EveIndustrexWeb.MarketLive do
                 <span class="w-4 h-2 rounded-full block bg-ei-warn " />
                 <span class="text-nowrap text-xs">500/LP</span>
               </div>
-            </div>
-          </:animation>
-        </.nav_panel>
-        <.nav_panel
-          route="/market/browser"
-          text="Market Browser"
-          description="Browse market orders across New Eden."
-        >
-          <:animation>
-            <div class="w-24 h-24 flex justify-evenly relative blur-sm opacity-20 items-center">
-              <span class="w-6 block bg-ei-text market-column1 rounded-t-md rounded-b-md" />
-              <span class="w-6 block bg-ei-text market-column2 rounded-t-md rounded-b-md" />
-              <span class="w-6 block bg-ei-text market-column3 rounded-t-md rounded-b-md" />
             </div>
           </:animation>
         </.nav_panel>
