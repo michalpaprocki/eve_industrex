@@ -131,6 +131,14 @@ defmodule EveIndustrex.Infrastructure.Cache do
       write_concurrency: :auto
     ])
 
+    :ets.new(:reprocess_materials, [
+      :bag,
+      :named_table,
+      :public,
+      read_concurrency: true,
+      write_concurrency: :auto
+    ])
+
     tid_trade_hub_bid_ask_spread =
       :ets.new(:undefined, [:bag, :public, read_concurrency: true, write_concurrency: true])
 

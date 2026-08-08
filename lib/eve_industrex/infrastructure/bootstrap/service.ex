@@ -77,6 +77,7 @@ defmodule EveIndustrex.Infrastructure.Bootstrap.Service do
     Loader.LpOffers.init()
     Loader.CorpOffers.init()
     Loader.Blueprint.init()
+    Loader.ReprocessMaterial.init()
     :ok
   end
 
