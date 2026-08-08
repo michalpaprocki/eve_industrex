@@ -19,11 +19,11 @@ defmodule EveIndustrexWeb.Reaction do
         <div class="flex gap-1">
           <img
             class="h-10 w-10 block"
-            src={"https://images.evetech.net/types/#{@reaction.type.type_id}/bp?size=128"}
+            src={"https://images.evetech.net/types/#{@reaction.type_id}/bp?size=128"}
           />
           <div class="flex flex-col">
-            <span class="text-ei-text">{@reaction.type.name}</span>
-            <span class="text-ei-text-muted text-xs">{@reaction.type.group}</span>
+            <span class="text-ei-text">{@reaction.name}</span>
+            <span class="text-ei-text-muted text-xs">{@reaction.group}</span>
           </div>
         </div>
         <%= if not is_nil(@reaction.profit) do %>
@@ -66,7 +66,7 @@ defmodule EveIndustrexWeb.Reaction do
             <div class="flex justify-end gap-1 w-full">
               <.live_component
                 module={EveIndustrexWeb.MiniMarket}
-                target_id={@reaction.type.type_id}
+                target_id={@reaction.type_id}
                 selected_trade_hub={@selected_trade_hub}
                 category={:product}
                 id={"#{@id}_Product"}
@@ -96,7 +96,7 @@ defmodule EveIndustrexWeb.Reaction do
             <div class="flex justify-end gap-1 w-full">
               <.live_component
                 module={EveIndustrexWeb.MiniMarket}
-                target_id={@reaction.type.type_id}
+                target_id={@reaction.type_id}
                 selected_trade_hub={@selected_trade_hub}
                 category={:bp_materials}
                 id={"#{@id}_BP_Materials_#{m.type_id}"}
