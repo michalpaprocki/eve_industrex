@@ -44,6 +44,9 @@ defmodule EveIndustrex.Universe.Type.Query do
          }}
     )
     |> Repo.all()
+    |> Enum.map(fn {type_id, type} ->
+      {type_id, Map.put(type, :search_name, String.downcase(type.name))}
+    end)
   end
 
   def return_missing_types(list_of_types_ids) do
