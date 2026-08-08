@@ -59,6 +59,8 @@ defmodule EveIndustrexWeb.Router do
       live "/market/lp_shop/:hub_id", Market.LpShopLive
       live "/market/lp_shop/:hub_id/:corp_id", Market.LpShopLive
       live "/market/lp_shop/:hub_id/:corp_id/:order_type", Market.LpShopLive
+      live "/item", ItemBrowserLive
+      live "/item/:type_id", ItemBrowserLive
       live "/industry", IndustryLive
       live "/industry/reactions", Industry.ReactionsLive
       live "/industry/reactions/:hub_id", Industry.ReactionsLive

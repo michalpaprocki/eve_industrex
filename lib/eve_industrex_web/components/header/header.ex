@@ -19,8 +19,9 @@ defmodule EveIndustrexWeb.Header.Header do
           trailing_text="EX"
           class="text-xl font-bold"
         />
-        <.header_link destination={~p"/market"} inner_text="Market" />
+        <.header_link destination={~p"/item"} inner_text="Item Browser" />
         <.header_link destination={~p"/industry"} inner_text="Industry" />
+        <.header_link destination={~p"/market"} inner_text="Market" />
       </nav>
     </header>
     """
