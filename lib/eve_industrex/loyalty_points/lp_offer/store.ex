@@ -23,9 +23,8 @@ defmodule EveIndustrex.LoyaltyPoints.LpOffer.Store do
     end
   end
 
-  def get_offers_rewards() do
+  def get_offers_by_rewards(type_id) do
     :ets.tab2list(:lp_offers)
-    |> Enum.map(fn {_id, o} -> %{name: o.name, type_id: o.type_id} end)
-    |> Enum.uniq()
+    |> Enum.filter(fn {_id, o} -> o.type_id == type_id end)
   end
 end

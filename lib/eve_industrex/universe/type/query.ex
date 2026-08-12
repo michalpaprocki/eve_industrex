@@ -40,6 +40,7 @@ defmodule EveIndustrex.Universe.Type.Query do
            category_id: g.category_id,
            category: c.name,
            group: g.name,
+           group_id: t.group_id,
            published: t.published
          }}
     )

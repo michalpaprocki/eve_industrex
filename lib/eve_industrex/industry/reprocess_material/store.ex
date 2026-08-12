@@ -36,4 +36,30 @@ defmodule EveIndustrex.Industry.ReprocessMaterial.Store do
         end)
     end
   end
+
+  def get_type_by_reprocess_material(type_id) when is_binary(type_id) do
+    case :ets.match(:reprocess_materials, {:"$1", String.to_integer(type_id), :_, :_, :_}) do
+      [] ->
+        []
+
+      [results] ->
+        Enum.map(results, fn r ->
+          %{type_id: r, name: Type.Store.get_type_id_details(r)[:name]}
+        end)
+        |> Enum.sort_by(& &1.name, :asc)
+    end
+  end
+
+  def get_type_by_reprocess_material(type_id) when is_integer(type_id) do
+    case :ets.match(:reprocess_materials, {:"$1", type_id, :_, :_, :_}) do
+      [] ->
+        []
+
+      results ->
+        Enum.map(results, fn r ->
+          %{type_id: hd(r), name: Type.Store.get_type_id_details(hd(r))[:name]}
+        end)
+        |> Enum.sort_by(& &1.name, :asc)
+    end
+  end
 end
