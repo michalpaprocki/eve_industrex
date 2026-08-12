@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [0.2.0]
+
+### Added
+
+- Item Browser
+
+## [0.1.1]
+
+### Added
+
+- CI | CD workflows
+
 ## [0.1.0]
 
 ### Added
@@ -11,8 +23,3 @@
 - Live synchronization
 - Universe dependecy disccovery
 
-## [0.1.1]
-
-### Added
-
-- CI | CD workflows
