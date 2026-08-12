@@ -1,6 +1,7 @@
 defmodule EveIndustrex.Industry.BlueprintActivityMaterial.Store do
   alias EveIndustrex.Universe.Type
-
+  @moduledoc false
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   def get_bps_by_material(material_type_id) when is_binary(material_type_id) do
     :ets.tab2list(:blueprints)
     |> Enum.filter(fn {_k, bp} ->

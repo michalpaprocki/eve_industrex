@@ -2,7 +2,7 @@ defmodule EveIndustrex.Industry.ReprocessMaterial.Query do
   import Ecto.Query
   alias EveIndustrex.Repo
   alias EveIndustrex.Industry.ReprocessMaterial
-
+  @moduledoc false
   def get_all() do
     Repo.all(ReprocessMaterial)
   end

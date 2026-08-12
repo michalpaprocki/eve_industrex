@@ -1,4 +1,5 @@
 defmodule EveIndustrex.SearchStore do
+  @moduledoc false
   def save(object) do
     list = get()
 

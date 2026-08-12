@@ -13,7 +13,7 @@ defmodule EveIndustrexWeb.ItemBrowserLive do
   alias EveIndustrex.Market.AveragePrice
   alias EveIndustrexWeb.Layouts
   alias EveIndustrex.Universe.Type
-
+  @moduledoc false
   @image_url "https://images.evetech.net/types/"
   @form_types %{
     query: :string

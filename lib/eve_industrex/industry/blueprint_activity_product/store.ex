@@ -1,6 +1,7 @@
 defmodule EveIndustrex.Industry.BlueprintActivityProduct.Store do
   alias EveIndustrex.Universe.Type
-
+  @moduledoc false
+  # credo:disable-for-this-file Credo.Check.Refactor.Nesting
   def get_bps_by_product(product_type_id) when is_binary(product_type_id) do
     :ets.tab2list(:blueprints)
     |> Enum.filter(fn {_k, bp} ->
