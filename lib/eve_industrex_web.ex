@@ -91,6 +91,7 @@ defmodule EveIndustrexWeb do
       import Phoenix.HTML
       # Core UI components
       import EveIndustrexWeb.CoreComponents
+      import EveIndustrexWeb.Seo
       import EveIndustrexWeb.Glyph
       import EveIndustrexWeb.NavPanel
 

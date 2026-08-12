@@ -95,7 +95,11 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
      |> assign(:order_types, @order_types)
      |> assign(:sorting_options, @sorting_options)
      |> maybe_start_async(params["selected_corp"])
-     |> assign(:hubs, hubs), layout: {Layouts, :lp_shop}}
+     |> assign(:hubs, hubs)
+     |> assign(:page_title, "LP Store Calculator | Eve Industrex")
+     |> assign(:page_description, "
+      Find profitable deals from NPC corporations' Loyalty Point Shops.
+    "), layout: {Layouts, :lp_shop}}
   end
 
   def render(assigns) do

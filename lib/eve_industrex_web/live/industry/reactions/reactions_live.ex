@@ -93,6 +93,11 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
      |> assign(:orders, nil)
      |> assign(:filtered_formulas, nil)
      |> assign(:systems, [])
+     |> assign(:page_title, "Reaction Profit Calculator | Eve Industrex")
+     |> assign(
+       :page_description,
+       "Browse Eve Online reaction formulas, see profitability of each blueprint."
+     )
      |> assign(:form, to_form(changeset, as: :reactions_form)), layout: {Layouts, :reactions}}
   end
 

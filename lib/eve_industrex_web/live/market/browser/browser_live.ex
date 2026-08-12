@@ -17,14 +17,20 @@ defmodule EveIndustrexWeb.Market.BrowserLive do
          |> assign(:filtered_orders, [])
          |> assign(:market_orders, AsyncResult.loading())
          |> start_async(:get_market_orders, fn -> Market.Service.get_market_view(type_id) end)
-         |> assign(:search_result, []), layout: {Layouts, :market}}
+         |> assign(:search_result, [])
+         |> assign(:page_title, "Market Browser | Eve Industrex")
+         |> assign(:page_description, "Browse Eve Online Market Data - refreshed hourly."),
+         layout: {Layouts, :market}}
 
       _ ->
         {:ok,
          socket
          |> assign(:filtered_orders, [])
          |> assign(:market_orders, AsyncResult.loading())
-         |> assign(:search_result, []), layout: {Layouts, :market}}
+         |> assign(:search_result, [])
+         |> assign(:page_title, "Market Browser | Eve Industrex")
+         |> assign(:page_description, "Browse Eve Online Market Data - refreshed hourly."),
+         layout: {Layouts, :market}}
     end
   end
 
@@ -33,7 +39,10 @@ defmodule EveIndustrexWeb.Market.BrowserLive do
      socket
      |> assign(:filtered_orders, [])
      |> assign(:market_orders, [])
-     |> assign(:search_result, []), layout: {Layouts, :market}}
+     |> assign(:search_result, [])
+     |> assign(:page_title, "Market Browser | Eve Industrex")
+     |> assign(:page_description, "Browse Eve Online Market Data - refreshed hourly."),
+     layout: {Layouts, :market}}
   end
 
   def render(assigns) do

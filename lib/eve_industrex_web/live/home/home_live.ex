@@ -2,7 +2,16 @@ defmodule EveIndustrexWeb.HomeLive do
   use EveIndustrexWeb, :live_view
 
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    {:ok,
+     socket
+     |> assign(:page_title, "Eve Industrex | EVE Online Industry & Market Tools")
+     |> assign(:page_description, "Explore loyalty point stores, analyze production chains,
+        browse market data and discover profitable opportunities
+        using live data from ESI.")
+     |> assign(
+       :page_keywords,
+       "eve online tools, eve tools, eve market, eve industry, eve online"
+     )}
   end
 
   def render(assigns) do
@@ -13,7 +22,7 @@ defmodule EveIndustrexWeb.HomeLive do
       </h1>
 
       <p class="mt-6 text-2xl text-ei-text">
-        Industrial intelligence for EVE Online.
+        EVE Online Industry & Market Tools.
       </p>
 
       <p class="mt-8 max-w-2xl text-lg text-ei-text-muted leading-relaxed">
