@@ -27,10 +27,7 @@ defmodule EveIndustrex.Market.MarketOrder.Jobs.MarketStoreProjectionWorker do
 
       Logger.info("Cache generation before: #{Cache.get_current_generation(:market_orders)}")
 
-      latest_gen =
-        current_with_status
-        |> Enum.map(&elem(&1, 0))
-        |> Enum.max()
+      latest_gen = generation + 1
 
       Logger.info("Publishing generation #{latest_gen} for Market Orders")
       Cache.update_generation(:market_orders, latest_gen)
@@ -54,11 +51,8 @@ defmodule EveIndustrex.Market.MarketOrder.Jobs.MarketStoreProjectionWorker do
   end
 
   defp fresh_gen?(store_gen, fetched_gens) do
-    latest_gen =
-      fetched_gens
-      |> Enum.map(&elem(&1, 0))
-      |> Enum.max()
-
-    latest_gen > store_gen
+    fetched_gens
+    |> Enum.map(&elem(&1, 0))
+    |> Enum.all?(fn x -> x > store_gen end)
   end
 end
