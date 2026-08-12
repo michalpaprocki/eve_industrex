@@ -257,14 +257,14 @@ defmodule EveIndustrexWeb.ItemBrowserLive do
                     phx-click="select_card"
                     phx-value-card="products"
                   >
-                    Products: {length(@products)}
+                    BP Products: {length(@products)}
                   </.button>
                   <.button
                     class={"#{if @selected_card == "req_materials", do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
                     phx-click="select_card"
                     phx-value-card="req_materials"
                   >
-                    Required Materials: {length(@req_materials)}
+                    BP Activities
                   </.button>
                 <% end %>
                 <.button

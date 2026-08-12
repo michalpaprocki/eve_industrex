@@ -58,7 +58,7 @@ defmodule EveIndustrex.Universe.Type.Store do
 
       types ->
         Enum.filter(types, fn {_k, type} ->
-          type.group_id == String.to_integer(group_id)
+          type.group_id == String.to_integer(group_id) and type.published == true
         end)
         |> Enum.map(fn {_id, type} ->
           %{type_id: type.type_id, name: type.name}
@@ -74,7 +74,7 @@ defmodule EveIndustrex.Universe.Type.Store do
 
       types ->
         Enum.filter(types, fn {_k, type} ->
-          type.group_id == group_id
+          type.group_id == group_id and type.published == true
         end)
         |> Enum.map(fn {_id, type} ->
           %{type_id: type.type_id, name: type.name}
