@@ -1,6 +1,14 @@
 defmodule EveIndustrexWeb.ItemBrowserLive do
-  alias EveIndustrex.Industry.BlueprintActivityMaterial
-  alias EveIndustrex.Industry.ReprocessMaterial
+  alias EveIndustrex.SearchStore
+
+  alias EveIndustrex.Industry.{
+    BlueprintActivityMaterial,
+    ReprocessMaterial,
+    BlueprintActivityProduct,
+    Blueprint
+  }
+
+  alias EveIndustrex.LoyaltyPoints.{CorpOffer, LpOffer, LpReqItem}
   use EveIndustrexWeb, :live_view
   alias EveIndustrex.Market.AveragePrice
   alias EveIndustrexWeb.Layouts
@@ -12,6 +20,12 @@ defmodule EveIndustrexWeb.ItemBrowserLive do
   }
   def mount(%{"type_id" => type_id} = _params, _session, socket) do
     type = Type.Store.get_type_id_details(type_id)
+
+    latest =
+      SearchStore.get()
+      |> Enum.map(fn {type_id, name} ->
+        %{type_id: type_id, name: name}
+      end)
 
     if type == nil do
       params = %{
@@ -25,6 +39,7 @@ defmodule EveIndustrexWeb.ItemBrowserLive do
       {:ok,
        socket
        |> assign(:form, to_form(changeset, as: :item_search_form))
+       |> assign(:latest, latest)
        |> assign(:results, [])
        |> assign(:type, nil)
        |> assign(:image_url, "")
@@ -58,14 +73,34 @@ defmodule EveIndustrexWeb.ItemBrowserLive do
         BlueprintActivityMaterial.Store.get_bps_by_material(type.type_id)
         |> Enum.sort_by(& &1.name, :asc)
 
+      product_of = BlueprintActivityProduct.Store.get_bps_by_product(type.type_id)
       average_price = AveragePrice.Store.get_average_price(type.type_id)
-      reprocess_mats = ReprocessMaterial.Store.get_type_reprocess_material(type_id)
+      reprocess_mats = ReprocessMaterial.Store.get_type_reprocess_material(type.type_id)
+      products = BlueprintActivityProduct.Store.get_product_by_bp(type_id)
+      reprocessed_from = ReprocessMaterial.Store.get_type_by_reprocess_material(type.type_id)
+      same_group = Type.Store.get_same_group(type.group_id)
+      required_mats = Blueprint.Store.get_bp_materials(type.type_id)
 
       params = %{
         "query" => "#{type.name}"
       }
 
-      lp_rewards = []
+      SearchStore.save({type.type_id, type.name})
+      offers = LpOffer.Store.get_offers_by_rewards(type.type_id)
+      offer_required_item = LpReqItem.Store.get_offers_by_req_item(type.type_id)
+
+      latest =
+        SearchStore.get()
+        |> Enum.map(fn {type_id, name} ->
+          %{type_id: type_id, name: name}
+        end)
+
+      lp_corps =
+        Enum.map(offers, fn {_k, o} ->
+          CorpOffer.Store.get_corps_by_offer(o.offer_id)
+        end)
+        |> List.flatten()
+        |> Enum.sort_by(& &1.name, :asc)
 
       changeset =
         {%{}, @form_types}
@@ -76,6 +111,7 @@ defmodule EveIndustrexWeb.ItemBrowserLive do
        |> assign(:form, to_form(changeset, as: :item_search_form))
        |> assign(:page_title, "#{type.name} | EveIndustrex")
        |> assign(:results, [])
+       |> assign(:latest, latest)
        |> assign(:type, type)
        |> assign(:image_url, image_url)
        |> assign(:page_title, "#{type.name} Details | EveIndustrex")
@@ -83,10 +119,14 @@ defmodule EveIndustrexWeb.ItemBrowserLive do
        |> assign(:not_found, false)
        |> assign(:material_of, material_of)
        |> assign(:reprocess_mats, reprocess_mats)
-       |> assign(:lp_rewards, lp_rewards)
-       |> assign(:show_recipes, false)
-       |> assign(:show_reprocess, false)
-       |> assign(:show_lp_rewards, false)
+       |> assign(:selected_card, "")
+       |> assign(:product_of, product_of)
+       |> assign(:lp_corps, lp_corps)
+       |> assign(:same_group, same_group)
+       |> assign(:reprocessed_from, reprocessed_from)
+       |> assign(:req_materials, required_mats)
+       |> assign(:offer_required_item, offer_required_item)
+       |> assign(:products, products)
        |> assign(
          :page_description,
          "Search Eve Online Items - find relations, market data and more."
@@ -99,6 +139,12 @@ defmodule EveIndustrexWeb.ItemBrowserLive do
       "query" => ""
     }
 
+    latest =
+      SearchStore.get()
+      |> Enum.map(fn {type_id, name} ->
+        %{type_id: type_id, name: name}
+      end)
+
     changeset =
       {%{}, @form_types}
       |> Ecto.Changeset.cast(params, Map.keys(@form_types))
@@ -109,7 +155,7 @@ defmodule EveIndustrexWeb.ItemBrowserLive do
      |> assign(:page_title, "Eve Online Item Search | EveIndustrex")
      |> assign(:results, [])
      |> assign(:type, nil)
-     |> assign(:material_of, nil)
+     |> assign(:latest, latest)
      |> assign(
        :page_description,
        "Search Eve Online Items - find relations, market data and more."
@@ -203,56 +249,200 @@ defmodule EveIndustrexWeb.ItemBrowserLive do
             image_url={@image_url}
           />
           <div class="p-8 panel">
-            <div class="">
-              <div class="flex bg-black p-8 rounded-md gap-2">
+            <div>
+              <div class="flex bg-black p-8 rounded-md gap-2 text-nowrap flex-wrap">
+                <%= if @type.category_id == 9 do %>
+                  <.button
+                    class={"#{if @selected_card == "products", do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
+                    phx-click="select_card"
+                    phx-value-card="products"
+                  >
+                    Products: {length(@products)}
+                  </.button>
+                  <.button
+                    class={"#{if @selected_card == "req_materials", do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
+                    phx-click="select_card"
+                    phx-value-card="req_materials"
+                  >
+                    Required Materials: {length(@req_materials)}
+                  </.button>
+                <% end %>
                 <.button
-                  class={"#{if @show_recipes, do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
-                  phx-click="toggle_recipes"
+                  class={"#{if @selected_card == "material_for", do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
+                  phx-click="select_card"
+                  phx-value-card="material_for"
                 >
-                  Recipes: {length(@material_of)}
+                  Material for: {length(@material_of)}
                 </.button>
                 <.button
-                  class={"#{if @show_reprocess, do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
-                  phx-click="toggle_reprocess"
+                  class={"#{if @selected_card == "reprocessed_materials", do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
+                  phx-click="select_card"
+                  phx-value-card="reprocess_mats"
                 >
-                  Reprocess: {length(@reprocess_mats)}
+                  Reprocesses into: {length(@reprocess_mats)}
                 </.button>
                 <.button
-                  class={"#{if @show_lp_rewards, do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
-                  phx-click="toggle_lp_rewards"
+                  class={"#{if @selected_card == "reprocessed_from", do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
+                  phx-click="select_card"
+                  phx-value-card="reprocessed_from"
                 >
-                  LP Rewards: {length(@lp_rewards)}
+                  Reprocessed From: {length(@reprocessed_from)}
+                </.button>
+                <.button
+                  class={"#{if @selected_card == "lp_corps", do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
+                  phx-click="select_card"
+                  phx-value-card="lp_corps"
+                >
+                  LP Reward From: {length(@lp_corps)}
+                </.button>
+                <.button
+                  class={"#{if @selected_card == "required_item", do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
+                  phx-click="select_card"
+                  phx-value-card="required_item"
+                >
+                  Required for LP offer: {length(@offer_required_item)}
+                </.button>
+                <.button
+                  class={"#{if @selected_card == "product_of", do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
+                  phx-click="select_card"
+                  phx-value-card="product_of"
+                >
+                  Product Of: {length(@product_of)}
+                </.button>
+
+                <.button
+                  class={"#{if @selected_card=="same_group", do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
+                  phx-click="select_card"
+                  phx-value-card="same_group"
+                >
+                  Same Group: {length(@same_group)}
                 </.button>
               </div>
-              <%= if @show_recipes do %>
-                <div class="flex flex-col p-8">
-                  <%= for m <- @material_of do %>
-                    <span>{m.name}</span>
-                  <% end %>
-                </div>
-              <% end %>
-              <%= if @show_reprocess do %>
-                <div class="flex flex-col p-8">
-                  <%= for r <- @reprocess_mats do %>
-                    <div>
-                      <span>{r.name}</span>
 
-                      <%= if r.quantity do %>
-                        <span>{r.quantity}</span>
-                      <% end %>
-
-                      <%= if r.min_quantity do %>
-                        <span>{r.min_quantity}</span>
-                      <% end %>
-
-                      <%= if r.max_quantity do %>
-                        <span>{r.max_quantity}</span>
+              <div>
+                <%= cond do %>
+                  <% @selected_card == "material_for" -> %>
+                    <div class="flex flex-col p-8">
+                      <%= for m <- @material_of do %>
+                        <.link class="hover:text-ei-hover transition" navigate={"/item/#{m.type_id}"}>
+                          {m.name}
+                        </.link>
                       <% end %>
                     </div>
-                  <% end %>
-                </div>
-              <% end %>
+                  <% @selected_card == "req_materials" -> %>
+                    <div class="flex flex-col p-8">
+                      <%= for r <- @req_materials do %>
+                        <%= if r.materials != [] do %>
+                          <span class="capitalize my-2">Activity: {r.activity}</span>
+                          <div class="p-1 flex flex-col gap-1">
+                            <%= for m <- r.materials do %>
+                              <div class="flex flex-col">
+                                <.link
+                                  class="hover:text-ei-hover transition"
+                                  navigate={"/item/#{m.type_id}"}
+                                >
+                                  {m.name}
+                                </.link>
+                                <span>Amount: {m.quantity}</span>
+                              </div>
+                            <% end %>
+                          </div>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  <% @selected_card == "reprocess_mats" -> %>
+                    <div class="flex flex-col p-8">
+                      <%= for r <- @reprocess_mats do %>
+                        <div>
+                          <.link
+                            class="hover:text-ei-hover transition"
+                            navigate={"/item/#{r.material_type_id}"}
+                          >
+                            {r.name}
+                          </.link>
+
+                          <%= if r.quantity do %>
+                            <span>{r.quantity}</span>
+                          <% end %>
+
+                          <%= if r.min_quantity do %>
+                            <span>{r.min_quantity}</span>
+                          <% end %>
+
+                          <%= if r.max_quantity do %>
+                            <span>{r.max_quantity}</span>
+                          <% end %>
+                        </div>
+                      <% end %>
+                    </div>
+                  <% @selected_card == "reprocessed_from" -> %>
+                    <div class="flex flex-col p-8">
+                      <%= for r <- @reprocessed_from do %>
+                        <.link class="hover:text-ei-hover transition" navigate={"/item/#{r.type_id}"}>
+                          {r.name}
+                        </.link>
+                      <% end %>
+                    </div>
+                  <% @selected_card == "lp_corps" -> %>
+                    <div class="flex flex-col p-8">
+                      <%= for o <- @lp_corps do %>
+                        <.link class="hover:text-ei-hover transition" navigate={"/item/#{o.corp_id}"}>
+                          {o.name}
+                        </.link>
+                      <% end %>
+                    </div>
+                  <% @selected_card == "required_item" -> %>
+                    <div class="flex flex-col p-8">
+                      <%= for ri <- @offer_required_item do %>
+                        <.link class="hover:text-ei-hover transition" navigate={"/item/#{ri.type_id}"}>
+                          {ri.name}
+                        </.link>
+                      <% end %>
+                    </div>
+                  <% @selected_card =="same_group" -> %>
+                    <div class="flex flex-col p-8">
+                      <%= for s <- @same_group do %>
+                        <.link class="hover:text-ei-hover transition" navigate={"/item/#{s.type_id}"}>
+                          {s.name}
+                        </.link>
+                      <% end %>
+                    </div>
+                  <% @selected_card == "product_of" -> %>
+                    <div class="flex flex-col p-8">
+                      <%= for p <- @product_of do %>
+                        <.link class="hover:text-ei-hover transition" navigate={"/item/#{p.type_id}"}>
+                          {p.name}
+                        </.link>
+                      <% end %>
+                    </div>
+                  <% @selected_card == "products" -> %>
+                    <div class="flex flex-col p-8">
+                      <%= for p <- @products do %>
+                        <.link class="hover:text-ei-hover transition" navigate={"/item/#{p.type_id}"}>
+                          {p.name}
+                        </.link>
+                      <% end %>
+                    </div>
+                  <% true -> %>
+                <% end %>
+              </div>
             </div>
+          </div>
+        </div>
+      <% end %>
+      <%= if @latest do %>
+        <div class="flex gap-1 flex-col justify-center items-center p-2 my-14">
+          <h3>Latest searches:</h3>
+          <div class="flex flex-col gap-1 mt-4 text-sm">
+            <%= for l <- @latest do %>
+              <.link
+                class="hover:text-ei-hover transition"
+                navigate={"/item/#{l.type_id}"}
+                class="p-1 hover:text-ei-hover"
+              >
+                {l.name}
+              </.link>
+            <% end %>
           </div>
         </div>
       <% end %>
@@ -282,11 +472,7 @@ defmodule EveIndustrexWeb.ItemBrowserLive do
     end
   end
 
-  def handle_event("toggle_recipes", _unsigned_params, socket) do
-    {:noreply, socket |> assign(:show_recipes, !socket.assigns.show_recipes)}
-  end
-
-  def handle_event("toggle_reprocess", _unsigned_params, socket) do
-    {:noreply, socket |> assign(:show_reprocess, !socket.assigns.show_reprocess)}
+  def handle_event("select_card", %{"card" => card}, socket) do
+    {:noreply, socket |> assign(:selected_card, card)}
   end
 end
