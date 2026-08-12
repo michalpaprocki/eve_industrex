@@ -99,7 +99,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Query do
 
   # TODO refactor, as vps 1 core causes significant time drift - next run timestamps are too apart
   def claim_due_strategies() do
-    now = DateTime.utc_now() |> DateTime.add(-5, :minute)
+    now = DateTime.utc_now()
 
     Repo.transaction(fn ->
       strategies =
