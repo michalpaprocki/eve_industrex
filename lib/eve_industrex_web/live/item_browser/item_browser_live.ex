@@ -438,11 +438,7 @@ defmodule EveIndustrexWeb.ItemBrowserLive do
           <h3>Latest searches:</h3>
           <div class="flex flex-col gap-1 mt-4 text-sm">
             <%= for l <- @latest do %>
-              <.link
-                class="hover:text-ei-hover transition"
-                navigate={"/item/#{l.type_id}"}
-                class="p-1 hover:text-ei-hover"
-              >
+              <.link class="hover:text-ei-hover transition p-1" navigate={"/item/#{l.type_id}"}>
                 {l.name}
               </.link>
             <% end %>
