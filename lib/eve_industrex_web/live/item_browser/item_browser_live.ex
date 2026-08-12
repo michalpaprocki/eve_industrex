@@ -275,7 +275,7 @@ defmodule EveIndustrexWeb.ItemBrowserLive do
                   Material for: {length(@material_of)}
                 </.button>
                 <.button
-                  class={"#{if @selected_card == "reprocessed_materials", do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
+                  class={"#{if @selected_card == "reprocess_mats", do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
                   phx-click="select_card"
                   phx-value-card="reprocess_mats"
                 >
@@ -386,7 +386,10 @@ defmodule EveIndustrexWeb.ItemBrowserLive do
                   <% @selected_card == "lp_corps" -> %>
                     <div class="flex flex-col p-8">
                       <%= for o <- @lp_corps do %>
-                        <.link class="hover:text-ei-hover transition" navigate={"/item/#{o.corp_id}"}>
+                        <.link
+                          class="hover:text-ei-hover transition"
+                          navigate={"/market/lp_shop/60003760/#{o.corp_id}/sell?sort=name_asc&query=#{URI.encode(@type.name)}"}
+                        >
                           {o.name}
                         </.link>
                       <% end %>
