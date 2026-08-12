@@ -97,8 +97,9 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Query do
     |> Repo.preload(generations: gen_query, generations: [:generation_pages])
   end
 
+  # TODO refactor, as vps 1 core causes significant time drift - next run timestamps are too apart
   def claim_due_strategies() do
-    now = DateTime.utc_now()
+    now = DateTime.utc_now() |> DateTime.add(-5, :minute)
 
     Repo.transaction(fn ->
       strategies =
