@@ -149,7 +149,7 @@ defmodule EveIndustrex.Infrastructure.ESI.Sync.Query do
   def get_current_resource_generation_and_status(resource_id) do
     # max_gen = from(g in EsiSyncGeneration, select: max(g.generation))
     from(s in EsiSyncStrategy,
-      where: s.resource_type_id == ^resource_id,
+      where: s.resource_type_id == ^resource_id and s.status == :idle,
       join: g in EsiSyncGeneration,
       on: s.id == g.esi_sync_strategy_id and g.generation == s.next_generation - 1,
       select: {g.generation, g.status}
