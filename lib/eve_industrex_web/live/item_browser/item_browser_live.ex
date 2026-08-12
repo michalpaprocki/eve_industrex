@@ -251,7 +251,7 @@ defmodule EveIndustrexWeb.ItemBrowserLive do
           <div class="p-8 panel">
             <div>
               <div class="flex bg-black p-8 rounded-md gap-2 text-nowrap flex-wrap">
-                <%= if @type.category_id == 9 do %>
+                <%= if @type.category_id == 9 or @type.category_id == 34 do %>
                   <.button
                     class={"#{if @selected_card == "products", do: "bg-ei-accent hover:bg-ei-hover", else: "bg-surface hover:bg-ei-hover"}"}
                     phx-click="select_card"
