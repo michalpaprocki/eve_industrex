@@ -98,7 +98,7 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
        :page_description,
        "Browse Eve Online reaction formulas, see profitability of each blueprint."
      )
-     |> assign(:form, to_form(changeset, as: :reactions_form)), layout: {Layouts, :reactions}}
+     |> assign(:form, to_form(changeset, as: :reactions_form)), layout: {Layouts, :industry}}
   end
 
   def render(assigns) do
