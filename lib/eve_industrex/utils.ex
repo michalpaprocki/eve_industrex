@@ -304,4 +304,21 @@ defmodule EveIndustrex.Utils do
     {:ok, files} = File.ls(Path.join(File.cwd!(), "/data_dump/"))
     Enum.map(files, fn f -> File.rm(Path.join(File.cwd!(), "/data_dump/#{f}")) end)
   end
+
+  def format_seconds(total_seconds) do
+    days = div(total_seconds, 86_400)
+    rem_days = rem(total_seconds, 86_400)
+
+    hours = div(rem_days, 3_600)
+    rem_hours = rem(rem_days, 3_600)
+
+    minutes = div(rem_hours, 60)
+    seconds = rem(rem_hours, 60)
+
+    hours_padded = String.pad_leading("#{hours}", 2, "0")
+    minutes_padded = String.pad_leading("#{minutes}", 2, "0")
+    seconds_padded = String.pad_leading("#{seconds}", 2, "0")
+
+    "#{days}d #{hours_padded}h #{minutes_padded}m #{seconds_padded}s"
+  end
 end
