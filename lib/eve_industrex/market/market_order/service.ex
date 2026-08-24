@@ -1,10 +1,9 @@
 defmodule EveIndustrex.Market.MarketOrder.Service do
-  alias EveIndustrex.Universe.Station
   alias EveIndustrex.Market.MarketOrder
 
   alias EveIndustrex.Repo
   import Ecto.Query
-  @trade_hub_station_ids Station.Query.get_trade_hub_station_ids()
+  @trade_hub_station_ids EveIndustrex.Universe.Service.get_trade_hub_station_ids()
   require Logger
 
   @moduledoc """
