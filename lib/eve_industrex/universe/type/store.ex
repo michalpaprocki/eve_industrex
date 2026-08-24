@@ -51,6 +51,22 @@ defmodule EveIndustrex.Universe.Type.Store do
     end
   end
 
+  def search_bp(query) do
+    case get_blueprints() do
+      [] ->
+        []
+
+      types ->
+        Enum.filter(types, fn {_k, type} ->
+          (String.contains?(type.search_name, "formula") or
+             String.contains?(type.search_name, "blueprint")) and
+            String.contains?(type.search_name, String.downcase(query)) and
+            type.published == true
+        end)
+        |> Enum.sort_by(&elem(&1, 1).name, :asc)
+    end
+  end
+
   def get_same_group(group_id) when is_binary(group_id) do
     case get_all() do
       [] ->
@@ -81,5 +97,9 @@ defmodule EveIndustrex.Universe.Type.Store do
         end)
         |> Enum.sort_by(& &1.name, :asc)
     end
+  end
+
+  def get_blueprints() do
+    get_all() |> Enum.filter(fn {_id, t} -> t.category_id == 9 and t.published == true end)
   end
 end

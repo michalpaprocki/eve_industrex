@@ -2,6 +2,16 @@ defmodule EveIndustrex.Universe.MarketGroup.Store do
   @moduledoc false
   def get_init_market_groups(), do: :ets.tab2list(:market_groups) |> Enum.sort_by(&elem(&1, 1))
 
+  def get_market_group(market_group_id) do
+    case :ets.lookup(:market_groups, market_group_id) do
+      [] ->
+        []
+
+      [{^market_group_id, name}] ->
+        {market_group_id, name}
+    end
+  end
+
   def get_market_group_children(market_group_id),
     do:
       :ets.match(:market_group_children, {market_group_id, :"$1"})
