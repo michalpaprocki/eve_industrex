@@ -1,6 +1,6 @@
 defmodule EveIndustrexWeb.Market.LpShopLive do
   alias EveIndustrex.LoyaltyPoints
-  alias EveIndustrex.Universe.Station
+  alias EveIndustrex.Universe.Service
   alias EveIndustrex.Market
   alias EveIndustrex.LiveParser
   alias EveIndustrex.LoyaltyPoints.NpcCorp
@@ -32,7 +32,7 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
 
   def mount(params, _session, socket) do
     corps = NpcCorp.Query.corps_with_offers()
-    hubs = Station.Query.get_trade_hubs()
+    hubs = Service.get_trade_hubs()
 
     path =
       cond do
