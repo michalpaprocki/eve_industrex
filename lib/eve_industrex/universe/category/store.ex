@@ -22,10 +22,23 @@ defmodule EveIndustrex.Universe.Category.Store do
     end)
   end
 
-  def get_category(category_id) do
+  def get_category_raw(category_id) do
     case :ets.lookup(:categories, category_id) do
-      [{^category_id, name, _published}] ->
+      [{^category_id, name, published}] ->
+        {category_id, name, published}
+
+      [] ->
+        nil
+    end
+  end
+
+  def get_category(category_id) do
+    case get_category_raw(category_id) do
+      {^category_id, name, _published} ->
         %{category_id: category_id, name: name}
+
+      nil ->
+        nil
     end
   end
 end
