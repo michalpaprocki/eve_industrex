@@ -4,7 +4,7 @@ defmodule EveIndustrex.Universe.Group.Query do
   import Ecto.Query
   @moduledoc false
   def get_groups_for_cache,
-    do: from(g in Group, select: {g.category_id, g.group_id, g.name}) |> Repo.all()
+    do: from(g in Group, select: {g.category_id, g.group_id, g.name, g.published}) |> Repo.all()
 
   def get_groups, do: from(g in Group) |> Repo.all()
 
