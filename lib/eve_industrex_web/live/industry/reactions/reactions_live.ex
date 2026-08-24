@@ -1,8 +1,9 @@
 defmodule EveIndustrexWeb.Industry.ReactionsLive do
   alias Phoenix.LiveView.AsyncResult
   alias EveIndustrex.Industry
+  alias EveIndustrex.Universe
   alias EveIndustrex.Market
-  alias EveIndustrex.Universe.{Station}
+
   alias EveIndustrex.LiveParser
   alias EveIndustrexWeb.Layouts
   use EveIndustrexWeb, :live_view
@@ -33,7 +34,7 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
     %{name: "Profit ▼", type: "profit_desc"}
   ]
   def mount(params, _session, socket) do
-    hubs = Station.Query.get_trade_hubs()
+    hubs = Universe.Service.get_trade_hubs()
     # read params
     path =
       cond do
@@ -402,7 +403,7 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
     systems =
       cond do
         system_query != form[:system_query].value and system_query != nil ->
-          Industry.Service.get_systems_with_indices(system_query)
+          Universe.Service.get_low_sec_systems(system_query)
 
         system_query == nil ->
           []
