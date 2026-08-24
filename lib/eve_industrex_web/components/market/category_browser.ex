@@ -1,6 +1,6 @@
 defmodule EveIndustrexWeb.Market.CategoryBrowser do
   use EveIndustrexWeb, :live_component
-  alias Phoenix.LiveView.AsyncResult
+
   alias EveIndustrex.Universe.MarketGroup.Store
   @moduledoc false
   def update(assigns, socket) do
@@ -17,24 +17,11 @@ defmodule EveIndustrexWeb.Market.CategoryBrowser do
             module={EveIndustrexWeb.Market.Category}
             market_group={%{name: elem(mg, 1), market_group_id: elem(mg, 0)}}
             indent={2}
+            click_event="fetch_market_orders"
           />
         <% end %>
       </div>
     </div>
     """
-  end
-
-  def handle_async(:get_market_groups, {:ok, fetched_market_groups}, socket) do
-    %{:market_groups => market_groups} = socket.assigns
-
-    {:noreply,
-     socket |> assign(:market_groups, AsyncResult.ok(market_groups, fetched_market_groups))}
-  end
-
-  def handle_async(:get_market_groups, {:exit, reason}, socket) do
-    %{:market_groups => market_groups} = socket.assigns
-
-    {:noreply,
-     socket |> assign(:market_groups, AsyncResult.failed(market_groups, {:exit, reason}))}
   end
 end

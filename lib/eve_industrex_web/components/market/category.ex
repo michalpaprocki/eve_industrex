@@ -4,6 +4,7 @@ defmodule EveIndustrexWeb.Market.Category do
   @moduledoc false
   def update(assigns, socket) do
     cat_indent = "ml-" <> ~s"#{assigns.indent}"
+
     %{:market_group => market_group} = assigns
 
     {:ok,
@@ -22,8 +23,8 @@ defmodule EveIndustrexWeb.Market.Category do
     <div class="flex flex-col font-headers font-semibold text-base">
       <%!-- add collapse all --%>
       <span
-        class="panel p-1 flex gap-1 hover:bg-black hover:text--eihover hover:cursor-pointer truncate"
-        phx-click={if length(@types) == 0, do: "toggle_open", else: "toggle_open_types"}
+        class="panel p-1 flex gap-1 hover:bg-black hover:text-ei-hover hover:cursor-pointer truncate"
+        phx-click={if @types == [], do: "toggle_open", else: "toggle_open_types"}
         phx-target={@myself}
       >
         <.glyph
@@ -40,13 +41,14 @@ defmodule EveIndustrexWeb.Market.Category do
             market_group={c}
             module={__MODULE__}
             indent={@indent}
+            click_event={@click_event}
           />
         </div>
       <% end %>
       <%= for t <- @types do %>
         <div
           class={"#{if @open_types, do: "block", else: "hidden"} px-2 ml-3 panel hover:bg-black hover:text-white hover:cursor-pointer truncate"}
-          phx-click="fetch_market_orders"
+          phx-click={@click_event}
           phx-value-type_id={t.type_id}
         >
           {t.name}
