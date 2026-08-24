@@ -1,5 +1,5 @@
 defmodule EveIndustrex.Industry.Service do
-  alias EveIndustrex.Universe.{System, Type}
+  alias EveIndustrex.Universe.Type
   alias EveIndustrex.Industry
 
   @moduledoc """
@@ -11,6 +11,18 @@ defmodule EveIndustrex.Industry.Service do
     Map.new(formulas, fn {id, f} ->
       {id, Map.put(f, :bp, Industry.Blueprint.Store.get_blueprint(id) |> handle_prepare())}
     end)
+  end
+
+  def get_bp_calculator_view(type_id) when is_integer(type_id) do
+    case Industry.Blueprint.Store.get_blueprint(type_id) do
+      [] ->
+        nil
+
+      {id, bp} ->
+        bp_type = Type.Store.get_type_id_details(type_id)
+
+        {id, Map.put(bp_type, :bp, handle_prepare({id, bp}))}
+    end
   end
 
   def extract_reactions_type_ids(reactions) do
@@ -32,6 +44,7 @@ defmodule EveIndustrex.Industry.Service do
     end)
     |> List.flatten()
     |> List.flatten()
+    |> Enum.uniq()
   end
 
   def prepare_blueprints(bps) do
@@ -41,6 +54,14 @@ defmodule EveIndustrex.Industry.Service do
   end
 
   def enrich(formulas, orders, order_type) do
+    # TO DO: placeholder logic, rerfactor when time avail
+    formulas =
+      if is_map(hd(formulas)) do
+        Map.to_list(hd(formulas))
+      else
+        formulas
+      end
+
     case order_type do
       "sell" ->
         Map.new(formulas, fn {id, f} ->
@@ -113,12 +134,9 @@ defmodule EveIndustrex.Industry.Service do
   end
 
   def assign_average_prices(bp, orders) do
-    Map.new(bp.bp.activities.reaction.materials, fn %{
-                                                      name: _,
-                                                      category_id: _,
-                                                      type_id: type_id,
-                                                      quantity: _
-                                                    } ->
+    types = extract_bp_type_ids(bp.bp)
+
+    Map.new(types, fn type_id ->
       {type_id, Map.get(orders.adjusted_prices, type_id)}
     end)
   end
@@ -180,13 +198,18 @@ defmodule EveIndustrex.Industry.Service do
     end
   end
 
-  def get_systems_with_indices(query) do
-    System.Query.get_systems_for_reactions()
-    |> Enum.filter(fn x -> String.contains?(String.downcase(x.name), String.downcase(query)) end)
-  end
-
   defp calc_materials_price(formula, prices) do
-    materials = formula.bp.activities.reaction.materials
+    materials =
+      cond do
+        Map.has_key?(formula.bp.activities, :reaction) ->
+          formula.bp.activities.reaction.materials
+
+        Map.has_key?(formula.bp.activities, :manufacturing) ->
+          formula.bp.activities.manufacturing.materials
+
+        Map.has_key?(formula.bp.activities, :invention) ->
+          formula.bp.activities.invention.materials
+      end
 
     if Enum.all?(materials, fn m ->
          prices[m.type_id]
@@ -200,7 +223,17 @@ defmodule EveIndustrex.Industry.Service do
   end
 
   defp calc_products_price(formula, prices) do
-    products = formula.bp.activities.reaction.products
+    products =
+      cond do
+        Map.has_key?(formula.bp.activities, :reaction) ->
+          formula.bp.activities.reaction.products
+
+        Map.has_key?(formula.bp.activities, :manufacturing) ->
+          formula.bp.activities.manufacturing.products
+
+        Map.has_key?(formula.bp.activities, :invention) ->
+          formula.bp.activities.invention.products
+      end
 
     if Enum.all?(products, fn p ->
          prices[p.type_id]
