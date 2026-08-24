@@ -6,19 +6,6 @@ defmodule EveIndustrex.Universe.Station.Query do
   alias EveIndustrex.Repo
   alias EveIndustrex.Universe.Station
   @moduledoc false
-  def get_trade_hub_station_ids(),
-    do: [60_003_760, 60_008_494, 60_011_866, 60_004_588, 60_005_686]
-
-  def get_trade_hubs() do
-    Enum.map(get_trade_hub_station_ids(), fn id ->
-      hub = Station.Store.get_station(id)
-
-      %{
-        name: elem(hub, 1),
-        station_id: elem(hub, 0)
-      }
-    end)
-  end
 
   def get_stations_for_cache(),
     do: from(s in Station, select: {s.station_id, s.name}) |> Repo.all()
