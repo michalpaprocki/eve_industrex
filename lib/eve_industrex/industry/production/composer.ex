@@ -1,5 +1,4 @@
 defmodule EveIndustrex.Industry.Production.Composer do
-  alias EveIndustrex.Industry.BlueprintActivityProduct
   alias EveIndustrex.Universe.Type
   alias EveIndustrex.Industry
 
