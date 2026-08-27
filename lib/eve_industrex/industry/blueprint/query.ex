@@ -1,7 +1,7 @@
 defmodule EveIndustrex.Industry.Blueprint.Query do
   import Ecto.Query
   alias EveIndustrex.Industry.{Blueprint, BlueprintActivityProduct}
-  alias EveIndustrex.Universe.Type
+
   alias EveIndustrex.Repo
   @moduledoc false
   def get_blueprints(), do: Repo.all(Blueprint) |> Repo.preload([:type])
@@ -25,25 +25,5 @@ defmodule EveIndustrex.Industry.Blueprint.Query do
       preload: [:type, :activities, activities: [:materials, :products]]
     )
     |> Repo.all()
-  end
-
-  def get_blueprints_from_bp_ids(bp_ids) do
-    Enum.map(bp_ids, fn id ->
-      case Blueprint.Store.get_blueprint(id) do
-        {_id, bp} ->
-          bp
-
-        [] ->
-          []
-      end
-    end)
-    |> List.flatten()
-  end
-
-  def get_reaction_formulas() do
-    Type.Store.get_all()
-    |> Enum.filter(fn {_id, t} ->
-      String.contains?(t.group, "Formula") and t.published == true
-    end)
   end
 end

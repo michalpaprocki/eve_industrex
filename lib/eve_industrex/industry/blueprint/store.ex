@@ -1,5 +1,6 @@
 defmodule EveIndustrex.Industry.Blueprint.Store do
   alias EveIndustrex.Universe.Type
+
   @moduledoc false
   def get_blueprint(id) do
     case :ets.lookup(:blueprints, id) do
@@ -35,5 +36,25 @@ defmodule EveIndustrex.Industry.Blueprint.Store do
           }
         end)
     end
+  end
+
+  def get_blueprints_from_bp_ids(bp_ids) do
+    Enum.map(bp_ids, fn id ->
+      case get_blueprint(id) do
+        {id, bp} ->
+          {id, bp}
+
+        [] ->
+          []
+      end
+    end)
+    |> List.flatten()
+  end
+
+  def get_reaction_formulas() do
+    Type.Store.get_all()
+    |> Enum.filter(fn {_id, t} ->
+      String.contains?(t.group, "Formula") and t.published == true
+    end)
   end
 end
