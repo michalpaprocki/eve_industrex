@@ -21,5 +21,5 @@
 - Operations dashboard
 - Bootstrap screen
 - Live synchronization
-- Universe dependecy disccovery
+- Universe dependecy discovery
 
