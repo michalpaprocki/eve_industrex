@@ -5,7 +5,7 @@ defmodule EveIndustrexWeb.Reaction do
   @moduledoc false
   def update(assigns, socket) do
     eiv =
-      Enum.reduce(assigns.reaction.bp.activities.reaction.materials, 0, fn x, acc ->
+      Enum.reduce(assigns.reaction.activities.reaction.materials, 0, fn x, acc ->
         x.quantity * assigns.reaction.adjusted_prices[x.type_id].adjusted_price + acc
       end)
 
@@ -27,7 +27,7 @@ defmodule EveIndustrexWeb.Reaction do
           </div>
         </div>
         <%= if not is_nil(@reaction.profit) do %>
-          <span class={"min-w-5 h-2 rounded-full mr-2 #{apply_profitability_tag(@reaction.profit - ((@eiv * @structure_tax) +(@eiv * @ssc_tax) + (@eiv * @system_cost_index |> Market.Service.apply_fw_discount(@fw_upgrade))))}"}>
+          <span class={"min-w-5 h-2 rounded-full mr-2 #{apply_profitability_tag(@reaction.profit - ((@eiv * @structure_tax) +(@eiv * @ssc_tax) + (@eiv * @system_cost_index |> Market.Calculator.apply_fw_discount(@fw_upgrade))))}"}>
           </span>
         <% end %>
       </div>
@@ -47,7 +47,7 @@ defmodule EveIndustrexWeb.Reaction do
             {Utils.format_with_coma(
               @reaction.profit -
                 (@eiv * @structure_tax + @eiv * @ssc_tax +
-                   ((@eiv * @system_cost_index) |> Market.Service.apply_fw_discount(@fw_upgrade)))
+                   ((@eiv * @system_cost_index) |> Market.Calculator.apply_fw_discount(@fw_upgrade)))
             )} ISK
           </span>
         <% else %>
@@ -57,7 +57,7 @@ defmodule EveIndustrexWeb.Reaction do
       <div class="p-1 flex flex-col border-t-2 border-dotted border-ei-text-muted mt-4 py-2">
         <span class="text-ei-text-muted">Products: </span>
 
-        <%= for p <- @reaction.bp.activities.reaction.products do %>
+        <%= for p <- @reaction.activities.reaction.products do %>
           <div class="flex p-1 gap-1 items-center">
             <div class="flex text-ei-text-muted justify-between gap-1 w-full">
               <span>{p.name}</span>
@@ -87,7 +87,7 @@ defmodule EveIndustrexWeb.Reaction do
       <div class="p-1 flex flex-col">
         <span class="text-ei-text-muted">Materials: </span>
 
-        <%= for m <- @reaction.bp.activities.reaction.materials do %>
+        <%= for m <- @reaction.activities.reaction.materials do %>
           <div class="flex p-1 gap-1 items-center">
             <div class="flex justify-between gap-1 w-full text-ei-text-muted ">
               <span>{m.name}</span>
@@ -118,12 +118,12 @@ defmodule EveIndustrexWeb.Reaction do
       <div class="p-1 flex flex-col">
         <span title="Total Materials Cost" class="text-ei-text-muted">Total: </span>
         <div class="flex p-1 gap-1 items-center">
-          <%= if Enum.any?(@reaction.bp.activities.reaction.materials, fn m -> @reaction.prices.materials[m.type_id] == nil end) do %>
+          <%= if Enum.any?(@reaction.activities.reaction.materials, fn m -> @reaction.prices.materials[m.type_id] == nil end) do %>
             <span class="text-ei-text-muted">Missing prices</span>
           <% else %>
             <span class="text-ei-text-muted">
               {Utils.format_with_coma(
-                Enum.reduce(@reaction.bp.activities.reaction.materials, 0, fn m, acc ->
+                Enum.reduce(@reaction.activities.reaction.materials, 0, fn m, acc ->
                   @reaction.prices.materials[m.type_id] * m.quantity + acc
                 end)
               )} ISK
@@ -141,7 +141,7 @@ defmodule EveIndustrexWeb.Reaction do
           <span class="text-ei-text-muted">
             {Utils.format_with_coma(
               (@eiv * @system_cost_index)
-              |> Market.Service.apply_fw_discount(@fw_upgrade)
+              |> Market.Calculator.apply_fw_discount(@fw_upgrade)
             )} ISK
           </span>
         </div>
@@ -162,7 +162,7 @@ defmodule EveIndustrexWeb.Reaction do
             <span class="text-ei-text-muted">
               {Utils.format_with_coma(
                 @eiv * @structure_tax + @eiv * @ssc_tax +
-                  ((@eiv * @system_cost_index) |> Market.Service.apply_fw_discount(@fw_upgrade))
+                  ((@eiv * @system_cost_index) |> Market.Calculator.apply_fw_discount(@fw_upgrade))
               )} ISK
             </span>
           </div>

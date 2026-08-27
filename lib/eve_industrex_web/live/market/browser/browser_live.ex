@@ -16,7 +16,7 @@ defmodule EveIndustrexWeb.Market.BrowserLive do
          socket
          |> assign(:filtered_orders, [])
          |> assign(:market_orders, AsyncResult.loading())
-         |> start_async(:get_market_orders, fn -> Market.Service.get_market_view(type_id) end)
+         |> start_async(:get_market_orders, fn -> Market.Composer.get_market_view(type_id) end)
          |> assign(:search_result, [])
          |> assign(:page_title, "Market Browser | Eve Industrex")
          |> assign(:page_description, "Browse Eve Online Market Data - refreshed hourly."),
@@ -192,7 +192,7 @@ defmodule EveIndustrexWeb.Market.BrowserLive do
      socket
      |> assign(:market_orders, AsyncResult.loading())
      |> start_async(:get_market_orders, fn ->
-       Market.Service.get_market_view(String.to_integer(type_id))
+       Market.Composer.get_market_view(String.to_integer(type_id))
      end)
      |> assign(:search_result, [])
      |> push_patch(to: "/market/browser/#{type_id}", replace: true)}

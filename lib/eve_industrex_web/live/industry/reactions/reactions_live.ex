@@ -85,7 +85,7 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
 
     {:ok,
      socket
-     |> start_async(:get_formulas, fn -> Industry.Service.get_reactions_view() end)
+     |> start_async(:get_formulas, fn -> Industry.Production.Composer.reactions_view() end)
      |> assign(:formulas, AsyncResult.loading())
      |> assign(:show_form, true)
      |> assign(:order_types, @order_types)
@@ -322,14 +322,16 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
     %{:form => form} = socket.assigns
     params = %{selected_trade_hub: form[:selected_trade_hub].value}
 
-    type_ids = Industry.Service.extract_reactions_type_ids(result)
+    type_ids =
+      Enum.map(result, fn {_id, r} -> Industry.Production.Helper.extract_bp_type_ids(r) end)
+      |> List.flatten()
 
     {:noreply,
      socket
      |> assign(:formulas, AsyncResult.ok(result))
      |> assign(:orders, AsyncResult.loading())
      |> start_async(:get_orders, fn ->
-       Market.Service.get_initial_prices_for_view(params.selected_trade_hub, type_ids)
+       Market.Cost.get_initial_prices_for_view(params.selected_trade_hub, type_ids)
      end)}
   end
 
@@ -341,7 +343,7 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
     %{:formulas => formulas, :form => form} = socket.assigns
 
     enriched_formulas =
-      Industry.Service.enrich(formulas.result, result, form[:order_type].value)
+      Market.Cost.enrich_bps(formulas.result, result, form[:order_type].value)
 
     filtered_formulas =
       if form[:filter].value != nil do
@@ -418,13 +420,18 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
           "/industry/reactions/#{trade_hub}/#{form[:order_type].value}" <>
             LiveParser.maybe_compose_query(filter, sorter)
 
-        type_ids = Industry.Service.extract_reactions_type_ids(formulas.result)
+        type_ids =
+          Enum.map(formulas.result, fn {_id, r} ->
+            Industry.Production.Helper.extract_bp_type_ids(r)
+          end)
+          |> List.flatten()
+          |> Enum.uniq()
 
         {:noreply,
          socket
          |> assign(:form, to_form(changeset, as: :reactions_form))
          |> start_async(:get_orders, fn ->
-           Market.Service.get_initial_prices_for_view(trade_hub, type_ids)
+           Market.Cost.get_initial_prices_for_view(trade_hub, type_ids)
          end)
          |> assign(:systems, systems)
          |> push_patch(to: path, replace: true)}
@@ -434,13 +441,18 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
           "/industry/reactions/#{form[:selected_trade_hub].value}/#{order_type}" <>
             LiveParser.maybe_compose_query(filter, sorter)
 
-        type_ids = Industry.Service.extract_reactions_type_ids(formulas.result)
+        type_ids =
+          Enum.map(formulas.result, fn {_id, r} ->
+            Industry.Production.Helper.extract_bp_type_ids(r)
+          end)
+          |> List.flatten()
+          |> Enum.uniq()
 
         {:noreply,
          socket
          |> assign(:form, to_form(changeset, as: :reactions_form))
          |> start_async(:get_orders, fn ->
-           Market.Service.get_initial_prices_for_view(trade_hub, type_ids)
+           Market.Cost.get_initial_prices_for_view(trade_hub, type_ids)
          end)
          |> assign(:systems, systems)
          |> push_patch(to: path, replace: true)}
@@ -472,7 +484,7 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
         Map.replace(
           filtered_formulas,
           formula_id,
-          Industry.Service.update_blueprint(
+          Market.Cost.update_blueprint_prices(
             Map.get(filtered_formulas, formula_id),
             type,
             price,
@@ -484,7 +496,7 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
         Map.replace(
           formulas.result,
           formula_id,
-          Industry.Service.update_blueprint(
+          Market.Cost.update_blueprint_prices(
             Map.get(formulas.result, formula_id),
             type,
             price,
@@ -501,7 +513,7 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
         Map.replace(
           formulas.result,
           formula_id,
-          Industry.Service.update_blueprint(
+          Market.Cost.update_blueprint_prices(
             Map.get(formulas.result, formula_id),
             type,
             price,
@@ -528,8 +540,7 @@ defmodule EveIndustrexWeb.Industry.ReactionsLive do
 
   defp sort(formulas, sorter) do
     formulas =
-      formulas
-      |> Map.values()
+      Enum.map(formulas, fn {_id, f} -> f end)
 
     cond do
       sorter == nil ->

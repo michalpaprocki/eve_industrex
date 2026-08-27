@@ -199,7 +199,7 @@ defmodule EveIndustrexWeb.MiniMarket do
        |> assign(:show_modal, !show_modal)
        |> assign(:is_loading?, true)
        |> start_async(:get_market_orders, fn ->
-         Market.Service.get_mini_market_view(selected_trade_hub, item.type_id)
+         Market.Composer.get_mini_market_view(selected_trade_hub, item.type_id)
        end)
        |> assign(:orders, [])}
     end

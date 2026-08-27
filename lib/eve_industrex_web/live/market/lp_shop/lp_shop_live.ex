@@ -285,7 +285,7 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
       selected_trade_hub: form[:selected_trade_hub].value
     }
 
-    type_ids = LoyaltyPoints.Service.extract_offers_type_ids(result)
+    type_ids = LoyaltyPoints.Helper.extract_offers_type_ids(result)
 
     {:noreply,
      socket
@@ -293,13 +293,13 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
      |> assign(:number_of_offers, length(Map.keys(result)))
      |> assign(:orders, AsyncResult.loading())
      |> start_async(:get_orders, fn ->
-       Market.Service.get_initial_prices_for_view(params.selected_trade_hub, type_ids)
+       Market.Cost.get_initial_prices_for_view(params.selected_trade_hub, type_ids)
      end)}
   end
 
   def handle_async(:get_orders, {:ok, result}, socket) do
     %{:offers => offers, :form => form} = socket.assigns
-    offers = LoyaltyPoints.Service.enrich(offers.result, result, form[:order_type].value)
+    offers = Market.Cost.enrich_offers(offers.result, result, form[:order_type].value)
 
     filtered_offers =
       if form[:filter].value != nil do
@@ -359,7 +359,7 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
            |> assign(:form, to_form(changeset, as: :lp_shop_form))
            |> assign(:offers, AsyncResult.loading())
            |> start_async(:get_lp_offers, fn ->
-             LoyaltyPoints.Service.get_lp_shop_view(corp_id)
+             LoyaltyPoints.Composer.lp_shop_view(corp_id)
            end)
            |> push_patch(to: path, replace: true)}
 
@@ -368,13 +368,13 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
             "/market/lp_shop/#{trade_hub}/#{form[:selected_corp].value}/#{form[:order_type].value}" <>
               LiveParser.maybe_compose_query(filter, sorter)
 
-          type_ids = LoyaltyPoints.Service.extract_offers_type_ids(offers.result)
+          type_ids = LoyaltyPoints.Helper.extract_offers_type_ids(offers.result)
 
           {:noreply,
            socket
            |> assign(:form, to_form(changeset, as: :lp_shop_form))
            |> start_async(:get_orders, fn ->
-             Market.Service.get_initial_prices_for_view(trade_hub, type_ids)
+             Market.Cost.get_initial_prices_for_view(trade_hub, type_ids)
            end)
            |> push_patch(to: path, replace: true)}
 
@@ -383,13 +383,13 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
             "/market/lp_shop/#{form[:selected_trade_hub].value}/#{form[:selected_corp].value}/#{order_type}" <>
               LiveParser.maybe_compose_query(filter, sorter)
 
-          type_ids = LoyaltyPoints.Service.extract_offers_type_ids(offers.result)
+          type_ids = LoyaltyPoints.Helper.extract_offers_type_ids(offers.result)
 
           {:noreply,
            socket
            |> assign(:form, to_form(changeset, as: :lp_shop_form))
            |> start_async(:get_orders, fn ->
-             Market.Service.get_initial_prices_for_view(trade_hub, type_ids)
+             Market.Cost.get_initial_prices_for_view(trade_hub, type_ids)
            end)
            |> push_patch(to: path, replace: true)}
 
@@ -424,7 +424,7 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
         Map.replace(
           filtered_offers,
           offer_id,
-          LoyaltyPoints.Service.update_offer(
+          Market.Cost.update_offer_prices(
             Map.get(filtered_offers, offer_id),
             type,
             price,
@@ -436,7 +436,7 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
         Map.replace(
           offers.result,
           offer_id,
-          LoyaltyPoints.Service.update_offer(
+          Market.Cost.update_offer_prices(
             Map.get(offers.result, offer_id),
             type,
             price,
@@ -453,7 +453,7 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
         Map.replace(
           offers.result,
           offer_id,
-          LoyaltyPoints.Service.update_offer(
+          Market.Cost.update_offer_prices(
             Map.get(offers.result, offer_id),
             type,
             price,
@@ -582,6 +582,6 @@ defmodule EveIndustrexWeb.Market.LpShopLive do
     do:
       assign(socket, :offers, AsyncResult.loading())
       |> start_async(:get_lp_offers, fn ->
-        LoyaltyPoints.Service.get_lp_shop_view(selected_corp)
+        LoyaltyPoints.Composer.lp_shop_view(selected_corp)
       end)
 end
